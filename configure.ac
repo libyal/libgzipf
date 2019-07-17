@@ -2,7 +2,7 @@ AC_PREREQ( 2.59 )
 
 AC_INIT(
  [libgzipf],
- [20190716],
+ [20190717],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -96,6 +96,10 @@ AX_LIBBFIO_CHECK_ENABLE
 dnl Check if libfdatetime or required headers and functions are available
 AX_LIBFDATETIME_CHECK_ENABLE
 
+dnl Check if zlib or required headers and functions are available
+AX_ZLIB_CHECK_ENABLE
+AX_ZLIB_CHECK_INFLATE
+
 dnl Check if libgzipf required headers and functions are available
 AX_LIBGZIPF_CHECK_LOCAL
 
@@ -150,7 +154,7 @@ CFLAGS="$CFLAGS -Wall";
 
 dnl Check if requires and build requires should be set in spec file
 AS_IF(
- [test "x$ac_cv_libcerror" = xyes || test "x$ac_cv_libcthreads" = xyes || test "x$ac_cv_libcdata" = xyes || test "x$ac_cv_libclocale" = xyes || test "x$ac_cv_libcnotify" = xyes || test "x$ac_cv_libcsplit" = xyes || test "x$ac_cv_libuna" = xyes || test "x$ac_cv_libcfile" = xyes || test "x$ac_cv_libcpath" = xyes || test "x$ac_cv_libbfio" = xyes || test "x$ac_cv_libfdatetime" = xyes],
+ [test "x$ac_cv_libcerror" = xyes || test "x$ac_cv_libcthreads" = xyes || test "x$ac_cv_libcdata" = xyes || test "x$ac_cv_libclocale" = xyes || test "x$ac_cv_libcnotify" = xyes || test "x$ac_cv_libcsplit" = xyes || test "x$ac_cv_libuna" = xyes || test "x$ac_cv_libcfile" = xyes || test "x$ac_cv_libcpath" = xyes || test "x$ac_cv_libbfio" = xyes || test "x$ac_cv_libfdatetime" = xyes || test "x$ac_cv_zlib" != xno],
  [AC_SUBST(
   [libgzipf_spec_requires],
   [Requires:])
@@ -222,6 +226,7 @@ Building:
    libcpath support:                           $ac_cv_libcpath
    libbfio support:                            $ac_cv_libbfio
    libfdatetime support:                       $ac_cv_libfdatetime
+   DEFLATE compression support:                $ac_cv_inflate
 
 Features:
    Multi-threading support:                    $ac_cv_libcthreads_multi_threading

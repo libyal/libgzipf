@@ -33,9 +33,9 @@ typedef intptr_t libgzipf_error_t;
 enum LIBGZIPF_ERROR_DOMAINS
 {
 	LIBGZIPF_ERROR_DOMAIN_ARGUMENTS			= (int) 'a',
-	LIBGZIPF_ERROR_DOMAIN_CONVERSION			= (int) 'c',
-	LIBGZIPF_ERROR_DOMAIN_COMPRESSION			= (int) 'C',
-	LIBGZIPF_ERROR_DOMAIN_IO				= (int) 'I',
+	LIBGZIPF_ERROR_DOMAIN_CONVERSION		= (int) 'c',
+	LIBGZIPF_ERROR_DOMAIN_COMPRESSION		= (int) 'C',
+	LIBGZIPF_ERROR_DOMAIN_IO			= (int) 'I',
 	LIBGZIPF_ERROR_DOMAIN_INPUT			= (int) 'i',
 	LIBGZIPF_ERROR_DOMAIN_MEMORY			= (int) 'm',
 	LIBGZIPF_ERROR_DOMAIN_OUTPUT			= (int) 'o',
@@ -80,11 +80,11 @@ enum LIBGZIPF_ARGUMENT_ERROR
 
 	/* The argument contains a value that is not supported
 	 */
-	LIBGZIPF_ARGUMENT_ERROR_UNSUPPORTED_VALUE		= 8,
+	LIBGZIPF_ARGUMENT_ERROR_UNSUPPORTED_VALUE	= 8,
 
 	/* The argument contains a value that conficts with another argument
 	 */
-	LIBGZIPF_ARGUMENT_ERROR_CONFLICTING_VALUE		= 9
+	LIBGZIPF_ARGUMENT_ERROR_CONFLICTING_VALUE	= 9
 };
 
 /* The conversion error codes
@@ -92,7 +92,7 @@ enum LIBGZIPF_ARGUMENT_ERROR
  */
 enum LIBGZIPF_CONVERSION_ERROR
 {
-	LIBGZIPF_CONVERSION_ERROR_GENERIC			= 0,
+	LIBGZIPF_CONVERSION_ERROR_GENERIC		= 0,
 
 	/* The conversion failed on the input
 	 */
@@ -124,7 +124,7 @@ enum LIBGZIPF_COMPRESSION_ERROR
  */
 enum LIBGZIPF_IO_ERROR
 {
-	LIBGZIPF_IO_ERROR_GENERIC				= 0,
+	LIBGZIPF_IO_ERROR_GENERIC			= 0,
 
 	/* The open failed
 	 */
@@ -172,7 +172,7 @@ enum LIBGZIPF_INPUT_ERROR
 
 	/* The input contains invalid data
 	 */
-	LIBGZIPF_INPUT_ERROR_INVALID_DATA			= 1,
+	LIBGZIPF_INPUT_ERROR_INVALID_DATA		= 1,
 
 	/* The input contains an unsupported signature
 	 */
@@ -201,11 +201,11 @@ enum LIBGZIPF_MEMORY_ERROR
 
 	/* The memory failed to be copied
 	 */
-	LIBGZIPF_MEMORY_ERROR_COPY_FAILED			= 2,
+	LIBGZIPF_MEMORY_ERROR_COPY_FAILED		= 2,
 
 	/* The memory failed to be set
 	 */
-	LIBGZIPF_MEMORY_ERROR_SET_FAILED			= 3
+	LIBGZIPF_MEMORY_ERROR_SET_FAILED		= 3
 };
 
 /* The output error codes
@@ -216,7 +216,7 @@ enum LIBGZIPF_OUTPUT_ERROR
 
 	/* There is insuficient space to write the output
 	 */
-	LIBGZIPF_OUTPUT_ERROR_INSUFFICIENT_SPACE		= 1
+	LIBGZIPF_OUTPUT_ERROR_INSUFFICIENT_SPACE	= 1
 };
 
 /* The runtime error codes
@@ -232,11 +232,11 @@ enum LIBGZIPF_RUNTIME_ERROR
 
 	/* The value was already set
 	 */
-	LIBGZIPF_RUNTIME_ERROR_VALUE_ALREADY_SET		= 2,
+	LIBGZIPF_RUNTIME_ERROR_VALUE_ALREADY_SET	= 2,
 
 	/* The creation and/or initialization of an internal structure failed
 	 */
-	LIBGZIPF_RUNTIME_ERROR_INITIALIZE_FAILED		= 3,
+	LIBGZIPF_RUNTIME_ERROR_INITIALIZE_FAILED	= 3,
 
 	/* The resize of an internal structure failed
 	 */
@@ -248,11 +248,11 @@ enum LIBGZIPF_RUNTIME_ERROR
 
 	/* The value could not be determined
 	 */
-	LIBGZIPF_RUNTIME_ERROR_GET_FAILED			= 6,
+	LIBGZIPF_RUNTIME_ERROR_GET_FAILED		= 6,
 
 	/* The value could not be set
 	 */
-	LIBGZIPF_RUNTIME_ERROR_SET_FAILED			= 7,
+	LIBGZIPF_RUNTIME_ERROR_SET_FAILED		= 7,
 
 	/* The value could not be appended/prepended
 	 */
@@ -280,7 +280,7 @@ enum LIBGZIPF_RUNTIME_ERROR
 
 	/* The value is unsupported
 	 */
-	LIBGZIPF_RUNTIME_ERROR_UNSUPPORTED_VALUE		= 14,
+	LIBGZIPF_RUNTIME_ERROR_UNSUPPORTED_VALUE	= 14,
 
 	/* An abort was requested
 	 */

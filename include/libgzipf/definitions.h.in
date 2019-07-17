@@ -24,11 +24,11 @@
 
 #include <libgzipf/types.h>
 
-#define LIBGZIPF_VERSION					@VERSION@
+#define LIBGZIPF_VERSION		@VERSION@
 
 /* The libgzipf version string
  */
-#define LIBGZIPF_VERSION_STRING				"@VERSION@"
+#define LIBGZIPF_VERSION_STRING		"@VERSION@"
 
 /* The libgzipf file access
  * bit 1        set to 1 for read access
@@ -37,18 +37,18 @@
  */
 enum LIBGZIPF_ACCESS_FLAGS
 {
-	LIBGZIPF_ACCESS_FLAG_READ			= 0x01,
+	LIBGZIPF_ACCESS_FLAG_READ	= 0x01,
 /* Reserved: not supported yet */
-	LIBGZIPF_ACCESS_FLAG_WRITE			= 0x02
+	LIBGZIPF_ACCESS_FLAG_WRITE	= 0x02
 };
 
 /* The libnlk file access macros
  */
-#define LIBGZIPF_OPEN_READ				( LIBGZIPF_ACCESS_FLAG_READ )
+#define LIBGZIPF_OPEN_READ		( LIBGZIPF_ACCESS_FLAG_READ )
 /* Reserved: not supported yet */
-#define LIBGZIPF_OPEN_WRITE				( LIBGZIPF_ACCESS_FLAG_WRITE )
+#define LIBGZIPF_OPEN_WRITE		( LIBGZIPF_ACCESS_FLAG_WRITE )
 /* Reserved: not supported yet */
-#define LIBGZIPF_OPEN_READ_WRITE				( LIBGZIPF_ACCESS_FLAG_READ | LIBGZIPF_ACCESS_FLAG_WRITE )
+#define LIBGZIPF_OPEN_READ_WRITE	( LIBGZIPF_ACCESS_FLAG_READ | LIBGZIPF_ACCESS_FLAG_WRITE )
 
 #endif /* !defined( _LIBGZIPF_DEFINITIONS_H ) */
 

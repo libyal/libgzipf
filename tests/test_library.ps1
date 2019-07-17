@@ -6,7 +6,7 @@ $ExitSuccess = 0
 $ExitFailure = 1
 $ExitIgnore = 77
 
-$LibraryTests = "error io_handle member_footer member_header notify"
+$LibraryTests = "deflate error io_handle member_footer member_header notify"
 $LibraryTestsWithInput = "file support"
 
 $InputGlob = "*"

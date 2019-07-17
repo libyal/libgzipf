@@ -35,15 +35,15 @@
 
 #if defined( HAVE_GZIPF_TEST_MEMORY )
 
-static void *(*gzipf_test_real_malloc)(size_t)                 = NULL;
-static void *(*gzipf_test_real_memcpy)(void *, void *, size_t) = NULL;
-static void *(*gzipf_test_real_memset)(void *, int, size_t)    = NULL;
-static void *(*gzipf_test_real_realloc)(void *, size_t)        = NULL;
+static void *(*gzipf_test_real_malloc)(size_t)                       = NULL;
+static void *(*gzipf_test_real_memcpy)(void *, const void *, size_t) = NULL;
+static void *(*gzipf_test_real_memset)(void *, int, size_t)          = NULL;
+static void *(*gzipf_test_real_realloc)(void *, size_t)              = NULL;
 
-int gzipf_test_malloc_attempts_before_fail                     = -1;
-int gzipf_test_memcpy_attempts_before_fail                     = -1;
-int gzipf_test_memset_attempts_before_fail                     = -1;
-int gzipf_test_realloc_attempts_before_fail                    = -1;
+int gzipf_test_malloc_attempts_before_fail                           = -1;
+int gzipf_test_memcpy_attempts_before_fail                           = -1;
+int gzipf_test_memset_attempts_before_fail                           = -1;
+int gzipf_test_realloc_attempts_before_fail                          = -1;
 
 /* Custom malloc for testing memory error cases
  * Note this function might fail if compiled with optimation
@@ -57,8 +57,8 @@ void *malloc(
 	if( gzipf_test_real_malloc == NULL )
 	{
 		gzipf_test_real_malloc = dlsym(
-		                        RTLD_NEXT,
-		                        "malloc" );
+		                          RTLD_NEXT,
+		                          "malloc" );
 	}
 	if( gzipf_test_malloc_attempts_before_fail == 0 )
 	{
@@ -82,14 +82,14 @@ void *malloc(
  */
 void *memcpy(
        void *destination,
-       void *source,
+       const void *source,
        size_t size )
 {
 	if( gzipf_test_real_memcpy == NULL )
 	{
 		gzipf_test_real_memcpy = dlsym(
-		                        RTLD_NEXT,
-		                        "memcpy" );
+		                          RTLD_NEXT,
+		                          "memcpy" );
 	}
 	if( gzipf_test_memcpy_attempts_before_fail == 0 )
 	{
@@ -121,8 +121,8 @@ void *memset(
 	if( gzipf_test_real_memset == NULL )
 	{
 		gzipf_test_real_memset = dlsym(
-		                        RTLD_NEXT,
-		                        "memset" );
+		                          RTLD_NEXT,
+		                          "memset" );
 	}
 	if( gzipf_test_memset_attempts_before_fail == 0 )
 	{
@@ -153,8 +153,8 @@ void *realloc(
 	if( gzipf_test_real_realloc == NULL )
 	{
 		gzipf_test_real_realloc = dlsym(
-		                         RTLD_NEXT,
-		                         "realloc" );
+		                           RTLD_NEXT,
+		                           "realloc" );
 	}
 	if( gzipf_test_realloc_attempts_before_fail == 0 )
 	{

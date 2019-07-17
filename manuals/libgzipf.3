@@ -1,11 +1,9 @@
-.Dd July 16, 2019
+.Dd July 17, 2019
 .Dt libgzipf 3
 .Os libgzipf
 .Sh NAME
 .Nm libgzipf.h
 .Nd Library to access the GZIP file format
-.Sh LIBRARY
-.Lb libgzipf
 .Sh SYNOPSIS
 .In libgzipf.h
 .Pp
@@ -15,27 +13,27 @@ Support functions
 .Ft int
 .Fn libgzipf_get_access_flags_read "void"
 .Ft int
-.Fn libgzipf_get_codepage "int *codepage, libgzipf_error_t **error"
+.Fn libgzipf_get_codepage "int *codepage" "libgzipf_error_t **error"
 .Ft int
-.Fn libgzipf_set_codepage "int codepage, libgzipf_error_t **error"
+.Fn libgzipf_set_codepage "int codepage" "libgzipf_error_t **error"
 .Ft int
-.Fn libgzipf_check_file_signature "const char *filename, libgzipf_error_t **error"
+.Fn libgzipf_check_file_signature "const char *filename" "libgzipf_error_t **error"
 .Pp
 Available when compiled with wide character string support:
 .Ft int
-.Fn libgzipf_check_file_signature_wide "const wchar_t *filename, libgzipf_error_t **error"
+.Fn libgzipf_check_file_signature_wide "const wchar_t *filename" "libgzipf_error_t **error"
 .Pp
 Available when compiled with libbfio support:
 .Ft int
-.Fn libgzipf_check_file_signature_file_io_handle "libbfio_handle_t *file_io_handle, libgzipf_error_t **error"
+.Fn libgzipf_check_file_signature_file_io_handle "libbfio_handle_t *file_io_handle" "libgzipf_error_t **error"
 .Pp
 Notify functions
 .Ft void
 .Fn libgzipf_notify_set_verbose "int verbose"
 .Ft int
-.Fn libgzipf_notify_set_stream "FILE *stream, libgzipf_error_t **error"
+.Fn libgzipf_notify_set_stream "FILE *stream" "libgzipf_error_t **error"
 .Ft int
-.Fn libgzipf_notify_stream_open "const char *filename, libgzipf_error_t **error"
+.Fn libgzipf_notify_stream_open "const char *filename" "libgzipf_error_t **error"
 .Ft int
 .Fn libgzipf_notify_stream_close "libgzipf_error_t **error"
 .Pp
@@ -43,33 +41,33 @@ Error functions
 .Ft void
 .Fn libgzipf_error_free "libgzipf_error_t **error"
 .Ft int
-.Fn libgzipf_error_fprint "libgzipf_error_t *error, FILE *stream"
+.Fn libgzipf_error_fprint "libgzipf_error_t *error" "FILE *stream"
 .Ft int
-.Fn libgzipf_error_sprint "libgzipf_error_t *error, char *string, size_t size"
+.Fn libgzipf_error_sprint "libgzipf_error_t *error" "char *string" "size_t size"
 .Ft int
-.Fn libgzipf_error_backtrace_fprint "libgzipf_error_t *error, FILE *stream"
+.Fn libgzipf_error_backtrace_fprint "libgzipf_error_t *error" "FILE *stream"
 .Ft int
-.Fn libgzipf_error_backtrace_sprint "libgzipf_error_t *error, char *string, size_t size"
+.Fn libgzipf_error_backtrace_sprint "libgzipf_error_t *error" "char *string" "size_t size"
 .Pp
 File functions
 .Ft int
-.Fn libgzipf_file_initialize "libgzipf_file_t **file, libgzipf_error_t **error"
+.Fn libgzipf_file_initialize "libgzipf_file_t **file" "libgzipf_error_t **error"
 .Ft int
-.Fn libgzipf_file_free "libgzipf_file_t **file, libgzipf_error_t **error"
+.Fn libgzipf_file_free "libgzipf_file_t **file" "libgzipf_error_t **error"
 .Ft int
-.Fn libgzipf_file_signal_abort "libgzipf_file_t *file, libgzipf_error_t **error"
+.Fn libgzipf_file_signal_abort "libgzipf_file_t *file" "libgzipf_error_t **error"
 .Ft int
-.Fn libgzipf_file_open "libgzipf_file_t *file, const char *filename, int access_flags, libgzipf_error_t **error"
+.Fn libgzipf_file_open "libgzipf_file_t *file" "const char *filename" "int access_flags" "libgzipf_error_t **error"
 .Ft int
-.Fn libgzipf_file_close "libgzipf_file_t *file, libgzipf_error_t **error"
+.Fn libgzipf_file_close "libgzipf_file_t *file" "libgzipf_error_t **error"
 .Pp
 Available when compiled with wide character string support:
 .Ft int
-.Fn libgzipf_file_open_wide "libgzipf_file_t *file, const wchar_t *filename, int access_flags, libgzipf_error_t **error"
+.Fn libgzipf_file_open_wide "libgzipf_file_t *file" "const wchar_t *filename" "int access_flags" "libgzipf_error_t **error"
 .Pp
 Available when compiled with libbfio support:
 .Ft int
-.Fn libgzipf_file_open_file_io_handle "libgzipf_file_t *file, libbfio_handle_t *file_io_handle, int access_flags, libgzipf_error_t **error"
+.Fn libgzipf_file_open_file_io_handle "libgzipf_file_t *file" "libbfio_handle_t *file_io_handle" "int access_flags" "libgzipf_error_t **error"
 .Sh DESCRIPTION
 The
 .Fn libgzipf_get_version
@@ -82,8 +80,8 @@ None
 .Sh FILES
 None
 .Sh NOTES
-libgzipf allows to be compiled with wide character support (wchar_t).
-
+libgzipf can be compiled with wide character support (wchar_t).
+.sp
 To compile libgzipf with wide character support use:
 .Ar ./configure --enable-wide-character-type=yes
  or define:
@@ -91,8 +89,8 @@ To compile libgzipf with wide character support use:
  or
 .Ar UNICODE
  during compilation.
-
-.Ar LIBGZIP_WIDE_CHARACTER_TYPE
+.sp
+.Ar LIBGZIPF_WIDE_CHARACTER_TYPE
  in libgzipf/features.h can be used to determine if libgzipf was compiled with wide character support.
 .Sh BUGS
 Please report bugs of any kind on the project issue tracker: https://github.com/libyal/libgzipf/issues
@@ -100,7 +98,7 @@ Please report bugs of any kind on the project issue tracker: https://github.com/
 These man pages are generated from "libgzipf.h".
 .Sh COPYRIGHT
 Copyright (C) 2019, Joachim Metz <joachim.metz@gmail.com>.
-
+.sp
 This is free software; see the source for copying conditions.
 There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 .Sh SEE ALSO

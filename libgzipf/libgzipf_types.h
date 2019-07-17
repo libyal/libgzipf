@@ -34,10 +34,12 @@
 /* The following type definitions hide internal data structures
  */
 #if defined( HAVE_DEBUG_OUTPUT ) && !defined( WINAPI )
-typedef struct libgzipf_file {}	libgzipf_file_t;
+typedef struct libgzipf_file {}		libgzipf_file_t;
+typedef struct libgzipf_member {}	libgzipf_member_t;
 
 #else
 typedef intptr_t libgzipf_file_t;
+typedef intptr_t libgzipf_member_t;
 
 #endif /* defined( HAVE_DEBUG_OUTPUT ) && !defined( WINAPI ) */
 

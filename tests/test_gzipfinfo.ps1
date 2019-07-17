@@ -45,7 +45,7 @@ If (-Not (Test-Path ${TestToolDirectory}))
 	Exit ${ExitFailure}
 }
 
-$TestExecutable = "${TestToolDirectory}\gzipinfo.exe"
+$TestExecutable = "${TestToolDirectory}\gzipfinfo.exe"
 
 If (-Not (Test-Path -Path "input"))
 {

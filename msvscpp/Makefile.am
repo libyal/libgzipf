@@ -1,4 +1,5 @@
 MSVSCPP_FILES = \
+	gzipf_test_deflate/gzipf_test_deflate.vcproj \
 	gzipf_test_error/gzipf_test_error.vcproj \
 	gzipf_test_file/gzipf_test_file.vcproj \
 	gzipf_test_io_handle/gzipf_test_io_handle.vcproj \
@@ -20,6 +21,7 @@ MSVSCPP_FILES = \
 	libgzipf/libgzipf.vcproj \
 	libuna/libuna.vcproj \
 	pygzipf/pygzipf.vcproj \
+	zlib/zlib.vcproj \
 	libgzipf.sln
 
 EXTRA_DIST = \

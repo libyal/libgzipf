@@ -20,22 +20,17 @@
  */
 
 #include <common.h>
-#include <narrow_string.h>
 #include <types.h>
 
 #if defined( HAVE_STDLIB_H ) || defined( HAVE_WINAPI )
 #include <stdlib.h>
 #endif
 
-#include "pygzipf_codepage.h"
-#include "pygzipf_datetime.h"
 #include "pygzipf_error.h"
 #include "pygzipf_file.h"
 #include "pygzipf_file_object_io_handle.h"
-#include "pygzipf_integer.h"
 #include "pygzipf_libbfio.h"
 #include "pygzipf_libcerror.h"
-#include "pygzipf_libclocale.h"
 #include "pygzipf_libgzipf.h"
 #include "pygzipf_python.h"
 #include "pygzipf_unused.h"
@@ -409,7 +404,7 @@ PyObject *pygzipf_file_open(
 	{
 		pygzipf_error_fetch_and_raise(
 		 PyExc_RuntimeError,
-		 "%s: unable to determine if string object is of type unicode.",
+		 "%s: unable to determine if string object is of type Unicode.",
 		 function );
 
 		return( NULL );
@@ -438,7 +433,7 @@ PyObject *pygzipf_file_open(
 		{
 			pygzipf_error_fetch_and_raise(
 			 PyExc_RuntimeError,
-			 "%s: unable to convert unicode string to UTF-8.",
+			 "%s: unable to convert Unicode string to UTF-8.",
 			 function );
 
 			return( NULL );
@@ -714,7 +709,7 @@ PyObject *pygzipf_file_close(
 		{
 			pygzipf_error_raise(
 			 error,
-			 PyExc_IOError,
+			 PyExc_MemoryError,
 			 "%s: unable to free libbfio file IO handle.",
 			 function );
 

@@ -12,6 +12,7 @@ AM_CPPFLAGS = \
 	@LIBCPATH_CPPFLAGS@ \
 	@LIBBFIO_CPPFLAGS@ \
 	@LIBFDATETIME_CPPFLAGS@ \
+	@ZLIB_CPPFLAGS@ \
 	@PTHREAD_CPPFLAGS@ \
 	@LIBGZIPF_DLL_EXPORT@
 
@@ -24,6 +25,7 @@ libgzipf_la_SOURCES = \
 	libgzipf_codepage.h \
 	libgzipf_debug.c libgzipf_debug.h \
 	libgzipf_definitions.h \
+	libgzipf_deflate.c libgzipf_deflate.h \
 	libgzipf_error.c libgzipf_error.h \
 	libgzipf_extern.h \
 	libgzipf_file.c libgzipf_file.h \
@@ -54,6 +56,7 @@ libgzipf_la_LIBADD = \
 	@LIBCPATH_LIBADD@ \
 	@LIBBFIO_LIBADD@ \
 	@LIBFDATETIME_LIBADD@ \
+	@ZLIB_LIBADD@ \
 	@PTHREAD_LIBADD@
 
 libgzipf_la_LDFLAGS = -no-undefined -version-info 1:0:0
