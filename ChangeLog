@@ -1,0 +1,11 @@
+To do:
+* member header add support for extra fields controlled by flags
+* complete library
+* complete Python bindings
+* debug print compression method
+* debug print flags
+* debug print operating system
+
+20190716
+* see `git log' for more recent change log
+* initial version based on liblnk

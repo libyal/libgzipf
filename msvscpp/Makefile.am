@@ -1,0 +1,33 @@
+MSVSCPP_FILES = \
+	gzipf_test_error/gzipf_test_error.vcproj \
+	gzipf_test_file/gzipf_test_file.vcproj \
+	gzipf_test_io_handle/gzipf_test_io_handle.vcproj \
+	gzipf_test_member_footer/gzipf_test_member_footer.vcproj \
+	gzipf_test_member_header/gzipf_test_member_header.vcproj \
+	gzipf_test_notify/gzipf_test_notify.vcproj \
+	gzipf_test_support/gzipf_test_support.vcproj \
+	gzipfinfo/gzipfinfo.vcproj \
+	libbfio/libbfio.vcproj \
+	libcdata/libcdata.vcproj \
+	libcerror/libcerror.vcproj \
+	libcfile/libcfile.vcproj \
+	libclocale/libclocale.vcproj \
+	libcnotify/libcnotify.vcproj \
+	libcpath/libcpath.vcproj \
+	libcsplit/libcsplit.vcproj \
+	libcthreads/libcthreads.vcproj \
+	libfdatetime/libfdatetime.vcproj \
+	libgzipf/libgzipf.vcproj \
+	libuna/libuna.vcproj \
+	pygzipf/pygzipf.vcproj \
+	libgzipf.sln
+
+EXTRA_DIST = \
+	$(MSVSCPP_FILES)
+
+MAINTAINERCLEANFILES = \
+	Makefile.in
+
+distclean: clean
+	/bin/rm -f Makefile
+

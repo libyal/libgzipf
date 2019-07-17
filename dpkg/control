@@ -1,0 +1,81 @@
+Source: libgzipf
+Priority: extra
+Maintainer: Joachim Metz <joachim.metz@gmail.com>
+Build-Depends: debhelper (>= 9), dh-autoreconf, pkg-config, python-dev, python3-dev
+Standards-Version: 3.9.5
+Section: libs
+Homepage: https://github.com/libyal/libgzipf
+
+Package: libgzipf
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Conflicts: libgzipf1
+Replaces: libgzipf1
+Suggests: libgzipf-dbg
+Description: Library to access the GZIP file format
+ libgzipf is a library to access the GZIP file format.
+
+Package: libgzipf-dbg
+Architecture: any
+Section: debug
+Depends: libgzipf (= ${binary:Version}), ${misc:Depends}
+Description: Debugging symbols for libgzipf
+ Debugging symbols for libgzipf.
+
+Package: libgzipf-dev
+Section: libdevel
+Architecture: any
+Depends: libgzipf (= ${binary:Version}), ${misc:Depends}
+Description: Header files and libraries for developing applications for libgzipf
+ Header files and libraries for developing applications for libgzipf.
+
+Package: libgzipf-tools
+Section: utils
+Architecture: any
+Depends: libgzipf (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Conflicts: libgzipf-utils
+Replaces: libgzipf-utils
+Description: Several tools for reading GZIP files
+ Several tools for reading GZIP files.
+
+Package: libgzipf-tools-dbg
+Section: debug
+Architecture: any
+Depends: libgzipf-tools (= ${binary:Version}), ${misc:Depends}
+Description: Debugging symbols for libgzipf-tools
+ Debugging symbols for libgzipf-tools.
+
+Package: libgzipf-python
+Section: python
+Architecture: any
+Depends: libgzipf (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Conflicts: python-libgzipf
+Replaces: python-libgzipf
+Suggests: libgzipf-python-dbg
+Description: Python 2 bindings for libgzipf
+ Python 2 bindings for libgzipf.
+
+Package: libgzipf-python-dbg
+Section: debug
+Architecture: any
+Depends: libgzipf-python (= ${binary:Version}), ${misc:Depends}
+Description: Debugging symbols for libgzipf-python
+ Debugging symbols for libgzipf-python.
+
+Package: libgzipf-python3
+Section: python
+Architecture: any
+Depends: libgzipf (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Conflicts: python3-libgzipf
+Replaces: python3-libgzipf
+Suggests: libgzipf-python3-dbg
+Description: Python 3 bindings for libgzipf
+ Python 3 bindings for libgzipf.
+
+Package: libgzipf-python3-dbg
+Section: debug
+Architecture: any
+Depends: libgzipf-python3 (= ${binary:Version}), ${misc:Depends}
+Description: Debugging symbols for libgzipf-python3
+ Debugging symbols for libgzipf-python3.
+
