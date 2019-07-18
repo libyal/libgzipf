@@ -38,6 +38,7 @@ EXTRA_DIST = \
 	$(check_SCRIPTS)
 
 check_PROGRAMS = \
+	gzipf_test_checksum \
 	gzipf_test_deflate \
 	gzipf_test_error \
 	gzipf_test_file \
@@ -46,6 +47,17 @@ check_PROGRAMS = \
 	gzipf_test_member_header \
 	gzipf_test_notify \
 	gzipf_test_support
+
+gzipf_test_checksum_SOURCES = \
+	gzipf_test_checksum.c \
+	gzipf_test_libcerror.h \
+	gzipf_test_libgzipf.h \
+	gzipf_test_memory.c gzipf_test_memory.h \
+	gzipf_test_unused.h
+
+gzipf_test_checksum_LDADD = \
+	../libgzipf/libgzipf.la \
+	@LIBCERROR_LIBADD@
 
 gzipf_test_deflate_SOURCES = \
 	gzipf_test_deflate.c \

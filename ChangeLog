@@ -2,8 +2,7 @@ To do:
 * member header add support for extra fields controlled by flags
 * complete library
 * complete Python bindings
-* debug print compression method
-* debug print flags
+* debug pring compression flags
 * debug print operating system
 
 20190716

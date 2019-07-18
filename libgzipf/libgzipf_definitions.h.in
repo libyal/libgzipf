@@ -63,7 +63,14 @@ enum LIBGZIPF_ACCESS_FLAGS
 /* Reserved: not supported yet */
 #define LIBGZIPF_OPEN_READ_WRITE			( LIBGZIPF_ACCESS_FLAG_READ | LIBGZIPF_ACCESS_FLAG_WRITE )
 
-#endif /*  !defined( HAVE_LOCAL_LIBGZIPF ) */
+#endif /* !defined( HAVE_LOCAL_LIBGZIPF ) */
+
+/* The compression methods
+ */
+enum LIBGZIPF_COMPRESSION_METHODS
+{
+	LIBGZIPF_COMPRESSION_METHOD_DEFLATE		= 1,
+};
 
 #endif /* !defined( _LIBGZIPF_INTERNAL_DEFINITIONS_H ) */
 

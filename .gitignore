@@ -125,6 +125,7 @@ stamp-h[1-9]
 /gzipftools/gzipfinfo
 /tests/*.exe
 /tests/input
+/tests/gzipf_test_checksum
 /tests/gzipf_test_deflate
 /tests/gzipf_test_error
 /tests/gzipf_test_file

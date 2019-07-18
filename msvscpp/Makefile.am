@@ -1,4 +1,5 @@
 MSVSCPP_FILES = \
+	gzipf_test_checksum/gzipf_test_checksum.vcproj \
 	gzipf_test_deflate/gzipf_test_deflate.vcproj \
 	gzipf_test_error/gzipf_test_error.vcproj \
 	gzipf_test_file/gzipf_test_file.vcproj \

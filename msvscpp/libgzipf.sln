@@ -1,6 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual C++ Express 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gzipf_test_checksum", "gzipf_test_checksum\gzipf_test_checksum.vcproj", "{2C569CDD-AE9E-41BC-A7BE-9D75BEDC45BB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{240075C2-DA46-434B-AA82-C82BFA1C1DC3} = {240075C2-DA46-434B-AA82-C82BFA1C1DC3}
+		{68D0551A-0D8C-4BB2-A23D-2FFCD27AB184} = {68D0551A-0D8C-4BB2-A23D-2FFCD27AB184}
+	EndProjectSection
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gzipf_test_deflate", "gzipf_test_deflate\gzipf_test_deflate.vcproj", "{9D87EA71-335A-4632-A600-0E95A24C3FE5}"
 	ProjectSection(ProjectDependencies) = postProject
 		{7CF47CDF-F3AF-48CA-B76F-89AB46F49296} = {7CF47CDF-F3AF-48CA-B76F-89AB46F49296}
@@ -197,6 +203,10 @@ Global
 		VSDebug|Win32 = VSDebug|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2C569CDD-AE9E-41BC-A7BE-9D75BEDC45BB}.Release|Win32.ActiveCfg = Release|Win32
+		{2C569CDD-AE9E-41BC-A7BE-9D75BEDC45BB}.Release|Win32.Build.0 = Release|Win32
+		{2C569CDD-AE9E-41BC-A7BE-9D75BEDC45BB}.VSDebug|Win32.ActiveCfg = VSDebug|Win32
+		{2C569CDD-AE9E-41BC-A7BE-9D75BEDC45BB}.VSDebug|Win32.Build.0 = VSDebug|Win32
 		{9D87EA71-335A-4632-A600-0E95A24C3FE5}.Release|Win32.ActiveCfg = Release|Win32
 		{9D87EA71-335A-4632-A600-0E95A24C3FE5}.Release|Win32.Build.0 = Release|Win32
 		{9D87EA71-335A-4632-A600-0E95A24C3FE5}.VSDebug|Win32.ActiveCfg = VSDebug|Win32

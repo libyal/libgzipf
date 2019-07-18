@@ -229,23 +229,29 @@ int libgzipf_member_header_read_data(
 		 ( (gzipf_member_header_t *) data )->signature[ 1 ] );
 
 		libcnotify_printf(
-		 "%s: compression method\t\t\t: %" PRIu8 "\n",
+		 "%s: compression method\t\t\t: %" PRIu8 " (%s)\n",
 		 function,
-		 ( (gzipf_member_header_t *) data )->compression_method );
+		 ( (gzipf_member_header_t *) data )->compression_method,
+		 libgzipf_debug_print_compression_method(
+		  ( (gzipf_member_header_t *) data )->compression_method ) );
 
 		libcnotify_printf(
-		 "%s: flags\t\t\t\t: %" PRIu8 "\n",
+		 "%s: flags\t\t\t\t\t: %" PRIu8 "\n",
 		 function,
 		 ( (gzipf_member_header_t *) data )->flags );
+		libgzipf_debug_print_flags(
+		 ( (gzipf_member_header_t *) data )->flags );
+		libcnotify_printf(
+		 "\n" );
 
 		if( libgzipf_debug_print_posix_time_value(
 		     function,
-		     "modification time\t\t\t\t",
+		     "modification time\t\t\t",
 		     ( (gzipf_member_header_t *) data )->modification_time,
 		     4,
 		     LIBFDATETIME_ENDIAN_LITTLE,
 		     LIBFDATETIME_POSIX_TIME_VALUE_TYPE_SECONDS_32BIT_SIGNED,
-		     LIBFDATETIME_STRING_FORMAT_TYPE_CTIME,
+		     LIBFDATETIME_STRING_FORMAT_TYPE_CTIME | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -316,7 +322,7 @@ int libgzipf_member_header_read_file_io_handle(
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: reading member header at offset: %" PRIi64 " (0x%08" PRIx64 ").",
+		 "%s: reading member header at offset: %" PRIi64 " (0x%08" PRIx64 ").\n",
 		 function,
 		 file_offset,
 		 file_offset );

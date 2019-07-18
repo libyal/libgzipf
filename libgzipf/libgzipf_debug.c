@@ -32,6 +32,67 @@
 
 #if defined( HAVE_DEBUG_OUTPUT )
 
+/* Prints the flags
+ */
+void libgzipf_debug_print_flags(
+      uint8_t flags )
+{
+	if( ( flags & 0x01 ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tData is text (FTEXT)\n" );
+	}
+	if( ( flags & 0x02 ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tHas header checksum (FHCRC)\n" );
+	}
+	if( ( flags & 0x04 ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tHas extra fields (FEXTRA)\n" );
+	}
+	if( ( flags & 0x08 ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tHas name (FNAME)\n" );
+	}
+	if( ( flags & 0x10 ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tHas comment (FCOMMENT)\n" );
+	}
+
+	if( ( flags & 0x20 ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tUnknown 0x20\n" );
+	}
+	if( ( flags & 0x40 ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tUnknown 0x40\n" );
+	}
+	if( ( flags & 0x80 ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tUnknown 0x80\n" );
+	}
+}
+
+/* Prints the compression method
+ */
+const char *libgzipf_debug_print_compression_method(
+             uint8_t compression_method )
+{
+	switch( compression_method )
+	{
+		case 8:
+			return( "deflate" );
+	}
+	return( "_UNKNOWN_" );
+}
+
 /* Prints a POSIX value
  * Returns 1 if successful or -1 on error
  */

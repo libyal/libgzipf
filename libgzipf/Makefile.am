@@ -22,7 +22,9 @@ libgzipf_la_SOURCES = \
 	gzipf_member_header.h \
 	gzipf_member_footer.h \
 	libgzipf.c \
+	libgzipf_checksum.c libgzipf_checksum.h \
 	libgzipf_codepage.h \
+	libgzipf_compression.c libgzipf_compression.h \
 	libgzipf_debug.c libgzipf_debug.h \
 	libgzipf_definitions.h \
 	libgzipf_deflate.c libgzipf_deflate.h \

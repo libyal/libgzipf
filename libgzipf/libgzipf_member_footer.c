@@ -261,7 +261,7 @@ int libgzipf_member_footer_read_file_io_handle(
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: reading member footer at offset: %" PRIi64 " (0x%08" PRIx64 ").",
+		 "%s: reading member footer at offset: %" PRIi64 " (0x%08" PRIx64 ").\n",
 		 function,
 		 file_offset,
 		 file_offset );

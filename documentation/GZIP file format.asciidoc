@@ -88,6 +88,9 @@ Contains a POSIX timestamp.
 | 8 | 1 | | Compression flags (or extra flags)
 | 9 | 1 | | Operating system +
 Value that indicates on which operating system the gzip file was created.
+4+| _If the FNAME flag is set_
+| ... | ... | | (File) name of the member +
+Contains an ISO 8859-1 (LATIN-1) string with end-of-string character.
 |===
 
 === [[compression_method]]Compression method
@@ -110,13 +113,13 @@ This flag hints end-of-line conversion for cross-platform text files but does no
 | 0x04 | FEXTRA | The member contains extra fields
 | 0x08 | FNAME | The member contains an original file name string
 | 0x10 | FCOMMENT | The member contains comment
-| 0x20 | | Reserved
-| 0x40 | | Reserved
-| 0x80 | | Reserved
+| 0x20 | | [yellow-background]*Unknown (Reserved)*
+| 0x40 | | [yellow-background]*Unknown (Reserved)*
+| 0x80 | | [yellow-background]*Unknown (Reserved)*
 |===
 
 [NOTE]
-Reserved flags bits must be zero.
+According to `[GZIP]` reserved flags must be zero.
 
 [NOTE]
 The FHCRC bit was never set by versions of gzip up to 1.2.4, even though it was

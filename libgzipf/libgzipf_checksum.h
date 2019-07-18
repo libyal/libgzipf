@@ -1,7 +1,7 @@
 /*
- * Debug functions
+ * Checksum functions
  *
- * Copyright (C) 2019, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2018-2019, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -19,50 +19,45 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBGZIPF_DEBUG_H )
-#define _LIBGZIPF_DEBUG_H
+#if !defined( _LIBGZIPF_CHECKSUM_H )
+#define _LIBGZIPF_CHECKSUM_H
 
 #include <common.h>
 #include <types.h>
 
-#include "libgzipf_libbfio.h"
 #include "libgzipf_libcerror.h"
+#include "libgzipf_extern.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-#if defined( HAVE_DEBUG_OUTPUT )
+LIBGZIPF_EXTERN_VARIABLE \
+uint32_t libgzipf_checksum_crc32_table[ 256 ];
 
-void libgzipf_debug_print_flags(
-      uint8_t flags );
+LIBGZIPF_EXTERN_VARIABLE \
+int libgzipf_checksum_crc32_table_computed;
 
-void libgzipf_debug_print_compression_flags(
-      uint8_t compression_method,
-      uint8_t compression_flags );
+void libgzipf_checksum_initialize_crc32_table(
+      uint32_t polynomial );
 
-const char *libgzipf_debug_print_compression_method(
-             uint8_t compression_method );
-
-int libgzipf_debug_print_posix_time_value(
-     const char *function_name,
-     const char *value_name,
-     const uint8_t *byte_stream,
-     size_t byte_stream_size,
-     int byte_order,
-     uint8_t value_type,
-     uint32_t string_format_flags,
+int libgzipf_checksum_calculate_weak_crc32(
+     uint32_t *checksum,
+     const uint8_t *buffer,
+     size_t size,
+     uint32_t initial_value,
      libcerror_error_t **error );
 
-int libgzipf_debug_print_read_offsets(
-     libbfio_handle_t *file_io_handle,
+int libgzipf_checksum_calculate_fletcher64(
+     uint64_t *checksum,
+     const uint8_t *buffer,
+     size_t size,
+     uint64_t initial_value,
      libcerror_error_t **error );
-
-#endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _LIBGZIPF_DEBUG_H ) */
+#endif /* !defined( _LIBGZIPF_CHECKSUM_H ) */
 
