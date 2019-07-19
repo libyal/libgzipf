@@ -1,4 +1,8 @@
 To do:
+* add support for members to API
+** get name
+** get comments
+** get modification time
 * member header add support for extra fields controlled by flags
 * complete library
 * complete Python bindings

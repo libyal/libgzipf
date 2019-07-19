@@ -73,7 +73,7 @@ Number of seconds since January 1, 1970 00:00:00 UTC
 
 == Member header
 
-The file header is 10 bytes in size and contains:
+The member header is variable in size and contains:
 
 [cols="1,1,1,5",options="header"]
 |===
@@ -88,9 +88,17 @@ Contains a POSIX timestamp.
 | 8 | 1 | | Compression flags (or extra flags)
 | 9 | 1 | | Operating system +
 Value that indicates on which operating system the gzip file was created.
+4+| _If the FEXTRA flag is set_
+| ... | ... | | Extra fields
 4+| _If the FNAME flag is set_
-| ... | ... | | (File) name of the member +
+| ... | ... | | Original file name +
 Contains an ISO 8859-1 (LATIN-1) string with end-of-string character.
+4+| _If the FCOMMENT flag is set_
+| ... | ... | | File comments +
+Contains an ISO 8859-1 (LATIN-1) string with end-of-string character.
+4+| _If the FHCRC flag is set_
+| ... | 2 | | Checksum +
+Checksum (CRC-16) of the data from the start of the member header
 |===
 
 === [[compression_method]]Compression method
@@ -109,10 +117,10 @@ Contains an ISO 8859-1 (LATIN-1) string with end-of-string character.
 | Value | Identifier | Description
 | 0x01 | FTEXT | If set the uncompressed data needs to be treated as text instead of binary data. +
 This flag hints end-of-line conversion for cross-platform text files but does not enforce it.
-| 0x02 | FHCRC | The member contains a header checksum (CRC-16)
+| 0x02 | FHCRC | The member contains a checksum (CRC-16) of the member header data
 | 0x04 | FEXTRA | The member contains extra fields
-| 0x08 | FNAME | The member contains an original file name string
-| 0x10 | FCOMMENT | The member contains comment
+| 0x08 | FNAME | The member contains an original file name
+| 0x10 | FCOMMENT | The member contains file comments
 | 0x20 | | [yellow-background]*Unknown (Reserved)*
 | 0x40 | | [yellow-background]*Unknown (Reserved)*
 | 0x80 | | [yellow-background]*Unknown (Reserved)*

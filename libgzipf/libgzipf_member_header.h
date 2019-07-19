@@ -36,9 +36,29 @@ typedef struct libgzipf_member_header libgzipf_member_header_t;
 
 struct libgzipf_member_header
 {
+	/* The flags
+	 */
+	uint8_t flags;
+
 	/* The modification date and time
 	 */
 	uint32_t modification_time;
+
+	/* The name
+	 */
+	uint8_t *name;
+
+	/* The name size
+	 */
+	size_t name_size;
+
+	/* The comments
+	 */
+	uint8_t *comments;
+
+	/* The comments size
+	 */
+	size_t comments_size;
 };
 
 int libgzipf_member_header_initialize(
@@ -53,6 +73,11 @@ int libgzipf_member_header_read_data(
      libgzipf_member_header_t *member_header,
      const uint8_t *data,
      size_t data_size,
+     libcerror_error_t **error );
+
+int libgzipf_member_header_read_name(
+     libgzipf_member_header_t *member_header,
+     libbfio_handle_t *file_io_handle,
      libcerror_error_t **error );
 
 int libgzipf_member_header_read_file_io_handle(

@@ -36,14 +36,17 @@
 
 #include "../libgzipf/libgzipf_member_header.h"
 
-uint8_t gzipf_test_member_header_data1[ 10 ] = {
-	0x1f, 0x8b, 0x08, 0x08, 0xd7, 0x16, 0x14, 0x50, 0x00, 0x03 };
+uint8_t gzipf_test_member_header_data1[ 19 ] = {
+	0x1f, 0x8b, 0x08, 0x08, 0xd7, 0x16, 0x14, 0x50, 0x00, 0x03, 0x73, 0x79, 0x73, 0x6c, 0x6f, 0x67,
+	0x2e, 0x31, 0x00 };
 
-uint8_t gzipf_test_member_header_error_data1[ 10 ] = {
-	0xff, 0xff, 0x08, 0x08, 0xd7, 0x16, 0x14, 0x50, 0x00, 0x03 };
+uint8_t gzipf_test_member_header_error_data1[ 19 ] = {
+	0xff, 0xff, 0x08, 0x08, 0xd7, 0x16, 0x14, 0x50, 0x00, 0x03, 0x73, 0x79, 0x73, 0x6c, 0x6f, 0x67,
+	0x2e, 0x31, 0x00 };
 
-uint8_t gzipf_test_member_header_error_data2[ 10 ] = {
-	0x1f, 0x8b, 0xff, 0x08, 0xd7, 0x16, 0x14, 0x50, 0x00, 0x03 };
+uint8_t gzipf_test_member_header_error_data2[ 19 ] = {
+	0x1f, 0x8b, 0xff, 0x08, 0xd7, 0x16, 0x14, 0x50, 0x00, 0x03, 0x73, 0x79, 0x73, 0x6c, 0x6f, 0x67,
+	0x2e, 0x31, 0x00 };
 
 #if defined( __GNUC__ ) && !defined( LIBGZIPF_DLL_IMPORT )
 
@@ -314,7 +317,7 @@ int gzipf_test_member_header_read_data(
 	result = libgzipf_member_header_read_data(
 	          member_header,
 	          gzipf_test_member_header_data1,
-	          10,
+	          19,
 	          &error );
 
 	GZIPF_TEST_ASSERT_EQUAL_INT(
@@ -336,7 +339,7 @@ int gzipf_test_member_header_read_data(
 	result = libgzipf_member_header_read_data(
 	          NULL,
 	          gzipf_test_member_header_data1,
-	          10,
+	          19,
 	          &error );
 
 	GZIPF_TEST_ASSERT_EQUAL_INT(
@@ -354,7 +357,7 @@ int gzipf_test_member_header_read_data(
 	result = libgzipf_member_header_read_data(
 	          member_header,
 	          NULL,
-	          10,
+	          19,
 	          &error );
 
 	GZIPF_TEST_ASSERT_EQUAL_INT(
@@ -410,7 +413,7 @@ int gzipf_test_member_header_read_data(
 	result = libgzipf_member_header_read_data(
 	          member_header,
 	          gzipf_test_member_header_error_data1,
-	          10,
+	          19,
 	          &error );
 
 	GZIPF_TEST_ASSERT_EQUAL_INT(
@@ -430,7 +433,7 @@ int gzipf_test_member_header_read_data(
 	result = libgzipf_member_header_read_data(
 	          member_header,
 	          gzipf_test_member_header_error_data2,
-	          10,
+	          19,
 	          &error );
 
 	GZIPF_TEST_ASSERT_EQUAL_INT(
@@ -516,7 +519,7 @@ int gzipf_test_member_header_read_file_io_handle(
 	result = gzipf_test_open_file_io_handle(
 	          &file_io_handle,
 	          gzipf_test_member_header_data1,
-	          10,
+	          19,
 	          &error );
 
 	GZIPF_TEST_ASSERT_EQUAL_INT(
@@ -659,7 +662,7 @@ int gzipf_test_member_header_read_file_io_handle(
 	result = gzipf_test_open_file_io_handle(
 	          &file_io_handle,
 	          gzipf_test_member_header_error_data1,
-	          10,
+	          19,
 	          &error );
 
 	GZIPF_TEST_ASSERT_EQUAL_INT(
@@ -778,6 +781,10 @@ int main(
 	GZIPF_TEST_RUN(
 	 "libgzipf_member_header_read_data",
 	 gzipf_test_member_header_read_data );
+
+	/* TODO: add tests for libgzipf_member_header_read_name */
+
+	/* TODO: add tests for libgzipf_member_header_read_comments */
 
 	GZIPF_TEST_RUN(
 	 "libgzipf_member_header_read_file_io_handle",
