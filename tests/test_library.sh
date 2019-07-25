@@ -7,7 +7,7 @@ EXIT_SUCCESS=0;
 EXIT_FAILURE=1;
 EXIT_IGNORE=77;
 
-LIBRARY_TESTS="checksum deflate error io_handle member_footer member_header notify";
+LIBRARY_TESTS="checksum deflate error io_handle member member_footer member_header notify";
 LIBRARY_TESTS_WITH_INPUT="file support";
 OPTION_SETS="";
 

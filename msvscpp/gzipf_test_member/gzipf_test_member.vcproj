@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="gzipf_test_notify"
-	ProjectGUID="{E24165F6-E7A8-4210-A82F-D2480D448535}"
-	RootNamespace="gzipf_test_notify"
+	Name="gzipf_test_member"
+	ProjectGUID="{E44CAA10-70E0-4FD3-A9A9-513F1C2B44E1}"
+	RootNamespace="gzipf_test_member"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -176,7 +176,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\tests\gzipf_test_notify.c"
+				RelativePath="..\..\tests\gzipf_test_member.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tests\gzipf_test_memory.c"
 				>
 			</File>
 		</Filter>
@@ -195,6 +199,10 @@
 			</File>
 			<File
 				RelativePath="..\..\tests\gzipf_test_macros.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\tests\gzipf_test_memory.h"
 				>
 			</File>
 			<File

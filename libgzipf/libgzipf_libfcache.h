@@ -1,5 +1,5 @@
 /*
- * Compression functions
+ * The libfcache header wrapper
  *
  * Copyright (C) 2019, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,30 +19,32 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBGZIPF_COMPRESSION_H )
-#define _LIBGZIPF_COMPRESSION_H
+#if !defined( _LIBGZIPF_LIBFCACHE_H )
+#define _LIBGZIPF_LIBFCACHE_H
 
 #include <common.h>
-#include <types.h>
 
-#include "libgzipf_libcerror.h"
+/* Define HAVE_LOCAL_LIBFCACHE for local use of libfcache
+ */
+#if defined( HAVE_LOCAL_LIBFCACHE )
 
-#if defined( __cplusplus )
-extern "C" {
+#include <libfcache_cache.h>
+#include <libfcache_date_time.h>
+#include <libfcache_definitions.h>
+#include <libfcache_types.h>
+
+#else
+
+/* If libtool DLL support is enabled set LIBFCACHE_DLL_IMPORT
+ * before including libfcache.h
+ */
+#if defined( _WIN32 ) && defined( DLL_IMPORT )
+#define LIBFCACHE_DLL_IMPORT
 #endif
 
-int libgzipf_decompress_data(
-     const uint8_t *compressed_data,
-     size_t *compressed_data_size,
-     int compression_method,
-     uint8_t *uncompressed_data,
-     size_t *uncompressed_data_size,
-     uint8_t *is_last_block,
-     libcerror_error_t **error );
+#include <libfcache.h>
 
-#if defined( __cplusplus )
-}
-#endif
+#endif /* defined( HAVE_LOCAL_LIBFCACHE ) */
 
-#endif /* !defined( _LIBGZIPF_COMPRESSION_H ) */
+#endif /* !defined( _LIBGZIPF_LIBFCACHE_H ) */
 

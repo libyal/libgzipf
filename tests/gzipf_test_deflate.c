@@ -1,7 +1,7 @@
 /*
  * Library DEFLATE decompression testing program
  *
- * Copyright (C) 2019, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2010-2019, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -933,6 +933,11 @@ int gzipf_test_deflate_bit_stream_get_value(
 	return( 1 );
 
 on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
 	return( 0 );
 }
 
@@ -1097,6 +1102,11 @@ int gzipf_test_deflate_huffman_table_construct(
 	return( 1 );
 
 on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
 	return( 0 );
 }
 
@@ -1244,6 +1254,11 @@ int gzipf_test_deflate_bit_stream_get_huffman_encoded_value(
 	return( 1 );
 
 on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
 	return( 0 );
 }
 
@@ -1264,14 +1279,6 @@ int gzipf_test_deflate_initialize_dynamic_huffman_tables(
 	int number_of_memset_fail_tests = 6;
 	int test_number                 = 0;
 #endif
-
-	/* Initialize test
-	 */
-        bit_stream.byte_stream        = gzipf_test_deflate_compressed_byte_stream;
-        bit_stream.byte_stream_size   = 2627;
-        bit_stream.byte_stream_offset = 0;
-        bit_stream.bit_buffer         = 0;
-        bit_stream.bit_buffer_size    = 0;
 
 	/* Test regular cases
 	 */
@@ -1372,6 +1379,11 @@ int gzipf_test_deflate_initialize_dynamic_huffman_tables(
 	return( 1 );
 
 on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
 	return( 0 );
 }
 
@@ -1483,6 +1495,11 @@ int gzipf_test_deflate_initialize_fixed_huffman_tables(
 	return( 1 );
 
 on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
 	return( 0 );
 }
 
@@ -1501,14 +1518,6 @@ int gzipf_test_deflate_decode_huffman(
 	libcerror_error_t *error        = NULL;
 	size_t uncompressed_data_offset = 0;
 	int result                      = 0;
-
-	/* Initialize test
-	 */
-        bit_stream.byte_stream        = gzipf_test_deflate_compressed_byte_stream;
-        bit_stream.byte_stream_size   = 2627;
-        bit_stream.byte_stream_offset = 0;
-        bit_stream.bit_buffer         = 0;
-        bit_stream.bit_buffer_size    = 0;
 
 	/* Test regular cases
 	 */
@@ -1644,6 +1653,11 @@ int gzipf_test_deflate_decode_huffman(
 	return( 1 );
 
 on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
 	return( 0 );
 }
 
@@ -1742,6 +1756,298 @@ int gzipf_test_deflate_calculate_adler32(
 	return( 1 );
 
 on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libgzipf_deflate_read_data_header function
+ * Returns 1 if successful or 0 if not
+ */
+int gzipf_test_deflate_read_data_header(
+     void )
+{
+	libcerror_error_t *error        = NULL;
+	size_t uncompressed_data_offset = 0;
+	int result                      = 0;
+
+	/* Test regular cases
+	 */
+	uncompressed_data_offset = 0;
+
+	result = libgzipf_deflate_read_data_header(
+	          gzipf_test_deflate_compressed_byte_stream,
+	          2627,
+	          &uncompressed_data_offset,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	GZIPF_TEST_ASSERT_EQUAL_SIZE(
+	 "uncompressed_data_offset",
+	 uncompressed_data_offset,
+	 (size_t) 2 );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	uncompressed_data_offset = 0;
+
+	result = libgzipf_deflate_read_data_header(
+	          NULL,
+	          2627,
+	          &uncompressed_data_offset,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libgzipf_deflate_read_data_header(
+	          gzipf_test_deflate_compressed_byte_stream,
+	          (size_t) SSIZE_MAX + 1,
+	          &uncompressed_data_offset,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libgzipf_deflate_read_data_header(
+	          gzipf_test_deflate_compressed_byte_stream,
+	          2627,
+	          NULL,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libgzipf_deflate_read_data_header(
+	          gzipf_test_deflate_compressed_byte_stream,
+	          1,
+	          &uncompressed_data_offset,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+/* TODO test compression_method != 8 */
+/* TODO test compression_window_size > 32768 */
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libgzipf_deflate_read_block function
+ * Returns 1 if successful or 0 if not
+ */
+int gzipf_test_deflate_read_block(
+     void )
+{
+	uint8_t uncompressed_data[ 8192 ];
+
+	libgzipf_deflate_bit_stream_t bit_stream;
+
+	libcerror_error_t *error        = NULL;
+	size_t uncompressed_data_offset = 0;
+	size_t uncompressed_data_size   = 7640;
+	uint8_t last_block_flag         = 0;
+	int result                      = 0;
+
+	/* Initialize test
+	 */
+        bit_stream.byte_stream        = gzipf_test_deflate_compressed_byte_stream;
+        bit_stream.byte_stream_size   = 2627;
+        bit_stream.byte_stream_offset = 2;
+        bit_stream.bit_buffer         = 0;
+        bit_stream.bit_buffer_size    = 0;
+
+	/* Test regular cases
+	 */
+	result = libgzipf_deflate_read_block(
+	          &bit_stream,
+	          uncompressed_data,
+	          uncompressed_data_size,
+	          &uncompressed_data_offset,
+	          &last_block_flag,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	GZIPF_TEST_ASSERT_EQUAL_SIZE(
+	 "uncompressed_data_size",
+	 uncompressed_data_size,
+	 (size_t) 7640 );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+/* TODO: test uncompressed data too small */
+
+	/* Test error cases
+	 */
+	result = libgzipf_deflate_read_block(
+	          NULL,
+	          uncompressed_data,
+	          uncompressed_data_size,
+	          &uncompressed_data_offset,
+	          &last_block_flag,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libgzipf_deflate_read_block(
+	          &bit_stream,
+	          NULL,
+	          uncompressed_data_size,
+	          &uncompressed_data_offset,
+	          &last_block_flag,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libgzipf_deflate_read_block(
+	          &bit_stream,
+	          uncompressed_data,
+	          (size_t) SSIZE_MAX + 1,
+	          &uncompressed_data_offset,
+	          &last_block_flag,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libgzipf_deflate_read_block(
+	          &bit_stream,
+	          uncompressed_data,
+	          uncompressed_data_size,
+	          NULL,
+	          &last_block_flag,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libgzipf_deflate_read_block(
+	          &bit_stream,
+	          uncompressed_data,
+	          uncompressed_data_size,
+	          &uncompressed_data_offset,
+	          NULL,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
 	return( 0 );
 }
 
@@ -1760,8 +2066,8 @@ int gzipf_test_deflate_decompress(
 	/* Test regular cases
 	 */
 	result = libgzipf_deflate_decompress(
-	          gzipf_test_deflate_compressed_byte_stream,
-	          2627,
+	          &( gzipf_test_deflate_compressed_byte_stream[ 2 ] ),
+	          2627 - 6,
 	          uncompressed_data,
 	          &uncompressed_data_size,
 	          &error );
@@ -1786,7 +2092,7 @@ int gzipf_test_deflate_decompress(
 	 */
 	result = libgzipf_deflate_decompress(
 	          NULL,
-	          2627,
+	          2627 - 6,
 	          uncompressed_data,
 	          &uncompressed_data_size,
 	          &error );
@@ -1804,7 +2110,7 @@ int gzipf_test_deflate_decompress(
 	 &error );
 
 	result = libgzipf_deflate_decompress(
-	          gzipf_test_deflate_compressed_byte_stream,
+	          &( gzipf_test_deflate_compressed_byte_stream[ 2 ] ),
 	          (size_t) SSIZE_MAX + 1,
 	          uncompressed_data,
 	          &uncompressed_data_size,
@@ -1823,6 +2129,132 @@ int gzipf_test_deflate_decompress(
 	 &error );
 
 	result = libgzipf_deflate_decompress(
+	          &( gzipf_test_deflate_compressed_byte_stream[ 2 ] ),
+	          2627 - 6,
+	          NULL,
+	          &uncompressed_data_size,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libgzipf_deflate_decompress(
+	          &( gzipf_test_deflate_compressed_byte_stream[ 2 ] ),
+	          2627 - 6,
+	          uncompressed_data,
+	          NULL,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libgzipf_deflate_decompress_zlib function
+ * Returns 1 if successful or 0 if not
+ */
+int gzipf_test_deflate_decompress_zlib(
+     void )
+{
+	uint8_t uncompressed_data[ 8192 ];
+
+	libcerror_error_t *error      = NULL;
+	size_t uncompressed_data_size = 7640;
+	int result                    = 0;
+
+	/* Test regular cases
+	 */
+	result = libgzipf_deflate_decompress_zlib(
+	          gzipf_test_deflate_compressed_byte_stream,
+	          2627,
+	          uncompressed_data,
+	          &uncompressed_data_size,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	GZIPF_TEST_ASSERT_EQUAL_SIZE(
+	 "uncompressed_data_size",
+	 uncompressed_data_size,
+	 (size_t) 7640 );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+/* TODO: test uncompressed data too small */
+
+	/* Test error cases
+	 */
+	result = libgzipf_deflate_decompress_zlib(
+	          NULL,
+	          2627,
+	          uncompressed_data,
+	          &uncompressed_data_size,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libgzipf_deflate_decompress_zlib(
+	          gzipf_test_deflate_compressed_byte_stream,
+	          (size_t) SSIZE_MAX + 1,
+	          uncompressed_data,
+	          &uncompressed_data_size,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libgzipf_deflate_decompress_zlib(
 	          gzipf_test_deflate_compressed_byte_stream,
 	          2627,
 	          NULL,
@@ -1841,7 +2273,7 @@ int gzipf_test_deflate_decompress(
 	libcerror_error_free(
 	 &error );
 
-	result = libgzipf_deflate_decompress(
+	result = libgzipf_deflate_decompress_zlib(
 	          gzipf_test_deflate_compressed_byte_stream,
 	          2627,
 	          uncompressed_data,
@@ -1863,6 +2295,11 @@ int gzipf_test_deflate_decompress(
 	return( 1 );
 
 on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
 	return( 0 );
 }
 
@@ -1883,7 +2320,6 @@ int main(
 	GZIPF_TEST_UNREFERENCED_PARAMETER( argc )
 	GZIPF_TEST_UNREFERENCED_PARAMETER( argv )
 
-#define GZIPF_TEST_DEFLATE
 #if defined( HAVE_DEBUG_OUTPUT ) && defined( GZIPF_TEST_DEFLATE )
 	libcnotify_verbose_set(
 	 1 );
@@ -1923,8 +2359,20 @@ int main(
 	 gzipf_test_deflate_calculate_adler32 );
 
 	GZIPF_TEST_RUN(
+	 "libgzipf_deflate_read_data_header",
+	 gzipf_test_deflate_read_data_header );
+
+	GZIPF_TEST_RUN(
+	 "libgzipf_deflate_read_block",
+	 gzipf_test_deflate_read_block );
+
+	GZIPF_TEST_RUN(
 	 "libgzipf_deflate_decompress",
 	 gzipf_test_deflate_decompress );
+
+	GZIPF_TEST_RUN(
+	 "libgzipf_deflate_decompress_zlib",
+	 gzipf_test_deflate_decompress_zlib );
 
 #endif /* defined( __GNUC__ ) && !defined( LIBGZIPF_DLL_IMPORT ) */
 

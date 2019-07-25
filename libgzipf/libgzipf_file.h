@@ -30,6 +30,8 @@
 #include "libgzipf_libbfio.h"
 #include "libgzipf_libcerror.h"
 #include "libgzipf_libcthreads.h"
+#include "libgzipf_libfcache.h"
+#include "libgzipf_libfdata.h"
 #include "libgzipf_types.h"
 
 #if defined( __cplusplus )
@@ -55,6 +57,14 @@ struct libgzipf_internal_file
 	/* Value to indicate if the file IO handle was opened inside the library
 	 */
 	uint8_t file_io_handle_opened_in_library;
+
+	/* The members list
+	 */
+	libfdata_list_t *members_list;
+
+	/* The members cache
+	 */
+	libfcache_cache_t *members_cache;
 
 #if defined( HAVE_LIBGZIPF_MULTI_THREAD_SUPPORT )
 	/* The read/write lock
@@ -111,6 +121,19 @@ int libgzipf_file_close(
 int libgzipf_file_open_read(
      libgzipf_internal_file_t *internal_file,
      libbfio_handle_t *file_io_handle,
+     libcerror_error_t **error );
+
+LIBGZIPF_EXTERN \
+int libgzipf_file_get_number_of_members(
+     libgzipf_file_t *file,
+     int *number_of_members,
+     libcerror_error_t **error );
+
+LIBGZIPF_EXTERN \
+int libgzipf_file_get_member(
+     libgzipf_file_t *file,
+     int member_index,
+     libgzipf_member_t **member,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

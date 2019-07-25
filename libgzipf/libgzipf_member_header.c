@@ -319,6 +319,187 @@ int libgzipf_member_header_read_data(
 	return( 1 );
 }
 
+/* Reads the comments
+ * Returns 1 if successful or -1 on error
+ */
+int libgzipf_member_header_read_comments(
+     libgzipf_member_header_t *member_header,
+     libbfio_handle_t *file_io_handle,
+     libcerror_error_t **error )
+{
+	uint8_t string_data[ 64 ];
+
+	static char *function     = "libgzipf_member_header_read_comments";
+	size_t string_data_offset = 0;
+	size_t string_size        = 0;
+	size_t read_size          = 0;
+	ssize_t read_count        = 0;
+	int found_end_of_string   = 0;
+
+	if( member_header == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid member header.",
+		 function );
+
+		return( -1 );
+	}
+	if( member_header->comments != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid member header - comments value already set.",
+		 function );
+
+		return( -1 );
+	}
+	while( found_end_of_string == 0 )
+	{
+		read_count = libbfio_handle_read_buffer(
+		              file_io_handle,
+		              string_data,
+		              64,
+		              error );
+
+		if( read_count <= -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read member header data.",
+			 function );
+
+			goto on_error;
+		}
+		read_size += (size_t) read_count;
+
+		for( string_data_offset = 0;
+		     string_data_offset < 64;
+		     string_data_offset++ )
+		{
+			string_size++;
+
+			if( string_data[ string_data_offset ] == 0 )
+			{
+				found_end_of_string = 1;
+
+				break;
+			}
+		}
+	}
+	if( libbfio_handle_seek_offset(
+	     file_io_handle,
+	     -read_size,
+	     SEEK_CUR,
+	     error ) == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_SEEK_FAILED,
+		 "%s: unable to seek start of comments.",
+		 function );
+
+		goto on_error;
+	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "%s: comments string size\t\t\t: %" PRIzd "\n",
+		 function,
+		 string_size );
+	}
+#endif
+	if( string_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid string size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	member_header->comments = (uint8_t *) memory_allocate(
+	                                       sizeof( uint8_t ) * string_size );
+
+	if( member_header->comments == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create comments.",
+		 function );
+
+		goto on_error;
+	}
+	member_header->comments_size = string_size;
+
+	read_count = libbfio_handle_read_buffer(
+	              file_io_handle,
+	              member_header->comments,
+	              string_size,
+	              error );
+
+	if( read_count != (ssize_t) string_size )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read comments.",
+		 function );
+
+		goto on_error;
+	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		if( libgzipf_debug_print_string_value(
+		     function,
+		     "comments\t\t\t\t\t",
+		     member_header->comments,
+		     member_header->comments_size,
+		     LIBUNA_CODEPAGE_ISO_8859_1,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+			 "%s: unable to print string value.",
+			 function );
+
+			goto on_error;
+		}
+		libcnotify_printf(
+		 "\n" );
+	}
+#endif
+	return( 1 );
+
+on_error:
+	if( member_header->comments != NULL )
+	{
+		memory_free(
+		 member_header->comments );
+
+		member_header->comments = NULL;
+	}
+	member_header->comments_size = 0;
+
+	return( -1 );
+}
+
 /* Reads the name
  * Returns 1 if successful or -1 on error
  */
@@ -536,6 +717,17 @@ int libgzipf_member_header_read_file_io_handle(
 
 		return( -1 );
 	}
+	if( member_header->comments != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid member header - comments value already set.",
+		 function );
+
+		return( -1 );
+	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -618,7 +810,20 @@ int libgzipf_member_header_read_file_io_handle(
 	}
 	if( ( member_header->flags & 0x10 ) != 0 )
 	{
-/* TODO read comments string */
+		if( libgzipf_member_header_read_comments(
+		     member_header,
+		     file_io_handle,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read comments.",
+			 function );
+
+			goto on_error;
+		}
 	}
 	if( ( member_header->flags & 0x02 ) != 0 )
 	{

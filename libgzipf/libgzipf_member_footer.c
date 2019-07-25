@@ -269,7 +269,7 @@ int libgzipf_member_footer_read_file_io_handle(
 #endif
 	if( libbfio_handle_seek_offset(
 	     file_io_handle,
-	     0,
+	     file_offset,
 	     SEEK_SET,
 	     error ) == -1 )
 	{

@@ -1,5 +1,5 @@
 /*
- * Compression functions
+ * The libfdata header wrapper
  *
  * Copyright (C) 2019, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,30 +19,39 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBGZIPF_COMPRESSION_H )
-#define _LIBGZIPF_COMPRESSION_H
+#if !defined( _LIBGZIPF_LIBFDATA_H )
+#define _LIBGZIPF_LIBFDATA_H
 
 #include <common.h>
-#include <types.h>
 
-#include "libgzipf_libcerror.h"
+/* Define HAVE_LOCAL_LIBFDATA for local use of libfdata
+ */
+#if defined( HAVE_LOCAL_LIBFDATA )
 
-#if defined( __cplusplus )
-extern "C" {
+#include <libfdata_area.h>
+#include <libfdata_btree.h>
+#include <libfdata_definitions.h>
+#include <libfdata_list.h>
+#include <libfdata_list_element.h>
+#include <libfdata_range_list.h>
+#include <libfdata_stream.h>
+#include <libfdata_tree.h>
+#include <libfdata_tree_node.h>
+#include <libfdata_types.h>
+#include <libfdata_vector.h>
+
+#else
+
+/* If libtool DLL support is enabled set LIBFDATA_DLL_IMPORT
+ * before including libfdata.h
+ */
+#if defined( _WIN32 ) && defined( DLL_IMPORT )
+#define LIBFDATA_DLL_IMPORT
 #endif
 
-int libgzipf_decompress_data(
-     const uint8_t *compressed_data,
-     size_t *compressed_data_size,
-     int compression_method,
-     uint8_t *uncompressed_data,
-     size_t *uncompressed_data_size,
-     uint8_t *is_last_block,
-     libcerror_error_t **error );
+#include <libfdata.h>
 
-#if defined( __cplusplus )
-}
-#endif
+#endif /* defined( HAVE_LOCAL_LIBFDATA ) */
 
-#endif /* !defined( _LIBGZIPF_COMPRESSION_H ) */
+#endif /* !defined( _LIBGZIPF_LIBFDATA_H ) */
 

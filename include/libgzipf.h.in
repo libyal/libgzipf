@@ -260,6 +260,36 @@ int libgzipf_file_close(
      libgzipf_file_t *file,
      libgzipf_error_t **error );
 
+/* Retrieves the number of members
+ * Returns 1 if successful or -1 on error
+ */
+LIBGZIPF_EXTERN \
+int libgzipf_file_get_number_of_members(
+     libgzipf_file_t *file,
+     int *number_of_members,
+     libgzipf_error_t **error );
+
+/* Retrieves a specific member
+ * Returns 1 if successful or -1 on error
+ */
+LIBGZIPF_EXTERN \
+int libgzipf_file_get_member_by_index(
+     libgzipf_file_t *file,
+     int member_index,
+     libgzipf_member_t **member,
+     libgzipf_error_t **error );
+
+/* -------------------------------------------------------------------------
+ * Member functions
+ * ------------------------------------------------------------------------- */
+
+/* Frees a member
+ */
+LIBGZIPF_EXTERN \
+int libgzipf_member_free(
+     libgzipf_member_t **member,
+     libgzipf_error_t **error );
+
 #if defined( __cplusplus )
 }
 #endif

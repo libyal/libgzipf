@@ -75,6 +75,11 @@ int libgzipf_member_header_read_data(
      size_t data_size,
      libcerror_error_t **error );
 
+int libgzipf_member_header_read_comments(
+     libgzipf_member_header_t *member_header,
+     libbfio_handle_t *file_io_handle,
+     libcerror_error_t **error );
+
 int libgzipf_member_header_read_name(
      libgzipf_member_header_t *member_header,
      libbfio_handle_t *file_io_handle,

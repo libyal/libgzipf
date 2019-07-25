@@ -11,6 +11,8 @@ AM_CPPFLAGS = \
 	@LIBCFILE_CPPFLAGS@ \
 	@LIBCPATH_CPPFLAGS@ \
 	@LIBBFIO_CPPFLAGS@ \
+	@LIBFCACHE_CPPFLAGS@ \
+	@LIBFDATA_CPPFLAGS@ \
 	@LIBFDATETIME_CPPFLAGS@ \
 	@PTHREAD_CPPFLAGS@ \
 	@LIBGZIPF_DLL_IMPORT@
@@ -43,6 +45,7 @@ check_PROGRAMS = \
 	gzipf_test_error \
 	gzipf_test_file \
 	gzipf_test_io_handle \
+	gzipf_test_member \
 	gzipf_test_member_footer \
 	gzipf_test_member_header \
 	gzipf_test_notify \
@@ -118,6 +121,18 @@ gzipf_test_io_handle_SOURCES = \
 	gzipf_test_unused.h
 
 gzipf_test_io_handle_LDADD = \
+	../libgzipf/libgzipf.la \
+	@LIBCERROR_LIBADD@
+
+gzipf_test_member_SOURCES = \
+	gzipf_test_libcerror.h \
+	gzipf_test_libgzipf.h \
+	gzipf_test_macros.h \
+	gzipf_test_member.c \
+	gzipf_test_memory.c gzipf_test_memory.h \
+	gzipf_test_unused.h
+
+gzipf_test_member_LDADD = \
 	../libgzipf/libgzipf.la \
 	@LIBCERROR_LIBADD@
 

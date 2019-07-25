@@ -11,6 +11,8 @@ AM_CPPFLAGS = \
 	@LIBCFILE_CPPFLAGS@ \
 	@LIBCPATH_CPPFLAGS@ \
 	@LIBBFIO_CPPFLAGS@ \
+	@LIBFCACHE_CPPFLAGS@ \
+	@LIBFDATA_CPPFLAGS@ \
 	@LIBFDATETIME_CPPFLAGS@ \
 	@ZLIB_CPPFLAGS@ \
 	@PTHREAD_CPPFLAGS@ \
@@ -37,8 +39,11 @@ libgzipf_la_SOURCES = \
 	libgzipf_libclocale.h \
 	libgzipf_libcnotify.h \
 	libgzipf_libcthreads.h \
+	libgzipf_libfcache.h \
+	libgzipf_libfdata.h \
 	libgzipf_libfdatetime.h \
 	libgzipf_libuna.h \
+	libgzipf_member.c libgzipf_member.h \
 	libgzipf_member_header.c libgzipf_member_header.h \
 	libgzipf_member_footer.c libgzipf_member_footer.h \
 	libgzipf_notify.c libgzipf_notify.h \
@@ -57,6 +62,8 @@ libgzipf_la_LIBADD = \
 	@LIBCFILE_LIBADD@ \
 	@LIBCPATH_LIBADD@ \
 	@LIBBFIO_LIBADD@ \
+	@LIBFCACHE_LIBADD@ \
+	@LIBFDATA_LIBADD@ \
 	@LIBFDATETIME_LIBADD@ \
 	@ZLIB_LIBADD@ \
 	@PTHREAD_LIBADD@

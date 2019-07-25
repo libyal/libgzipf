@@ -25,6 +25,7 @@
 #include <types.h>
 #include <wide_string.h>
 
+#include "libgzipf_compression.h"
 #include "libgzipf_debug.h"
 #include "libgzipf_definitions.h"
 #include "libgzipf_file.h"
@@ -33,6 +34,10 @@
 #include "libgzipf_libcerror.h"
 #include "libgzipf_libcnotify.h"
 #include "libgzipf_libcthreads.h"
+#include "libgzipf_libfcache.h"
+#include "libgzipf_libfdata.h"
+#include "libgzipf_member.h"
+#include "libgzipf_member_footer.h"
 #include "libgzipf_member_header.h"
 #include "libgzipf_types.h"
 
@@ -106,6 +111,41 @@ int libgzipf_file_initialize(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
 		 "%s: unable to create IO handle.",
+		 function );
+
+		goto on_error;
+	}
+/* TODO implement
+	if( libfdata_list_initialize(
+	     &( internal_file->members_list ),
+	     (intptr_t *) internal_file->io_handle,
+	     NULL,
+	     NULL,
+	     (int (*)(intptr_t *, intptr_t *, libfdata_list_element_t *, libfdata_cache_t *, int, off64_t, size64_t, uint32_t, uint8_t, libcerror_error_t **)) &libgzip_member_read_element_data,
+	     NULL,
+	     LIBFDATA_DATA_HANDLE_FLAG_NON_MANAGED,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create members list.",
+		 function );
+
+		goto on_error;
+	}
+*/
+	if( libfcache_cache_initialize(
+	     &( internal_file->members_cache ),
+	     LIBGZIPF_MAXIMUM_CACHE_ENTRIES_MEMBERS,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create members cache.",
 		 function );
 
 		goto on_error;
@@ -197,6 +237,32 @@ int libgzipf_file_free(
 			result = -1;
 		}
 #endif
+		if( libfcache_cache_free(
+		     &( internal_file->members_cache ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free members cache.",
+			 function );
+
+			result = -1;
+		}
+		if( libfdata_list_free(
+		     &( internal_file->members_list ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free members list.",
+			 function );
+
+			result = -1;
+		}
 		if( libgzipf_io_handle_free(
 		     &( internal_file->io_handle ),
 		     error ) != 1 )
@@ -918,8 +984,11 @@ int libgzipf_file_open_read(
      libbfio_handle_t *file_io_handle,
      libcerror_error_t **error )
 {
+	libgzipf_member_footer_t *member_footer = NULL;
 	libgzipf_member_header_t *member_header = NULL;
 	static char *function                   = "libgzipf_file_open_read";
+	size64_t file_size                      = 0;
+	off64_t file_offset                     = 0;
 
 	if( internal_file == NULL )
 	{
@@ -945,7 +1014,7 @@ int libgzipf_file_open_read(
 	}
 	if( libbfio_handle_get_size(
 	     file_io_handle,
-	     &( internal_file->io_handle->file_size ),
+	     &file_size,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -961,55 +1030,192 @@ int libgzipf_file_open_read(
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "Reading member header:\n" );
+		 "Reading member header(s):\n" );
 	}
 #endif
-	if( libgzipf_member_header_initialize(
-	     &member_header,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create member header.",
-		 function );
+	uint8_t compressed_data[ 32 * 1024 ];
+	uint8_t uncompressed_data[ 64 * 1024 ];
+	ssize_t read_count = 0;
+	size_t uncompressed_data_size = 0;
+	uint8_t is_last_block = 0;
 
-		goto on_error;
-	}
-	if( libgzipf_member_header_read_file_io_handle(
-	     member_header,
-	     file_io_handle,
-	     0,
-	     error ) != 1 )
+	while( (size64_t) file_offset < file_size )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read member header at offset: %" PRIi64 " (0x%08" PRIx64 ").",
-		 function,
-		 0,
-		 0 );
+		if( libgzipf_member_header_initialize(
+		     &member_header,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create member header.",
+			 function );
 
-		goto on_error;
-	}
-	if( libgzipf_member_header_free(
-	     &member_header,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-		 "%s: unable to free member header.",
-		 function );
+			goto on_error;
+		}
+		if( libgzipf_member_header_read_file_io_handle(
+		     member_header,
+		     file_io_handle,
+		     file_offset,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read member header at offset: %" PRIi64 " (0x%08" PRIx64 ").",
+			 function,
+			 file_offset,
+			 file_offset );
 
-		goto on_error;
+			goto on_error;
+		}
+		if( libbfio_handle_get_offset(
+		     file_io_handle,
+		     &file_offset,
+		     error ) == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_SEEK_FAILED,
+			 "%s: unable to determine offset.",
+			 function );
+
+			goto on_error;
+		}
+		while( (size64_t) file_offset < file_size )
+		{
+			if( libbfio_handle_seek_offset(
+			     file_io_handle,
+			     file_offset,
+			     SEEK_SET,
+			     error ) == -1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_SEEK_FAILED,
+				 "%s: unable to seek offset: %" PRIi64 " (0x%08" PRIx64 ").",
+				 function,
+				 file_offset,
+				 file_offset );
+
+				goto on_error;
+			}
+			read_count = libbfio_handle_read_buffer(
+			              file_io_handle,
+			              compressed_data,
+			              32 * 1024,
+			              error );
+
+			if( read_count <= -1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_READ_FAILED,
+				 "%s: unable to read compressed data.",
+				 function );
+
+				goto on_error;
+			}
+			uncompressed_data_size = 64 * 1024;
+
+			if( libgzipf_decompress_data(
+			     compressed_data,
+			     (size_t *) &read_count,
+			     LIBGZIPF_COMPRESSION_METHOD_DEFLATE,
+			     uncompressed_data,
+			     &uncompressed_data_size,
+			     &is_last_block,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
+				 LIBCERROR_ENCRYPTION_ERROR_GENERIC,
+				 "%s: unable to decompress data.",
+				 function );
+
+				goto on_error;
+			}
+			file_offset += (off64_t) read_count;
+
+			if( is_last_block != 0 )
+			{
+				break;
+			}
+		}
+		if( libgzipf_member_header_free(
+		     &member_header,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free member header.",
+			 function );
+
+			goto on_error;
+		}
+		if( libgzipf_member_footer_initialize(
+		     &member_footer,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create member footer.",
+			 function );
+
+			goto on_error;
+		}
+		if( libgzipf_member_footer_read_file_io_handle(
+		     member_footer,
+		     file_io_handle,
+		     file_offset,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read member footer at offset: %" PRIi64 " (0x%08" PRIx64 ").",
+			 function,
+			 file_offset,
+			 file_offset );
+
+			goto on_error;
+		}
+		file_offset += 8;
+
+		if( libgzipf_member_footer_free(
+		     &member_footer,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free member footer.",
+			 function );
+
+			goto on_error;
+		}
 	}
 	return( 1 );
 
 on_error:
+	if( member_footer != NULL )
+	{
+		libgzipf_member_footer_free(
+		 &member_footer,
+		 NULL );
+	}
 	if( member_header != NULL )
 	{
 		libgzipf_member_header_free(
@@ -1017,5 +1223,195 @@ on_error:
 		 NULL );
 	}
 	return( -1 );
+}
+
+/* Retrieves the number of members
+ * Returns 1 if successful or -1 on error
+ */
+int libgzipf_file_get_number_of_members(
+     libgzipf_file_t *file,
+     int *number_of_members,
+     libcerror_error_t **error )
+{
+	libgzipf_internal_file_t *internal_file = NULL;
+	static char *function                   = "libgzipf_file_get_number_of_members";
+	int result                              = 1;
+
+	if( file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file.",
+		 function );
+
+		return( -1 );
+	}
+	internal_file = (libgzipf_internal_file_t *) file;
+
+#if defined( HAVE_LIBGZIPF_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_file->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( libfdata_list_get_number_of_elements(
+	     internal_file->members_list,
+	     number_of_members,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of elements from members list.",
+		 function );
+
+		result = -1;
+	}
+#if defined( HAVE_LIBGZIPF_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_file->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
+/* Retrieves a specific member
+ * Returns 1 if successful or -1 on error
+ */
+int libgzipf_file_get_member(
+     libgzipf_file_t *file,
+     int member_index,
+     libgzipf_member_t **member,
+     libcerror_error_t **error )
+{
+	libgzipf_internal_file_t *internal_file = NULL;
+	static char *function                   = "libgzipf_file_get_member";
+	int result                              = 1;
+
+	if( file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file.",
+		 function );
+
+		return( -1 );
+	}
+	internal_file = (libgzipf_internal_file_t *) file;
+
+	if( member == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid member.",
+		 function );
+
+		return( -1 );
+	}
+	if( *member != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid member value already set.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_LIBGZIPF_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_file->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+/* TODO implement
+	if( libfdata_list_get_element_value_by_index(
+	     internal_file->members_list,
+	     (intptr_t *) internal_file->file_io_handle,
+	     (libfdata_cache_t *) internal_file->members_cache,
+	     member_index,
+	     (intptr_t **) &member_values,
+	     0,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve member values: %d.",
+		 function,
+		 member_index );
+
+		result = -1;
+	}
+	else if( libgzipf_member_initialize(
+	          member,
+	          internal_file->io_handle,
+	          internal_file->file_io_handle,
+	          member_values,
+	          error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create member.",
+		 function );
+
+		result = -1;
+	}
+*/
+#if defined( HAVE_LIBGZIPF_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_file->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
 }
 

@@ -1,7 +1,7 @@
 /*
- * Input/Output (IO) handle
+ * Member functions
  *
- * Copyright (C) 2019, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2011-2019, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -19,54 +19,49 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBGZIPF_IO_HANDLE_H )
-#define _LIBGZIPF_IO_HANDLE_H
+#if !defined( _LIBGZIPF_MEMBER_H )
+#define _LIBGZIPF_MEMBER_H
 
 #include <common.h>
 #include <types.h>
 
+#include "libgzipf_extern.h"
+#include "libgzipf_io_handle.h"
+#include "libgzipf_libbfio.h"
 #include "libgzipf_libcerror.h"
+#include "libgzipf_types.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-typedef struct libgzipf_io_handle libgzipf_io_handle_t;
+typedef struct libgzipf_internal_member libgzipf_internal_member_t;
 
-struct libgzipf_io_handle
+struct libgzipf_internal_member
 {
-	/* Value to indicate if the string data is in Unicode (UTF-16 little-endian)
+	/* The IO handle
 	 */
-	uint8_t is_unicode;
+	libgzipf_io_handle_t *io_handle;
 
-	/* Flags
+	/* The file IO handle
 	 */
-	uint8_t flags;
-
-	/* The codepage of the extended ASCII strings
-	 */
-	int ascii_codepage;
-
-	/* Value to indicate if abort was signalled
-	 */
-	int abort;
+	libbfio_handle_t *file_io_handle;
 };
 
-int libgzipf_io_handle_initialize(
-     libgzipf_io_handle_t **io_handle,
-     libcerror_error_t **error );
-
-int libgzipf_io_handle_free(
-     libgzipf_io_handle_t **io_handle,
-     libcerror_error_t **error );
-
-int libgzipf_io_handle_clear(
+int libgzipf_member_initialize(
+     libgzipf_member_t **member,
      libgzipf_io_handle_t *io_handle,
+     libbfio_handle_t *file_io_handle,
+     libcerror_error_t **error );
+
+LIBGZIPF_EXTERN \
+int libgzipf_member_free(
+     libgzipf_member_t **member,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _LIBGZIPF_IO_HANDLE_H ) */
+#endif /* !defined( _LIBGZIPF_MEMBER_H ) */
 
