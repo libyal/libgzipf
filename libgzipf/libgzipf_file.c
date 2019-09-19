@@ -873,7 +873,7 @@ int libgzipf_file_close(
 
 		return( -1 );
 	}
-#if defined( HAVE_LIBREGF_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBGZIPF_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_write(
 	     internal_file->read_write_lock,
 	     error ) != 1 )
@@ -958,7 +958,7 @@ int libgzipf_file_close(
 
 		result = -1;
 	}
-#if defined( HAVE_LIBREGF_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBGZIPF_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_file->read_write_lock,
 	     error ) != 1 )
@@ -1034,11 +1034,25 @@ int libgzipf_file_open_read(
 	}
 #endif
 	uint8_t compressed_data[ 32 * 1024 ];
-	uint8_t uncompressed_data[ 64 * 1024 ];
+	uint8_t *uncompressed_data = NULL;
 	ssize_t read_count = 0;
 	size_t uncompressed_data_size = 0;
 	uint8_t is_last_block = 0;
 
+	uncompressed_data = (uint8_t *) memory_allocate(
+	                                 sizeof( uint8_t ) * ( 16 * 1024 * 1024 ) );
+
+	if( uncompressed_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create uncompressed data.",
+		 function );
+
+		goto on_error;
+	}
 	while( (size64_t) file_offset < file_size )
 	{
 		if( libgzipf_member_header_initialize(
@@ -1087,6 +1101,7 @@ int libgzipf_file_open_read(
 		}
 		while( (size64_t) file_offset < file_size )
 		{
+fprintf( stderr, "F: 0x%08jx\n", file_offset );
 			if( libbfio_handle_seek_offset(
 			     file_io_handle,
 			     file_offset,
@@ -1121,7 +1136,7 @@ int libgzipf_file_open_read(
 
 				goto on_error;
 			}
-			uncompressed_data_size = 64 * 1024;
+			uncompressed_data_size = 16 * 1024 * 1024;
 
 			if( libgzipf_decompress_data(
 			     compressed_data,
@@ -1207,6 +1222,9 @@ int libgzipf_file_open_read(
 			goto on_error;
 		}
 	}
+	memory_free(
+	 uncompressed_data );
+
 	return( 1 );
 
 on_error:
@@ -1221,6 +1239,11 @@ on_error:
 		libgzipf_member_header_free(
 		 &member_header,
 		 NULL );
+	}
+	if( uncompressed_data != NULL )
+	{
+		memory_free(
+		 uncompressed_data );
 	}
 	return( -1 );
 }

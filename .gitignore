@@ -124,7 +124,6 @@ stamp-h[1-9]
 /gzipftools/*.exe
 /gzipftools/gzipfinfo
 /tests/*.exe
-/tests/input
 /tests/gzipf_test_checksum
 /tests/gzipf_test_deflate
 /tests/gzipf_test_error
@@ -135,6 +134,7 @@ stamp-h[1-9]
 /tests/gzipf_test_member_header
 /tests/gzipf_test_notify
 /tests/gzipf_test_support
+/tests/input
 /tests/tmp*
 
 # Local library dependencies specific files

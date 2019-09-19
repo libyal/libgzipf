@@ -1,4 +1,5 @@
 To do:
+* add bit stream with read on demand support?
 * add support for members to API
 ** get name
 ** get comments
