@@ -1,7 +1,7 @@
 /*
  * File functions
  *
- * Copyright (C) 2019, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2019-2020, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -984,11 +984,17 @@ int libgzipf_file_open_read(
      libbfio_handle_t *file_io_handle,
      libcerror_error_t **error )
 {
+	uint8_t compressed_data[ 32 * 1024 ];
+
 	libgzipf_member_footer_t *member_footer = NULL;
 	libgzipf_member_header_t *member_header = NULL;
+	uint8_t *uncompressed_data              = NULL;
 	static char *function                   = "libgzipf_file_open_read";
 	size64_t file_size                      = 0;
+	size_t uncompressed_data_size           = 0;
+	ssize_t read_count                      = 0;
 	off64_t file_offset                     = 0;
+	uint8_t is_last_block                   = 0;
 
 	if( internal_file == NULL )
 	{
@@ -1033,12 +1039,6 @@ int libgzipf_file_open_read(
 		 "Reading member header(s):\n" );
 	}
 #endif
-	uint8_t compressed_data[ 32 * 1024 ];
-	uint8_t *uncompressed_data = NULL;
-	ssize_t read_count = 0;
-	size_t uncompressed_data_size = 0;
-	uint8_t is_last_block = 0;
-
 	uncompressed_data = (uint8_t *) memory_allocate(
 	                                 sizeof( uint8_t ) * ( 16 * 1024 * 1024 ) );
 
@@ -1101,7 +1101,6 @@ int libgzipf_file_open_read(
 		}
 		while( (size64_t) file_offset < file_size )
 		{
-fprintf( stderr, "F: 0x%08jx\n", file_offset );
 			if( libbfio_handle_seek_offset(
 			     file_io_handle,
 			     file_offset,
