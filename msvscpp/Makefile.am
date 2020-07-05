@@ -9,6 +9,9 @@ MSVSCPP_FILES = \
 	gzipf_test_member_header/gzipf_test_member_header.vcproj \
 	gzipf_test_notify/gzipf_test_notify.vcproj \
 	gzipf_test_support/gzipf_test_support.vcproj \
+	gzipf_test_tools_info_handle/gzipf_test_tools_info_handle.vcproj \
+	gzipf_test_tools_output/gzipf_test_tools_output.vcproj \
+	gzipf_test_tools_signal/gzipf_test_tools_signal.vcproj \
 	gzipfinfo/gzipfinfo.vcproj \
 	libbfio/libbfio.vcproj \
 	libcdata/libcdata.vcproj \

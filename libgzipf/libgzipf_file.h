@@ -28,6 +28,7 @@
 #include "libgzipf_extern.h"
 #include "libgzipf_io_handle.h"
 #include "libgzipf_libbfio.h"
+#include "libgzipf_libcdata.h"
 #include "libgzipf_libcerror.h"
 #include "libgzipf_libcthreads.h"
 #include "libgzipf_libfcache.h"
@@ -57,6 +58,10 @@ struct libgzipf_internal_file
 	/* Value to indicate if the file IO handle was opened inside the library
 	 */
 	uint8_t file_io_handle_opened_in_library;
+
+	/* The member descriptors array
+	 */
+	libcdata_array_t *member_descriptors_array;
 
 	/* The members list
 	 */
@@ -118,7 +123,7 @@ int libgzipf_file_close(
      libgzipf_file_t *file,
      libcerror_error_t **error );
 
-int libgzipf_file_open_read(
+int libgzipf_internal_file_open_read(
      libgzipf_internal_file_t *internal_file,
      libbfio_handle_t *file_io_handle,
      libcerror_error_t **error );
@@ -130,7 +135,7 @@ int libgzipf_file_get_number_of_members(
      libcerror_error_t **error );
 
 LIBGZIPF_EXTERN \
-int libgzipf_file_get_member(
+int libgzipf_file_get_member_by_index(
      libgzipf_file_t *file,
      int member_index,
      libgzipf_member_t **member,

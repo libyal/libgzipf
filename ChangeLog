@@ -1,4 +1,5 @@
 To do:
+* zlib use inflate?
 * add bit stream with read on demand support?
 * add support for members to API
 ** get name

@@ -299,6 +299,7 @@ int info_handle_file_fprint(
      libcerror_error_t **error )
 {
 	static char *function = "info_handle_file_fprint";
+	int number_of_members = 0;
 
 	if( info_handle == NULL )
 	{
@@ -311,7 +312,34 @@ int info_handle_file_fprint(
 
 		return( -1 );
 	}
+	fprintf(
+	 info_handle->notify_stream,
+	 "GZIP file information:\n" );
+
+	if( libgzipf_file_get_number_of_members(
+	     info_handle->input_file,
+	     &number_of_members,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of members.",
+		 function );
+
+		return( -1 );
+	}
+	fprintf(
+	 info_handle->notify_stream,
+	 "\tNumber of members\t\t: %d\n",
+	 number_of_members );
+
 /* TODO print more info */
+
+	fprintf(
+	 info_handle->notify_stream,
+	 "\n" );
 
 	return( 1 );
 }

@@ -1,5 +1,5 @@
 /*
- * Library error functions test program
+ * Tools signal functions test program
  *
  * Copyright (C) 2019-2020, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -27,84 +27,81 @@
 #include <stdlib.h>
 #endif
 
-#include "gzipf_test_libgzipf.h"
+#include "gzipf_test_libcerror.h"
 #include "gzipf_test_macros.h"
 #include "gzipf_test_unused.h"
 
-/* Tests the libgzipf_error_free function
- * Returns 1 if successful or 0 if not
- */
-int gzipf_test_error_free(
-     void )
-{
-	/* Test invocation of function only
-	 */
-	libgzipf_error_free(
-	 NULL );
+#include "../gzipftools/gzipftools_signal.h"
 
-	return( 1 );
+void gzipf_test_tools_signal_handler(
+      gzipftools_signal_t signal GZIPF_TEST_ATTRIBUTE_UNUSED )
+{
+	GZIPF_TEST_UNREFERENCED_PARAMETER( signal )
 }
 
-/* Tests the libgzipf_error_fprint function
+/* Tests the gzipftools_signal_attach and function
  * Returns 1 if successful or 0 if not
  */
-int gzipf_test_error_fprint(
+int gzipf_test_tools_signal_attach(
      void )
 {
-	/* Test invocation of function only
-	 */
-	libgzipf_error_fprint(
-	 NULL,
-	 NULL );
+	libcerror_error_t *error = NULL;
+	int result               = 0;
+
+	result = gzipftools_signal_attach(
+	          gzipf_test_tools_signal_handler,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
 }
 
-/* Tests the libgzipf_error_sprint function
+/* Tests the gzipftools_signal_detach and function
  * Returns 1 if successful or 0 if not
  */
-int gzipf_test_error_sprint(
+int gzipf_test_tools_signal_detach(
      void )
 {
-	/* Test invocation of function only
-	 */
-	libgzipf_error_sprint(
-	 NULL,
-	 NULL,
-	 0 );
+	libcerror_error_t *error = NULL;
+	int result               = 0;
+
+	result = gzipftools_signal_detach(
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	return( 1 );
-}
 
-/* Tests the libgzipf_error_backtrace_fprint function
- * Returns 1 if successful or 0 if not
- */
-int gzipf_test_error_backtrace_fprint(
-     void )
-{
-	/* Test invocation of function only
-	 */
-	libgzipf_error_backtrace_fprint(
-	 NULL,
-	 NULL );
-
-	return( 1 );
-}
-
-/* Tests the libgzipf_error_backtrace_sprint function
- * Returns 1 if successful or 0 if not
- */
-int gzipf_test_error_backtrace_sprint(
-     void )
-{
-	/* Test invocation of function only
-	 */
-	libgzipf_error_backtrace_sprint(
-	 NULL,
-	 NULL,
-	 0 );
-
-	return( 1 );
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
 }
 
 /* The main program
@@ -122,25 +119,23 @@ int main(
 	GZIPF_TEST_UNREFERENCED_PARAMETER( argc )
 	GZIPF_TEST_UNREFERENCED_PARAMETER( argv )
 
-	GZIPF_TEST_RUN(
-	 "libgzipf_error_free",
-	 gzipf_test_error_free );
+#if defined( WINAPI )
+
+	/* TODO add tests for gzipftools_signal_handler */
+#endif
+
+#if defined( WINAPI ) && defined( _MSC_VER )
+
+	/* TODO add tests for gzipftools_signal_initialize_memory_debug */
+#endif
 
 	GZIPF_TEST_RUN(
-	 "libgzipf_error_fprint",
-	 gzipf_test_error_fprint );
+	 "gzipftools_signal_attach",
+	 gzipf_test_tools_signal_attach )
 
 	GZIPF_TEST_RUN(
-	 "libgzipf_error_sprint",
-	 gzipf_test_error_sprint );
-
-	GZIPF_TEST_RUN(
-	 "libgzipf_error_backtrace_fprint",
-	 gzipf_test_error_backtrace_fprint );
-
-	GZIPF_TEST_RUN(
-	 "libgzipf_error_backtrace_sprint",
-	 gzipf_test_error_backtrace_sprint );
+	 "gzipftools_signal_detach",
+	 gzipf_test_tools_signal_detach )
 
 	return( EXIT_SUCCESS );
 

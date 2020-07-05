@@ -35,6 +35,7 @@ libgzipf_la_SOURCES = \
 	libgzipf_file.c libgzipf_file.h \
 	libgzipf_io_handle.c libgzipf_io_handle.h \
 	libgzipf_libbfio.h \
+	libgzipf_libcdata.h \
 	libgzipf_libcerror.h \
 	libgzipf_libclocale.h \
 	libgzipf_libcnotify.h \
@@ -44,8 +45,10 @@ libgzipf_la_SOURCES = \
 	libgzipf_libfdatetime.h \
 	libgzipf_libuna.h \
 	libgzipf_member.c libgzipf_member.h \
+	libgzipf_member_descriptor.c libgzipf_member_descriptor.h \
 	libgzipf_member_header.c libgzipf_member_header.h \
 	libgzipf_member_footer.c libgzipf_member_footer.h \
+	libgzipf_members_list.c libgzipf_members_list.h \
 	libgzipf_notify.c libgzipf_notify.h \
 	libgzipf_support.c libgzipf_support.h \
 	libgzipf_types.h \

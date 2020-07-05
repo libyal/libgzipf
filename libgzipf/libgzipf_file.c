@@ -25,20 +25,24 @@
 #include <types.h>
 #include <wide_string.h>
 
+#include "libgzipf_checksum.h"
 #include "libgzipf_compression.h"
 #include "libgzipf_debug.h"
 #include "libgzipf_definitions.h"
 #include "libgzipf_file.h"
 #include "libgzipf_io_handle.h"
 #include "libgzipf_libbfio.h"
+#include "libgzipf_libcdata.h"
 #include "libgzipf_libcerror.h"
 #include "libgzipf_libcnotify.h"
 #include "libgzipf_libcthreads.h"
 #include "libgzipf_libfcache.h"
 #include "libgzipf_libfdata.h"
 #include "libgzipf_member.h"
+#include "libgzipf_member_descriptor.h"
 #include "libgzipf_member_footer.h"
 #include "libgzipf_member_header.h"
+#include "libgzipf_members_list.h"
 #include "libgzipf_types.h"
 
 /* Creates a file
@@ -115,13 +119,27 @@ int libgzipf_file_initialize(
 
 		goto on_error;
 	}
+	if( libcdata_array_initialize(
+	     &( internal_file->member_descriptors_array ),
+	     0,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create member descriptors array.",
+		 function );
+
+		goto on_error;
+	}
 /* TODO implement
 	if( libfdata_list_initialize(
 	     &( internal_file->members_list ),
 	     (intptr_t *) internal_file->io_handle,
 	     NULL,
 	     NULL,
-	     (int (*)(intptr_t *, intptr_t *, libfdata_list_element_t *, libfdata_cache_t *, int, off64_t, size64_t, uint32_t, uint8_t, libcerror_error_t **)) &libgzip_member_read_element_data,
+	     (int (*)(intptr_t *, intptr_t *, libfdata_list_element_t *, libfdata_cache_t *, int, off64_t, size64_t, uint32_t, uint8_t, libcerror_error_t **)) &libgzipf_members_list_read_element_data,
 	     NULL,
 	     LIBFDATA_DATA_HANDLE_FLAG_NON_MANAGED,
 	     error ) != 1 )
@@ -135,7 +153,6 @@ int libgzipf_file_initialize(
 
 		goto on_error;
 	}
-*/
 	if( libfcache_cache_initialize(
 	     &( internal_file->members_cache ),
 	     LIBGZIPF_MAXIMUM_CACHE_ENTRIES_MEMBERS,
@@ -150,6 +167,7 @@ int libgzipf_file_initialize(
 
 		goto on_error;
 	}
+*/
 #if defined( HAVE_LIBGZIPF_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_initialize(
 	     &( internal_file->read_write_lock ),
@@ -237,6 +255,7 @@ int libgzipf_file_free(
 			result = -1;
 		}
 #endif
+/* TODO implement
 		if( libfcache_cache_free(
 		     &( internal_file->members_cache ),
 		     error ) != 1 )
@@ -259,6 +278,21 @@ int libgzipf_file_free(
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
 			 "%s: unable to free members list.",
+			 function );
+
+			result = -1;
+		}
+*/
+		if( libcdata_array_free(
+		     &( internal_file->member_descriptors_array ),
+		     (int (*)(intptr_t **, libcerror_error_t **)) &libgzipf_member_descriptor_free,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free the member descriptors array.",
 			 function );
 
 			result = -1;
@@ -775,7 +809,7 @@ int libgzipf_file_open_file_io_handle(
 		}
 		file_io_handle_opened_in_library = 1;
 	}
-	if( libgzipf_file_open_read(
+	if( libgzipf_internal_file_open_read(
 	     internal_file,
 	     file_io_handle,
 	     error ) != 1 )
@@ -958,6 +992,20 @@ int libgzipf_file_close(
 
 		result = -1;
 	}
+	if( libcdata_array_empty(
+	     internal_file->member_descriptors_array,
+	     (int (*)(intptr_t **, libcerror_error_t **)) &libgzipf_member_descriptor_free,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to empty the member descriptors array.",
+		 function );
+
+		result = -1;
+	}
 #if defined( HAVE_LIBGZIPF_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_file->read_write_lock,
@@ -979,22 +1027,27 @@ int libgzipf_file_close(
 /* Opens a file for reading
  * Returns 1 if successful or -1 on error
  */
-int libgzipf_file_open_read(
+int libgzipf_internal_file_open_read(
      libgzipf_internal_file_t *internal_file,
      libbfio_handle_t *file_io_handle,
      libcerror_error_t **error )
 {
 	uint8_t compressed_data[ 32 * 1024 ];
 
-	libgzipf_member_footer_t *member_footer = NULL;
-	libgzipf_member_header_t *member_header = NULL;
-	uint8_t *uncompressed_data              = NULL;
-	static char *function                   = "libgzipf_file_open_read";
-	size64_t file_size                      = 0;
-	size_t uncompressed_data_size           = 0;
-	ssize_t read_count                      = 0;
-	off64_t file_offset                     = 0;
-	uint8_t is_last_block                   = 0;
+	libgzipf_member_descriptor_t *member_descriptor = NULL;
+	libgzipf_member_footer_t *member_footer         = NULL;
+	libgzipf_member_header_t *member_header         = NULL;
+	uint8_t *uncompressed_data                      = NULL;
+	static char *function                           = "libgzipf_internal_file_open_read";
+	size64_t calculated_uncompressed_data_size      = 0;
+	size64_t file_size                              = 0;
+	size_t uncompressed_data_size                   = 0;
+	ssize_t read_count                              = 0;
+	off64_t file_offset                             = 0;
+	uint32_t calculated_checksum                    = 0;
+	uint8_t is_last_block                           = 0;
+	int entry_index                                 = 0;
+	int member_descriptor_index                     = 0;
 
 	if( internal_file == NULL )
 	{
@@ -1055,6 +1108,19 @@ int libgzipf_file_open_read(
 	}
 	while( (size64_t) file_offset < file_size )
 	{
+		if( libgzipf_member_descriptor_initialize(
+		     &member_descriptor,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create member descriptor.",
+			 function );
+
+			goto on_error;
+		}
 		if( libgzipf_member_header_initialize(
 		     &member_header,
 		     error ) != 1 )
@@ -1099,6 +1165,35 @@ int libgzipf_file_open_read(
 
 			goto on_error;
 		}
+		member_descriptor->flags                  = member_header->flags;
+		member_descriptor->modification_time      = member_header->modification_time;
+		member_descriptor->name                   = member_header->name;
+		member_descriptor->name_size              = member_header->name_size;
+		member_descriptor->comments               = member_header->comments;
+		member_descriptor->comments_size          = member_header->comments_size;
+		member_descriptor->compressed_data_offset = file_offset;
+
+		member_header->name          = NULL;
+		member_header->name_size     = 0;
+		member_header->comments      = NULL;
+		member_header->comments_size = 0;
+
+		if( libgzipf_member_header_free(
+		     &member_header,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free member header.",
+			 function );
+
+			goto on_error;
+		}
+		calculated_uncompressed_data_size = 0;
+		calculated_checksum               = 0;
+
 		while( (size64_t) file_offset < file_size )
 		{
 			if( libbfio_handle_seek_offset(
@@ -1155,26 +1250,72 @@ int libgzipf_file_open_read(
 
 				goto on_error;
 			}
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				 "%s: compressed block offset\t\t: 0x%08" PRIx32 "\n",
+				 function,
+				 file_offset );
+
+				libcnotify_printf(
+				 "%s: compressed block size\t\t\t: %" PRIzd "\n",
+				 function,
+				 read_count );
+
+				libcnotify_printf(
+				 "%s: uncompressed block size\t\t: %" PRIzd "\n",
+				 function,
+				 uncompressed_data_size );
+
+				libcnotify_printf(
+				 "\n" );
+			}
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 			file_offset += (off64_t) read_count;
+
+			if( libgzipf_checksum_calculate_crc32(
+			     &calculated_checksum,
+			     uncompressed_data,
+			     uncompressed_data_size,
+			     calculated_checksum,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
+				 LIBCERROR_ENCRYPTION_ERROR_GENERIC,
+				 "%s: unable to decompress data.",
+				 function );
+
+				goto on_error;
+			}
+			calculated_uncompressed_data_size += uncompressed_data_size;
 
 			if( is_last_block != 0 )
 			{
 				break;
 			}
 		}
-		if( libgzipf_member_header_free(
-		     &member_header,
-		     error ) != 1 )
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
 		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free member header.",
-			 function );
+			libcnotify_printf(
+			 "%s: calculated checksum\t\t\t: 0x%08" PRIx32 "\n",
+			 function,
+			 calculated_checksum );
 
-			goto on_error;
+			libcnotify_printf(
+			 "%s: calculated uncompressed data size\t: %" PRIu32 "\n",
+			 function,
+			 calculated_uncompressed_data_size );
+
+			libcnotify_printf(
+			 "\n" );
 		}
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 		if( libgzipf_member_footer_initialize(
 		     &member_footer,
 		     error ) != 1 )
@@ -1207,6 +1348,9 @@ int libgzipf_file_open_read(
 		}
 		file_offset += 8;
 
+		member_descriptor->uncompressed_data_size     = member_footer->uncompressed_data_size;
+		member_descriptor->uncompressed_data_checksum = member_footer->checksum;
+
 		if( libgzipf_member_footer_free(
 		     &member_footer,
 		     error ) != 1 )
@@ -1220,6 +1364,25 @@ int libgzipf_file_open_read(
 
 			goto on_error;
 		}
+		if( libcdata_array_append_entry(
+		     internal_file->member_descriptors_array,
+		     &entry_index,
+		     (intptr_t *) member_descriptor,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+			 "%s: unable to append member descriptor: %d.",
+			 function,
+			 member_descriptor_index );
+
+			goto on_error;
+		}
+		member_descriptor = NULL;
+
+		member_descriptor_index++;
 	}
 	memory_free(
 	 uncompressed_data );
@@ -1237,6 +1400,12 @@ on_error:
 	{
 		libgzipf_member_header_free(
 		 &member_header,
+		 NULL );
+	}
+	if( member_descriptor != NULL )
+	{
+		libgzipf_member_descriptor_free(
+		 &member_descriptor,
 		 NULL );
 	}
 	if( uncompressed_data != NULL )
@@ -1287,8 +1456,8 @@ int libgzipf_file_get_number_of_members(
 		return( -1 );
 	}
 #endif
-	if( libfdata_list_get_number_of_elements(
-	     internal_file->members_list,
+	if( libcdata_array_get_number_of_entries(
+	     internal_file->member_descriptors_array,
 	     number_of_members,
 	     error ) != 1 )
 	{
@@ -1296,7 +1465,7 @@ int libgzipf_file_get_number_of_members(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve number of elements from members list.",
+		 "%s: unable to retrieve number of entries from member descriptors array.",
 		 function );
 
 		result = -1;
@@ -1322,14 +1491,14 @@ int libgzipf_file_get_number_of_members(
 /* Retrieves a specific member
  * Returns 1 if successful or -1 on error
  */
-int libgzipf_file_get_member(
+int libgzipf_file_get_member_by_index(
      libgzipf_file_t *file,
      int member_index,
      libgzipf_member_t **member,
      libcerror_error_t **error )
 {
 	libgzipf_internal_file_t *internal_file = NULL;
-	static char *function                   = "libgzipf_file_get_member";
+	static char *function                   = "libgzipf_file_get_member_by_index";
 	int result                              = 1;
 
 	if( file == NULL )

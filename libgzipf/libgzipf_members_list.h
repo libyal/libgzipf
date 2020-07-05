@@ -1,5 +1,5 @@
 /*
- * Checksum functions
+ * Members list functions
  *
  * Copyright (C) 2019-2020, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,45 +19,35 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBGZIPF_CHECKSUM_H )
-#define _LIBGZIPF_CHECKSUM_H
+#if !defined( _LIBGZIPF_MEMBERS_LIST_H )
+#define _LIBGZIPF_MEMBERS_LIST_H
 
 #include <common.h>
 #include <types.h>
 
-#include "libgzipf_extern.h"
+#include "libgzipf_libbfio.h"
 #include "libgzipf_libcerror.h"
+#include "libgzipf_libfdata.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-LIBGZIPF_EXTERN_VARIABLE \
-uint32_t libgzipf_checksum_crc32_table[ 256 ];
-
-LIBGZIPF_EXTERN_VARIABLE \
-int libgzipf_checksum_crc32_table_computed;
-
-void libgzipf_checksum_initialize_crc32_table(
-      int );
-
-int libgzipf_checksum_calculate_crc32(
-     uint32_t *checksum,
-     const uint8_t *buffer,
-     size_t size,
-     uint32_t initial_value,
-     libcerror_error_t **error );
-
-int libgzipf_checksum_calculate_weak_crc32(
-     uint32_t *checksum,
-     const uint8_t *buffer,
-     size_t size,
-     uint32_t initial_value,
+int libgzipf_members_list_read_element_data(
+     intptr_t *data_handle,
+     libbfio_handle_t *file_io_handle,
+     libfdata_list_element_t *element,
+     libfdata_cache_t *cache,
+     int data_range_file_index,
+     off64_t data_range_offset,
+     size64_t data_range_size,
+     uint32_t data_range_flags,
+     uint8_t read_flags,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _LIBGZIPF_CHECKSUM_H ) */
+#endif /* !defined( _LIBGZIPF_MEMBERS_LIST_H ) */
 

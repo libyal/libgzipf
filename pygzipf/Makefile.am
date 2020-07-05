@@ -26,6 +26,8 @@ pygzipf_la_SOURCES = \
 	pygzipf_libcerror.h \
 	pygzipf_libclocale.h \
 	pygzipf_libgzipf.h \
+	pygzipf_member.c pygzipf_member.h \
+	pygzipf_members.c pygzipf_members.h \
 	pygzipf_python.h \
 	pygzipf_unused.h
 

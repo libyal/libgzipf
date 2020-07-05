@@ -31,8 +31,11 @@
 #include "pygzipf_error.h"
 #include "pygzipf_file.h"
 #include "pygzipf_file_object_io_handle.h"
+#include "pygzipf_libbfio.h"
 #include "pygzipf_libcerror.h"
 #include "pygzipf_libgzipf.h"
+#include "pygzipf_member.h"
+#include "pygzipf_members.h"
 #include "pygzipf_python.h"
 #include "pygzipf_unused.h"
 
@@ -424,19 +427,47 @@ PyObject *pygzipf_open_new_file(
            PyObject *arguments,
            PyObject *keywords )
 {
-	PyObject *pygzipf_file = NULL;
+	pygzipf_file_t *pygzipf_file = NULL;
+	static char *function        = "pygzipf_open_new_file";
 
 	PYGZIPF_UNREFERENCED_PARAMETER( self )
 
-	pygzipf_file_init(
-	 (pygzipf_file_t *) pygzipf_file );
+	/* PyObject_New does not invoke tp_init
+	 */
+	pygzipf_file = PyObject_New(
+	                struct pygzipf_file,
+	                &pygzipf_file_type_object );
 
-	pygzipf_file_open(
-	 (pygzipf_file_t *) pygzipf_file,
-	 arguments,
-	 keywords );
+	if( pygzipf_file == NULL )
+	{
+		PyErr_Format(
+		 PyExc_MemoryError,
+		 "%s: unable to create file.",
+		 function );
 
-	return( pygzipf_file );
+		goto on_error;
+	}
+	if( pygzipf_file_init(
+	     pygzipf_file ) != 0 )
+	{
+		goto on_error;
+	}
+	if( pygzipf_file_open(
+	     pygzipf_file,
+	     arguments,
+	     keywords ) == NULL )
+	{
+		goto on_error;
+	}
+	return( (PyObject *) pygzipf_file );
+
+on_error:
+	if( pygzipf_file != NULL )
+	{
+		Py_DecRef(
+		 (PyObject *) pygzipf_file );
+	}
+	return( NULL );
 }
 
 /* Creates a new file object and opens it using a file-like object
@@ -447,19 +478,47 @@ PyObject *pygzipf_open_new_file_with_file_object(
            PyObject *arguments,
            PyObject *keywords )
 {
-	PyObject *pygzipf_file = NULL;
+	pygzipf_file_t *pygzipf_file = NULL;
+	static char *function        = "pygzipf_open_new_file_with_file_object";
 
 	PYGZIPF_UNREFERENCED_PARAMETER( self )
 
-	pygzipf_file_init(
-	 (pygzipf_file_t *) pygzipf_file );
+	/* PyObject_New does not invoke tp_init
+	 */
+	pygzipf_file = PyObject_New(
+	                struct pygzipf_file,
+	                &pygzipf_file_type_object );
 
-	pygzipf_file_open_file_object(
-	 (pygzipf_file_t *) pygzipf_file,
-	 arguments,
-	 keywords );
+	if( pygzipf_file == NULL )
+	{
+		PyErr_Format(
+		 PyExc_MemoryError,
+		 "%s: unable to create file.",
+		 function );
 
-	return( pygzipf_file );
+		goto on_error;
+	}
+	if( pygzipf_file_init(
+	     pygzipf_file ) != 0 )
+	{
+		goto on_error;
+	}
+	if( pygzipf_file_open_file_object(
+	     pygzipf_file,
+	     arguments,
+	     keywords ) == NULL )
+	{
+		goto on_error;
+	}
+	return( (PyObject *) pygzipf_file );
+
+on_error:
+	if( pygzipf_file != NULL )
+	{
+		Py_DecRef(
+		 (PyObject *) pygzipf_file );
+	}
+	return( NULL );
 }
 
 #if PY_MAJOR_VERSION >= 3
@@ -551,6 +610,40 @@ PyMODINIT_FUNC initpygzipf(
 	 module,
 	 "file",
 	 (PyObject *) &pygzipf_file_type_object );
+
+	/* Setup the member type object
+	 */
+	pygzipf_member_type_object.tp_new = PyType_GenericNew;
+
+	if( PyType_Ready(
+	     &pygzipf_member_type_object ) < 0 )
+	{
+		goto on_error;
+	}
+	Py_IncRef(
+	 (PyObject *) &pygzipf_member_type_object );
+
+	PyModule_AddObject(
+	 module,
+	 "member",
+	 (PyObject *) &pygzipf_member_type_object );
+
+	/* Setup the members type object
+	 */
+	pygzipf_members_type_object.tp_new = PyType_GenericNew;
+
+	if( PyType_Ready(
+	     &pygzipf_members_type_object ) < 0 )
+	{
+		goto on_error;
+	}
+	Py_IncRef(
+	 (PyObject *) &pygzipf_members_type_object );
+
+	PyModule_AddObject(
+	 module,
+	 "members",
+	 (PyObject *) &pygzipf_members_type_object );
 
 	PyGILState_Release(
 	 gil_state );

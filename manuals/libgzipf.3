@@ -1,4 +1,4 @@
-.Dd July 17, 2019
+.Dd July  5, 2020
 .Dt libgzipf 3
 .Os libgzipf
 .Sh NAME
@@ -60,6 +60,10 @@ File functions
 .Fn libgzipf_file_open "libgzipf_file_t *file" "const char *filename" "int access_flags" "libgzipf_error_t **error"
 .Ft int
 .Fn libgzipf_file_close "libgzipf_file_t *file" "libgzipf_error_t **error"
+.Ft int
+.Fn libgzipf_file_get_number_of_members "libgzipf_file_t *file" "int *number_of_members" "libgzipf_error_t **error"
+.Ft int
+.Fn libgzipf_file_get_member_by_index "libgzipf_file_t *file" "int member_index" "libgzipf_member_t **member" "libgzipf_error_t **error"
 .Pp
 Available when compiled with wide character string support:
 .Ft int
@@ -68,6 +72,10 @@ Available when compiled with wide character string support:
 Available when compiled with libbfio support:
 .Ft int
 .Fn libgzipf_file_open_file_io_handle "libgzipf_file_t *file" "libbfio_handle_t *file_io_handle" "int access_flags" "libgzipf_error_t **error"
+.Pp
+Member functions
+.Ft int
+.Fn libgzipf_member_free "libgzipf_member_t **member" "libgzipf_error_t **error"
 .Sh DESCRIPTION
 The
 .Fn libgzipf_get_version

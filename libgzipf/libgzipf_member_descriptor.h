@@ -1,5 +1,5 @@
 /*
- * Checksum functions
+ * Member descriptor functions
  *
  * Copyright (C) 2019-2020, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,45 +19,71 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBGZIPF_CHECKSUM_H )
-#define _LIBGZIPF_CHECKSUM_H
+#if !defined( _LIBGZIPF_MEMBER_DESCRIPTOR_H )
+#define _LIBGZIPF_MEMBER_DESCRIPTOR_H
 
 #include <common.h>
 #include <types.h>
 
-#include "libgzipf_extern.h"
+#include "libgzipf_libbfio.h"
 #include "libgzipf_libcerror.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-LIBGZIPF_EXTERN_VARIABLE \
-uint32_t libgzipf_checksum_crc32_table[ 256 ];
+typedef struct libgzipf_member_descriptor libgzipf_member_descriptor_t;
 
-LIBGZIPF_EXTERN_VARIABLE \
-int libgzipf_checksum_crc32_table_computed;
+struct libgzipf_member_descriptor
+{
+	/* The flags
+	 */
+	uint8_t flags;
 
-void libgzipf_checksum_initialize_crc32_table(
-      int );
+	/* The modification date and time
+	 */
+	uint32_t modification_time;
 
-int libgzipf_checksum_calculate_crc32(
-     uint32_t *checksum,
-     const uint8_t *buffer,
-     size_t size,
-     uint32_t initial_value,
+	/* The name
+	 */
+	uint8_t *name;
+
+	/* The name size
+	 */
+	size_t name_size;
+
+	/* The comments
+	 */
+	uint8_t *comments;
+
+	/* The comments size
+	 */
+	size_t comments_size;
+
+	/* The compressed data offset
+	 */
+	off64_t compressed_data_offset;
+
+	/* The uncompressed data size
+	 */
+	uint32_t uncompressed_data_size;
+
+	/* The uncompressed data checksum
+	 */
+	uint32_t uncompressed_data_checksum;
+};
+
+int libgzipf_member_descriptor_initialize(
+     libgzipf_member_descriptor_t **member_descriptor,
      libcerror_error_t **error );
 
-int libgzipf_checksum_calculate_weak_crc32(
-     uint32_t *checksum,
-     const uint8_t *buffer,
-     size_t size,
-     uint32_t initial_value,
+int libgzipf_member_descriptor_free(
+     libgzipf_member_descriptor_t **member_descriptor,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _LIBGZIPF_CHECKSUM_H ) */
+#endif /* !defined( _LIBGZIPF_MEMBER_DESCRIPTOR_H ) */
 

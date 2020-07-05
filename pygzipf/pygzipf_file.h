@@ -77,6 +77,23 @@ PyObject *pygzipf_file_close(
            pygzipf_file_t *pygzipf_file,
            PyObject *arguments );
 
+PyObject *pygzipf_file_get_number_of_members(
+           pygzipf_file_t *pygzipf_file,
+           PyObject *arguments );
+
+PyObject *pygzipf_file_get_member_by_index(
+           PyObject *pygzipf_file,
+           int member_index );
+
+PyObject *pygzipf_file_get_member(
+           pygzipf_file_t *pygzipf_file,
+           PyObject *arguments,
+           PyObject *keywords );
+
+PyObject *pygzipf_file_get_members(
+           pygzipf_file_t *pygzipf_file,
+           PyObject *arguments );
+
 #if defined( __cplusplus )
 }
 #endif

@@ -1,5 +1,5 @@
 /*
- * Checksum functions
+ * Python object wrapper of libgzipf_member_t
  *
  * Copyright (C) 2019-2020, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,45 +19,52 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBGZIPF_CHECKSUM_H )
-#define _LIBGZIPF_CHECKSUM_H
+#if !defined( _PYGZIPF_MEMBER_H )
+#define _PYGZIPF_MEMBER_H
 
 #include <common.h>
 #include <types.h>
 
-#include "libgzipf_extern.h"
-#include "libgzipf_libcerror.h"
+#include "pygzipf_libgzipf.h"
+#include "pygzipf_python.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-LIBGZIPF_EXTERN_VARIABLE \
-uint32_t libgzipf_checksum_crc32_table[ 256 ];
+typedef struct pygzipf_member pygzipf_member_t;
 
-LIBGZIPF_EXTERN_VARIABLE \
-int libgzipf_checksum_crc32_table_computed;
+struct pygzipf_member
+{
+	/* Python object initialization
+	 */
+	PyObject_HEAD
 
-void libgzipf_checksum_initialize_crc32_table(
-      int );
+	/* The libgzipf member
+	 */
+	libgzipf_member_t *member;
 
-int libgzipf_checksum_calculate_crc32(
-     uint32_t *checksum,
-     const uint8_t *buffer,
-     size_t size,
-     uint32_t initial_value,
-     libcerror_error_t **error );
+	/* The parent object
+	 */
+	PyObject *parent_object;
+};
 
-int libgzipf_checksum_calculate_weak_crc32(
-     uint32_t *checksum,
-     const uint8_t *buffer,
-     size_t size,
-     uint32_t initial_value,
-     libcerror_error_t **error );
+extern PyMethodDef pygzipf_member_object_methods[];
+extern PyTypeObject pygzipf_member_type_object;
+
+PyObject *pygzipf_member_new(
+           libgzipf_member_t *member,
+           PyObject *parent_object );
+
+int pygzipf_member_init(
+     pygzipf_member_t *pygzipf_member );
+
+void pygzipf_member_free(
+      pygzipf_member_t *pygzipf_member );
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _LIBGZIPF_CHECKSUM_H ) */
+#endif /* !defined( _PYGZIPF_MEMBER_H ) */
 

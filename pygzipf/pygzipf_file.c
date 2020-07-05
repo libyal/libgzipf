@@ -32,6 +32,8 @@
 #include "pygzipf_libbfio.h"
 #include "pygzipf_libcerror.h"
 #include "pygzipf_libgzipf.h"
+#include "pygzipf_member.h"
+#include "pygzipf_members.h"
 #include "pygzipf_python.h"
 #include "pygzipf_unused.h"
 
@@ -76,11 +78,37 @@ PyMethodDef pygzipf_file_object_methods[] = {
 	  "\n"
 	  "Closes a file." },
 
+	{ "get_number_of_members",
+	  (PyCFunction) pygzipf_file_get_number_of_members,
+	  METH_NOARGS,
+	  "get_number_of_members() -> Integer\n"
+	  "\n"
+	  "Retrieves the number of members." },
+
+	{ "get_member",
+	  (PyCFunction) pygzipf_file_get_member,
+	  METH_VARARGS | METH_KEYWORDS,
+	  "get_member(member_index) -> Object\n"
+	  "\n"
+	  "Retrieves the member specified by the index." },
+
 	/* Sentinel */
 	{ NULL, NULL, 0, NULL }
 };
 
 PyGetSetDef pygzipf_file_object_get_set_definitions[] = {
+
+	{ "number_of_members",
+	  (getter) pygzipf_file_get_number_of_members,
+	  (setter) 0,
+	  "The number of members.",
+	  NULL },
+
+	{ "members",
+	  (getter) pygzipf_file_get_members,
+	  (setter) 0,
+	  "The members.",
+	  NULL },
 
 	/* Sentinel */
 	{ NULL, NULL, NULL, NULL, NULL }
@@ -588,6 +616,36 @@ PyObject *pygzipf_file_open_file_object(
 
 		return( NULL );
 	}
+	PyErr_Clear();
+
+	result = PyObject_HasAttrString(
+	          file_object,
+	          "read" );
+
+	if( result != 1 )
+	{
+		PyErr_Format(
+		 PyExc_TypeError,
+		 "%s: unsupported file object - missing read attribute.",
+		 function );
+
+		return( NULL );
+	}
+	PyErr_Clear();
+
+	result = PyObject_HasAttrString(
+	          file_object,
+	          "seek" );
+
+	if( result != 1 )
+	{
+		PyErr_Format(
+		 PyExc_TypeError,
+		 "%s: unsupported file object - missing seek attribute.",
+		 function );
+
+		return( NULL );
+	}
 	if( pygzipf_file->file_io_handle != NULL )
 	{
 		pygzipf_error_raise(
@@ -723,5 +781,224 @@ PyObject *pygzipf_file_close(
 	 Py_None );
 
 	return( Py_None );
+}
+
+/* Retrieves the number of members
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pygzipf_file_get_number_of_members(
+           pygzipf_file_t *pygzipf_file,
+           PyObject *arguments PYGZIPF_ATTRIBUTE_UNUSED )
+{
+	PyObject *integer_object = NULL;
+	libcerror_error_t *error = NULL;
+	static char *function    = "pygzipf_file_get_number_of_members";
+	int number_of_members    = 0;
+	int result               = 0;
+
+	PYGZIPF_UNREFERENCED_PARAMETER( arguments )
+
+	if( pygzipf_file == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid file.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libgzipf_file_get_number_of_members(
+	          pygzipf_file->file,
+	          &number_of_members,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result != 1 )
+	{
+		pygzipf_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to retrieve number of members.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		return( NULL );
+	}
+#if PY_MAJOR_VERSION >= 3
+	integer_object = PyLong_FromLong(
+	                  (long) number_of_members );
+#else
+	integer_object = PyInt_FromLong(
+	                  (long) number_of_members );
+#endif
+	return( integer_object );
+}
+
+/* Retrieves a specific member by index
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pygzipf_file_get_member_by_index(
+           PyObject *pygzipf_file,
+           int member_index )
+{
+	PyObject *member_object   = NULL;
+	libcerror_error_t *error  = NULL;
+	libgzipf_member_t *member = NULL;
+	static char *function     = "pygzipf_file_get_member_by_index";
+	int result                = 0;
+
+	if( pygzipf_file == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid file.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libgzipf_file_get_member_by_index(
+	          ( (pygzipf_file_t *) pygzipf_file )->file,
+	          member_index,
+	          &member,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result != 1 )
+	{
+		pygzipf_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to retrieve member: %d.",
+		 function,
+		 member_index );
+
+		libcerror_error_free(
+		 &error );
+
+		goto on_error;
+	}
+	member_object = pygzipf_member_new(
+	                 member,
+	                 pygzipf_file );
+
+	if( member_object == NULL )
+	{
+		PyErr_Format(
+		 PyExc_MemoryError,
+		 "%s: unable to create member object.",
+		 function );
+
+		goto on_error;
+	}
+	return( member_object );
+
+on_error:
+	if( member != NULL )
+	{
+		libgzipf_member_free(
+		 &member,
+		 NULL );
+	}
+	return( NULL );
+}
+
+/* Retrieves a specific member
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pygzipf_file_get_member(
+           pygzipf_file_t *pygzipf_file,
+           PyObject *arguments,
+           PyObject *keywords )
+{
+	PyObject *member_object     = NULL;
+	static char *keyword_list[] = { "member_index", NULL };
+	int member_index            = 0;
+
+	if( PyArg_ParseTupleAndKeywords(
+	     arguments,
+	     keywords,
+	     "i",
+	     keyword_list,
+	     &member_index ) == 0 )
+	{
+		return( NULL );
+	}
+	member_object = pygzipf_file_get_member_by_index(
+	                 (PyObject *) pygzipf_file,
+	                 member_index );
+
+	return( member_object );
+}
+
+/* Retrieves a sequence and iterator object for the members
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pygzipf_file_get_members(
+           pygzipf_file_t *pygzipf_file,
+           PyObject *arguments PYGZIPF_ATTRIBUTE_UNUSED )
+{
+	PyObject *sequence_object = NULL;
+	libcerror_error_t *error  = NULL;
+	static char *function     = "pygzipf_file_get_members";
+	int number_of_members     = 0;
+	int result                = 0;
+
+	PYGZIPF_UNREFERENCED_PARAMETER( arguments )
+
+	if( pygzipf_file == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid file.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libgzipf_file_get_number_of_members(
+	          pygzipf_file->file,
+	          &number_of_members,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result != 1 )
+	{
+		pygzipf_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to retrieve number of members.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		return( NULL );
+	}
+	sequence_object = pygzipf_members_new(
+	                   (PyObject *) pygzipf_file,
+	                   &pygzipf_file_get_member_by_index,
+	                   number_of_members );
+
+	if( sequence_object == NULL )
+	{
+		pygzipf_error_raise(
+		 error,
+		 PyExc_MemoryError,
+		 "%s: unable to create sequence object.",
+		 function );
+
+		return( NULL );
+	}
+	return( sequence_object );
 }
 

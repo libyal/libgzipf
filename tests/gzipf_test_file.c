@@ -1406,7 +1406,7 @@ int main(
 
 #if defined( __GNUC__ ) && !defined( LIBGZIPF_DLL_IMPORT )
 
-		/* TODO: add tests for libgzipf_file_open_read */
+		/* TODO: add tests for libgzipf_internal_file_open_read */
 
 #endif /* defined( __GNUC__ ) && !defined( LIBGZIPF_DLL_IMPORT ) */
 

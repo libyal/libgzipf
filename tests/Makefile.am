@@ -1,3 +1,5 @@
+AUTOMAKE_OPTIONS = subdir-objects
+
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/common \
@@ -23,6 +25,7 @@ TESTS_PYGZIPF = \
 endif
 
 TESTS = \
+	test_tools.sh \
 	test_library.sh \
 	test_gzipfinfo.sh \
 	$(TESTS_PYGZIPF)
@@ -34,7 +37,8 @@ check_SCRIPTS = \
 	test_library.sh \
 	test_manpage.sh \
 	test_python_module.sh \
-	test_runner.sh
+	test_runner.sh \
+	test_tools.sh
 
 EXTRA_DIST = \
 	$(check_SCRIPTS)
@@ -49,7 +53,10 @@ check_PROGRAMS = \
 	gzipf_test_member_footer \
 	gzipf_test_member_header \
 	gzipf_test_notify \
-	gzipf_test_support
+	gzipf_test_support \
+	gzipf_test_tools_info_handle \
+	gzipf_test_tools_output \
+	gzipf_test_tools_signal
 
 gzipf_test_checksum_SOURCES = \
 	gzipf_test_checksum.c \
@@ -214,6 +221,41 @@ gzipf_test_support_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
 	@LIBCDATA_LIBADD@ \
+	../libgzipf/libgzipf.la \
+	@LIBCERROR_LIBADD@
+
+gzipf_test_tools_info_handle_SOURCES = \
+	../gzipftools/info_handle.c ../gzipftools/info_handle.h \
+	gzipf_test_libcerror.h \
+	gzipf_test_macros.h \
+	gzipf_test_memory.c gzipf_test_memory.h \
+	gzipf_test_tools_info_handle.c \
+	gzipf_test_unused.h
+
+gzipf_test_tools_info_handle_LDADD = \
+	@LIBCLOCALE_LIBADD@ \
+	../libgzipf/libgzipf.la \
+	@LIBCERROR_LIBADD@
+
+gzipf_test_tools_output_SOURCES = \
+	../gzipftools/gzipftools_output.c ../gzipftools/gzipftools_output.h \
+	gzipf_test_libcerror.h \
+	gzipf_test_macros.h \
+	gzipf_test_tools_output.c \
+	gzipf_test_unused.h
+
+gzipf_test_tools_output_LDADD = \
+	../libgzipf/libgzipf.la \
+	@LIBCERROR_LIBADD@
+
+gzipf_test_tools_signal_SOURCES = \
+	../gzipftools/gzipftools_signal.c ../gzipftools/gzipftools_signal.h \
+	gzipf_test_libcerror.h \
+	gzipf_test_macros.h \
+	gzipf_test_tools_signal.c \
+	gzipf_test_unused.h
+
+gzipf_test_tools_signal_LDADD = \
 	../libgzipf/libgzipf.la \
 	@LIBCERROR_LIBADD@
 

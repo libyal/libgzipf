@@ -45,7 +45,7 @@ int gzipf_test_checksum_initialize_crc32_table(
 	/* Test invocation of function only
 	 */
 	libgzipf_checksum_initialize_crc32_table(
-	 0x82f63b78UL );
+	 0xedb88320UL );
 
 	return( 1 );
 }
@@ -82,7 +82,7 @@ int gzipf_test_checksum_calculate_weak_crc32(
 	GZIPF_TEST_ASSERT_EQUAL_UINT32(
 	 "checksum",
 	 checksum,
-	 (uint32_t) 0x9bb99201UL );
+	 (uint32_t) 0x2275a9ddUL );
 
 	GZIPF_TEST_ASSERT_IS_NULL(
 	 "error",

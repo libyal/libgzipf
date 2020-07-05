@@ -1,7 +1,7 @@
 /*
  * Checksum functions
  *
- * Copyright (C) 2018-2020, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2019-2020, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -20,7 +20,6 @@
  */
 
 #include <common.h>
-#include <byte_stream.h>
 #include <types.h>
 
 #include "libgzipf_libcerror.h"
@@ -67,17 +66,17 @@ void libgzipf_checksum_initialize_crc32_table(
 	libgzipf_checksum_crc32_table_computed = 1;
 }
 
-/* Calculates the weak CRC-32 checksum of a buffer of data
+/* Calculates the CRC-32 checksum of a buffer
  * Returns 1 if successful or -1 on error
  */
-int libgzipf_checksum_calculate_weak_crc32(
+int libgzipf_checksum_calculate_crc32(
      uint32_t *checksum,
      const uint8_t *buffer,
      size_t size,
      uint32_t initial_value,
      libcerror_error_t **error )
 {
-	static char *function  = "libgzipf_checkcum_calculate_weak_crc32";
+	static char *function  = "libgzipf_checksum_calculate_crc32";
 	size_t buffer_offset   = 0;
 	uint32_t safe_checksum = 0;
 	uint32_t table_index   = 0;
@@ -118,9 +117,9 @@ int libgzipf_checksum_calculate_weak_crc32(
         if( libgzipf_checksum_crc32_table_computed == 0 )
 	{
 		libgzipf_checksum_initialize_crc32_table(
-		 0x82f63b78UL );
+		 0xedb88320UL );
 	}
-	safe_checksum = initial_value;
+	safe_checksum = initial_value ^ (uint32_t) 0xffffffffUL;
 
         for( buffer_offset = 0;
 	     buffer_offset < size;
@@ -130,27 +129,37 @@ int libgzipf_checksum_calculate_weak_crc32(
 
 		safe_checksum = libgzipf_checksum_crc32_table[ table_index ] ^ ( safe_checksum >> 8 );
         }
-	*checksum = safe_checksum;
+        *checksum = safe_checksum ^ 0xffffffffUL;
 
 	return( 1 );
 }
 
-/* Calculates the Fletcher-64 of a buffer of data
+/* Calculates the weak CRC-32 checksum of a buffer
  * Returns 1 if successful or -1 on error
  */
-int libgzipf_checksum_calculate_fletcher64(
-     uint64_t *checksum,
+int libgzipf_checksum_calculate_weak_crc32(
+     uint32_t *checksum,
      const uint8_t *buffer,
      size_t size,
-     uint64_t initial_value,
+     uint32_t initial_value,
      libcerror_error_t **error )
 {
-	static char *function = "libgzipf_checksum_calculate_fletcher64";
-	size_t buffer_offset  = 0;
-	uint64_t lower_32bit  = 0;
-	uint64_t upper_32bit  = 0;
-	uint32_t value_32bit  = 0;
+	static char *function  = "libgzipf_checksum_calculate_weak_crc32";
+	size_t buffer_offset   = 0;
+	uint32_t safe_checksum = 0;
+	uint32_t table_index   = 0;
 
+	if( checksum == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid checksum.",
+		 function );
+
+		return( -1 );
+	}
 	if( buffer == NULL )
 	{
 		libcerror_error_set(
@@ -173,50 +182,23 @@ int libgzipf_checksum_calculate_fletcher64(
 
 		return( -1 );
 	}
-	if( ( size % 4 ) != 0 )
+        if( libgzipf_checksum_crc32_table_computed == 0 )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid size value out of bounds.",
-		 function );
-
-		return( -1 );
+		libgzipf_checksum_initialize_crc32_table(
+		 0xedb88320UL );
 	}
-	if( checksum == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid checksum.",
-		 function );
-
-		return( -1 );
-	}
-	lower_32bit = initial_value & 0xffffffffUL;
-	upper_32bit = ( initial_value >> 32 ) & 0xffffffffUL;
+	safe_checksum = initial_value;
 
         for( buffer_offset = 0;
 	     buffer_offset < size;
-	     buffer_offset += 4 )
+	     buffer_offset++ )
 	{
-		byte_stream_copy_to_uint32_little_endian(
-		 &( buffer[ buffer_offset ] ),
-		 value_32bit );
+		table_index = ( safe_checksum ^ buffer[ buffer_offset ] ) & 0x000000ffUL;
 
-		lower_32bit += value_32bit;
-		upper_32bit += lower_32bit;
-	}
-	lower_32bit %= 0xffffffffUL;
-	upper_32bit %= 0xffffffffUL;
+		safe_checksum = libgzipf_checksum_crc32_table[ table_index ] ^ ( safe_checksum >> 8 );
+        }
+	*checksum = safe_checksum;
 
-	value_32bit = 0xffffffffUL - ( ( lower_32bit + upper_32bit ) % 0xffffffffUL );
-	upper_32bit = 0xffffffffUL - ( ( lower_32bit + value_32bit ) % 0xffffffffUL );
-
-	*checksum = ( upper_32bit << 32 ) | value_32bit;
-
-	return( 1 );
+        return( 1 );
 }
 

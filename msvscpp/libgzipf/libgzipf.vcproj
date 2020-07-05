@@ -206,11 +206,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libgzipf\libgzipf_member_descriptor.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libgzipf\libgzipf_member_footer.c"
 				>
 			</File>
 			<File
 				RelativePath="..\..\libgzipf\libgzipf_member_header.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libgzipf\libgzipf_members_list.c"
 				>
 			</File>
 			<File
@@ -280,6 +288,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libgzipf\libgzipf_libcdata.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libgzipf\libgzipf_libcerror.h"
 				>
 			</File>
@@ -316,11 +328,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libgzipf\libgzipf_member_descriptor.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libgzipf\libgzipf_member_footer.h"
 				>
 			</File>
 			<File
 				RelativePath="..\..\libgzipf\libgzipf_member_header.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libgzipf\libgzipf_members_list.h"
 				>
 			</File>
 			<File
