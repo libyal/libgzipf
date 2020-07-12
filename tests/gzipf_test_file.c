@@ -30,6 +30,15 @@
 #include <stdlib.h>
 #endif
 
+#if defined( TIME_WITH_SYS_TIME )
+#include <sys/time.h>
+#include <time.h>
+#elif defined( HAVE_SYS_TIME_H )
+#include <sys/time.h>
+#else
+#include <time.h>
+#endif
+
 #include "gzipf_test_functions.h"
 #include "gzipf_test_getopt.h"
 #include "gzipf_test_libbfio.h"
@@ -47,6 +56,8 @@
 /* Define to make gzipf_test_file generate verbose output
 #define GZIPF_TEST_FILE_VERBOSE
  */
+
+#define GZIPF_TEST_FILE_READ_BUFFER_SIZE	4096
 
 #if !defined( LIBGZIPF_HAVE_BFIO )
 
@@ -1233,6 +1244,1430 @@ on_error:
 	return( 0 );
 }
 
+#if defined( __GNUC__ ) && !defined( LIBGZIPF_DLL_IMPORT )
+
+/* Tests the libgzipf_internal_file_read_buffer_from_file_io_handle function
+ * Returns 1 if successful or 0 if not
+ */
+int gzipf_test_internal_file_read_buffer_from_file_io_handle(
+     libgzipf_file_t *file )
+{
+	uint8_t buffer[ GZIPF_TEST_FILE_READ_BUFFER_SIZE ];
+
+	libcerror_error_t *error = NULL;
+	time_t timestamp         = 0;
+	size64_t remaining_size  = 0;
+	size64_t size            = 0;
+	size_t read_size         = 0;
+	ssize_t read_count       = 0;
+	off64_t offset           = 0;
+	off64_t read_offset      = 0;
+	int number_of_tests      = 1024;
+	int random_number        = 0;
+	int result               = 0;
+	int test_number          = 0;
+
+	/* Determine size
+	 */
+	result = libgzipf_file_get_uncompressed_data_size(
+	          file,
+	          &size,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Reset offset to 0
+	 */
+	offset = libgzipf_file_seek_offset(
+	          file,
+	          0,
+	          SEEK_SET,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT64(
+	 "offset",
+	 offset,
+	 (int64_t) 0 );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test regular cases
+	 */
+	read_size = GZIPF_TEST_FILE_READ_BUFFER_SIZE;
+
+	if( size < GZIPF_TEST_FILE_READ_BUFFER_SIZE )
+	{
+		read_size = (size_t) size;
+	}
+	read_count = libgzipf_internal_file_read_buffer_from_file_io_handle(
+	              (libgzipf_internal_file_t *) file,
+	              ( (libgzipf_internal_file_t *) file )->file_io_handle,
+	              buffer,
+	              GZIPF_TEST_FILE_READ_BUFFER_SIZE,
+	              &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_SSIZE(
+	 "read_count",
+	 read_count,
+	 (ssize_t) read_size );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	if( size > 8 )
+	{
+		/* Set offset to size - 8
+		 */
+		offset = libgzipf_file_seek_offset(
+		          file,
+		          -8,
+		          SEEK_END,
+		          &error );
+
+		GZIPF_TEST_ASSERT_EQUAL_INT64(
+		 "offset",
+		 offset,
+		 (int64_t) size - 8 );
+
+		GZIPF_TEST_ASSERT_IS_NULL(
+		 "error",
+		 error );
+
+		/* Read buffer on size boundary
+		 */
+		read_count = libgzipf_internal_file_read_buffer_from_file_io_handle(
+		              (libgzipf_internal_file_t *) file,
+		              ( (libgzipf_internal_file_t *) file )->file_io_handle,
+		              buffer,
+		              GZIPF_TEST_FILE_READ_BUFFER_SIZE,
+		              &error );
+
+		GZIPF_TEST_ASSERT_EQUAL_SSIZE(
+		 "read_count",
+		 read_count,
+		 (ssize_t) 8 );
+
+		GZIPF_TEST_ASSERT_IS_NULL(
+		 "error",
+		 error );
+
+		/* Read buffer beyond size boundary
+		 */
+		read_count = libgzipf_internal_file_read_buffer_from_file_io_handle(
+		              (libgzipf_internal_file_t *) file,
+		              ( (libgzipf_internal_file_t *) file )->file_io_handle,
+		              buffer,
+		              GZIPF_TEST_FILE_READ_BUFFER_SIZE,
+		              &error );
+
+		GZIPF_TEST_ASSERT_EQUAL_SSIZE(
+		 "read_count",
+		 read_count,
+		 (ssize_t) 0 );
+
+		GZIPF_TEST_ASSERT_IS_NULL(
+		 "error",
+		 error );
+	}
+	/* Stress test read buffer
+	 */
+	timestamp = time(
+	             NULL );
+
+	srand(
+	 (unsigned int) timestamp );
+
+	offset = libgzipf_file_seek_offset(
+	          file,
+	          0,
+	          SEEK_SET,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT64(
+	 "offset",
+	 offset,
+	 (int64_t) 0 );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	remaining_size = size;
+
+	for( test_number = 0;
+	     test_number < number_of_tests;
+	     test_number++ )
+	{
+		random_number = rand();
+
+		GZIPF_TEST_ASSERT_GREATER_THAN_INT(
+		 "random_number",
+		 random_number,
+		 -1 );
+
+		read_size = (size_t) random_number % GZIPF_TEST_FILE_READ_BUFFER_SIZE;
+
+#if defined( GZIPF_TEST_FILE_VERBOSE )
+		fprintf(
+		 stdout,
+		 "libgzipf_file_read_buffer: at offset: %" PRIi64 " (0x%08" PRIx64 ") of size: %" PRIzd "\n",
+		 read_offset,
+		 read_offset,
+		 read_size );
+#endif
+		read_count = libgzipf_internal_file_read_buffer_from_file_io_handle(
+		              (libgzipf_internal_file_t *) file,
+		              ( (libgzipf_internal_file_t *) file )->file_io_handle,
+		              buffer,
+		              read_size,
+		              &error );
+
+		if( read_size > remaining_size )
+		{
+			read_size = (size_t) remaining_size;
+		}
+		GZIPF_TEST_ASSERT_EQUAL_SSIZE(
+		 "read_count",
+		 read_count,
+		 (ssize_t) read_size );
+
+		GZIPF_TEST_ASSERT_IS_NULL(
+		 "error",
+		 error );
+
+		read_offset += read_count;
+
+		result = libgzipf_file_get_offset(
+		          file,
+		          &offset,
+		          &error );
+
+		GZIPF_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 1 );
+
+		GZIPF_TEST_ASSERT_EQUAL_INT64(
+		 "offset",
+		 offset,
+		 read_offset );
+
+		GZIPF_TEST_ASSERT_IS_NULL(
+		 "error",
+		 error );
+
+		remaining_size -= read_count;
+
+		if( remaining_size == 0 )
+		{
+			offset = libgzipf_file_seek_offset(
+			          file,
+			          0,
+			          SEEK_SET,
+			          &error );
+
+			GZIPF_TEST_ASSERT_EQUAL_INT64(
+			 "offset",
+			 offset,
+			 (int64_t) 0 );
+
+			GZIPF_TEST_ASSERT_IS_NULL(
+			 "error",
+			 error );
+
+			read_offset = 0;
+
+			remaining_size = size;
+		}
+	}
+	/* Reset offset to 0
+	 */
+	offset = libgzipf_file_seek_offset(
+	          file,
+	          0,
+	          SEEK_SET,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT64(
+	 "offset",
+	 offset,
+	 (int64_t) 0 );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	read_count = libgzipf_internal_file_read_buffer_from_file_io_handle(
+	              NULL,
+	              ( (libgzipf_internal_file_t *) file )->file_io_handle,
+	              buffer,
+	              GZIPF_TEST_FILE_READ_BUFFER_SIZE,
+	              &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_SSIZE(
+	 "read_count",
+	 read_count,
+	 (ssize_t) -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	read_count = libgzipf_internal_file_read_buffer_from_file_io_handle(
+	              (libgzipf_internal_file_t *) file,
+	              ( (libgzipf_internal_file_t *) file )->file_io_handle,
+	              NULL,
+	              GZIPF_TEST_FILE_READ_BUFFER_SIZE,
+	              &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_SSIZE(
+	 "read_count",
+	 read_count,
+	 (ssize_t) -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	read_count = libgzipf_internal_file_read_buffer_from_file_io_handle(
+	              (libgzipf_internal_file_t *) file,
+	              ( (libgzipf_internal_file_t *) file )->file_io_handle,
+	              buffer,
+	              (size_t) SSIZE_MAX + 1,
+	              &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_SSIZE(
+	 "read_count",
+	 read_count,
+	 (ssize_t) -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+#endif /* defined( __GNUC__ ) && !defined( LIBGZIPF_DLL_IMPORT ) */
+
+/* Tests the libgzipf_file_read_buffer function
+ * Returns 1 if successful or 0 if not
+ */
+int gzipf_test_file_read_buffer(
+     libgzipf_file_t *file )
+{
+	uint8_t buffer[ GZIPF_TEST_FILE_READ_BUFFER_SIZE ];
+
+	libcerror_error_t *error = NULL;
+	time_t timestamp         = 0;
+	size64_t remaining_size  = 0;
+	size64_t size            = 0;
+	size_t read_size         = 0;
+	ssize_t read_count       = 0;
+	off64_t offset           = 0;
+	off64_t read_offset      = 0;
+	int number_of_tests      = 1024;
+	int random_number        = 0;
+	int result               = 0;
+	int test_number          = 0;
+
+	/* Determine size
+	 */
+	result = libgzipf_file_get_uncompressed_data_size(
+	          file,
+	          &size,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Reset offset to 0
+	 */
+	offset = libgzipf_file_seek_offset(
+	          file,
+	          0,
+	          SEEK_SET,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT64(
+	 "offset",
+	 offset,
+	 (int64_t) 0 );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test regular cases
+	 */
+	read_size = GZIPF_TEST_FILE_READ_BUFFER_SIZE;
+
+	if( size < GZIPF_TEST_FILE_READ_BUFFER_SIZE )
+	{
+		read_size = (size_t) size;
+	}
+	read_count = libgzipf_file_read_buffer(
+	              file,
+	              buffer,
+	              GZIPF_TEST_FILE_READ_BUFFER_SIZE,
+	              &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_SSIZE(
+	 "read_count",
+	 read_count,
+	 (ssize_t) read_size );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	if( size > 8 )
+	{
+		/* Set offset to size - 8
+		 */
+		offset = libgzipf_file_seek_offset(
+		          file,
+		          -8,
+		          SEEK_END,
+		          &error );
+
+		GZIPF_TEST_ASSERT_EQUAL_INT64(
+		 "offset",
+		 offset,
+		 (int64_t) size - 8 );
+
+		GZIPF_TEST_ASSERT_IS_NULL(
+		 "error",
+		 error );
+
+		/* Read buffer on size boundary
+		 */
+		read_count = libgzipf_file_read_buffer(
+		              file,
+		              buffer,
+		              GZIPF_TEST_FILE_READ_BUFFER_SIZE,
+		              &error );
+
+		GZIPF_TEST_ASSERT_EQUAL_SSIZE(
+		 "read_count",
+		 read_count,
+		 (ssize_t) 8 );
+
+		GZIPF_TEST_ASSERT_IS_NULL(
+		 "error",
+		 error );
+
+		/* Read buffer beyond size boundary
+		 */
+		read_count = libgzipf_file_read_buffer(
+		              file,
+		              buffer,
+		              GZIPF_TEST_FILE_READ_BUFFER_SIZE,
+		              &error );
+
+		GZIPF_TEST_ASSERT_EQUAL_SSIZE(
+		 "read_count",
+		 read_count,
+		 (ssize_t) 0 );
+
+		GZIPF_TEST_ASSERT_IS_NULL(
+		 "error",
+		 error );
+	}
+	/* Stress test read buffer
+	 */
+	timestamp = time(
+	             NULL );
+
+	srand(
+	 (unsigned int) timestamp );
+
+	offset = libgzipf_file_seek_offset(
+	          file,
+	          0,
+	          SEEK_SET,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT64(
+	 "offset",
+	 offset,
+	 (int64_t) 0 );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	remaining_size = size;
+
+	for( test_number = 0;
+	     test_number < number_of_tests;
+	     test_number++ )
+	{
+		random_number = rand();
+
+		GZIPF_TEST_ASSERT_GREATER_THAN_INT(
+		 "random_number",
+		 random_number,
+		 -1 );
+
+		read_size = (size_t) random_number % GZIPF_TEST_FILE_READ_BUFFER_SIZE;
+
+#if defined( GZIPF_TEST_FILE_VERBOSE )
+		fprintf(
+		 stdout,
+		 "libgzipf_file_read_buffer: at offset: %" PRIi64 " (0x%08" PRIx64 ") of size: %" PRIzd "\n",
+		 read_offset,
+		 read_offset,
+		 read_size );
+#endif
+		read_count = libgzipf_file_read_buffer(
+		              file,
+		              buffer,
+		              read_size,
+		              &error );
+
+		if( read_size > remaining_size )
+		{
+			read_size = (size_t) remaining_size;
+		}
+		GZIPF_TEST_ASSERT_EQUAL_SSIZE(
+		 "read_count",
+		 read_count,
+		 (ssize_t) read_size );
+
+		GZIPF_TEST_ASSERT_IS_NULL(
+		 "error",
+		 error );
+
+		read_offset += read_count;
+
+		result = libgzipf_file_get_offset(
+		          file,
+		          &offset,
+		          &error );
+
+		GZIPF_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 1 );
+
+		GZIPF_TEST_ASSERT_EQUAL_INT64(
+		 "offset",
+		 offset,
+		 read_offset );
+
+		GZIPF_TEST_ASSERT_IS_NULL(
+		 "error",
+		 error );
+
+		remaining_size -= read_count;
+
+		if( remaining_size == 0 )
+		{
+			offset = libgzipf_file_seek_offset(
+			          file,
+			          0,
+			          SEEK_SET,
+			          &error );
+
+			GZIPF_TEST_ASSERT_EQUAL_INT64(
+			 "offset",
+			 offset,
+			 (int64_t) 0 );
+
+			GZIPF_TEST_ASSERT_IS_NULL(
+			 "error",
+			 error );
+
+			read_offset = 0;
+
+			remaining_size = size;
+		}
+	}
+	/* Reset offset to 0
+	 */
+	offset = libgzipf_file_seek_offset(
+	          file,
+	          0,
+	          SEEK_SET,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT64(
+	 "offset",
+	 offset,
+	 (int64_t) 0 );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	read_count = libgzipf_file_read_buffer(
+	              NULL,
+	              buffer,
+	              GZIPF_TEST_FILE_READ_BUFFER_SIZE,
+	              &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_SSIZE(
+	 "read_count",
+	 read_count,
+	 (ssize_t) -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	read_count = libgzipf_file_read_buffer(
+	              file,
+	              NULL,
+	              GZIPF_TEST_FILE_READ_BUFFER_SIZE,
+	              &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_SSIZE(
+	 "read_count",
+	 read_count,
+	 (ssize_t) -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	read_count = libgzipf_file_read_buffer(
+	              file,
+	              buffer,
+	              (size_t) SSIZE_MAX + 1,
+	              &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_SSIZE(
+	 "read_count",
+	 read_count,
+	 (ssize_t) -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+#if defined( HAVE_GZIPF_TEST_RWLOCK )
+
+	/* Test libgzipf_file_read_buffer with pthread_rwlock_wrlock failing in libcthreads_read_write_lock_grab_for_write
+	 */
+	gzipf_test_pthread_rwlock_wrlock_attempts_before_fail = 0;
+
+	read_count = libgzipf_file_read_buffer(
+	              file,
+	              buffer,
+	              GZIPF_TEST_PARTITION_READ_BUFFER_SIZE,
+	              &error );
+
+	if( gzipf_test_pthread_rwlock_wrlock_attempts_before_fail != -1 )
+	{
+		gzipf_test_pthread_rwlock_wrlock_attempts_before_fail = -1;
+	}
+	else
+	{
+		GZIPF_TEST_ASSERT_EQUAL_SSIZE(
+		 "read_count",
+		 read_count,
+		 (ssize_t) -1 );
+
+		GZIPF_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+	/* Test libgzipf_file_read_buffer with pthread_rwlock_unlock failing in libcthreads_read_write_lock_release_for_write
+	 */
+	gzipf_test_pthread_rwlock_unlock_attempts_before_fail = 0;
+
+	read_count = libgzipf_file_read_buffer(
+	              file,
+	              buffer,
+	              GZIPF_TEST_PARTITION_READ_BUFFER_SIZE,
+	              &error );
+
+	if( gzipf_test_pthread_rwlock_unlock_attempts_before_fail != -1 )
+	{
+		gzipf_test_pthread_rwlock_unlock_attempts_before_fail = -1;
+	}
+	else
+	{
+		GZIPF_TEST_ASSERT_EQUAL_SSIZE(
+		 "read_count",
+		 read_count,
+		 (ssize_t) -1 );
+
+		GZIPF_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+#endif /* defined( HAVE_GZIPF_TEST_RWLOCK ) */
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libgzipf_file_read_buffer_at_offset function
+ * Returns 1 if successful or 0 if not
+ */
+int gzipf_test_file_read_buffer_at_offset(
+     libgzipf_file_t *file )
+{
+	uint8_t buffer[ GZIPF_TEST_FILE_READ_BUFFER_SIZE ];
+
+	libcerror_error_t *error = NULL;
+	time_t timestamp         = 0;
+	size64_t remaining_size  = 0;
+	size64_t size            = 0;
+	size_t read_size         = 0;
+	ssize_t read_count       = 0;
+	off64_t offset           = 0;
+	off64_t read_offset      = 0;
+	int number_of_tests      = 1024;
+	int random_number        = 0;
+	int result               = 0;
+	int test_number          = 0;
+
+	/* Determine size
+	 */
+	result = libgzipf_file_get_uncompressed_data_size(
+	          file,
+	          &size,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test regular cases
+	 */
+	read_size = GZIPF_TEST_FILE_READ_BUFFER_SIZE;
+
+	if( size < GZIPF_TEST_FILE_READ_BUFFER_SIZE )
+	{
+		read_size = (size_t) size;
+	}
+	read_count = libgzipf_file_read_buffer_at_offset(
+	              file,
+	              buffer,
+	              GZIPF_TEST_FILE_READ_BUFFER_SIZE,
+	              0,
+	              &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_SSIZE(
+	 "read_count",
+	 read_count,
+	 (ssize_t) read_size );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	if( size > 8 )
+	{
+		/* Read buffer on size boundary
+		 */
+		read_count = libgzipf_file_read_buffer_at_offset(
+		              file,
+		              buffer,
+		              GZIPF_TEST_FILE_READ_BUFFER_SIZE,
+		              size - 8,
+		              &error );
+
+		GZIPF_TEST_ASSERT_EQUAL_SSIZE(
+		 "read_count",
+		 read_count,
+		 (ssize_t) 8 );
+
+		GZIPF_TEST_ASSERT_IS_NULL(
+		 "error",
+		 error );
+
+		/* Read buffer beyond size boundary
+		 */
+		read_count = libgzipf_file_read_buffer_at_offset(
+		              file,
+		              buffer,
+		              GZIPF_TEST_FILE_READ_BUFFER_SIZE,
+		              size + 8,
+		              &error );
+
+		GZIPF_TEST_ASSERT_EQUAL_SSIZE(
+		 "read_count",
+		 read_count,
+		 (ssize_t) 0 );
+
+		GZIPF_TEST_ASSERT_IS_NULL(
+		 "error",
+		 error );
+	}
+	/* Stress test read buffer
+	 */
+	timestamp = time(
+	             NULL );
+
+	srand(
+	 (unsigned int) timestamp );
+
+	for( test_number = 0;
+	     test_number < number_of_tests;
+	     test_number++ )
+	{
+		random_number = rand();
+
+		GZIPF_TEST_ASSERT_GREATER_THAN_INT(
+		 "random_number",
+		 random_number,
+		 -1 );
+
+		if( size > 0 )
+		{
+			read_offset = (off64_t) random_number % size;
+		}
+		read_size = (size_t) random_number % GZIPF_TEST_FILE_READ_BUFFER_SIZE;
+
+#if defined( GZIPF_TEST_FILE_VERBOSE )
+		fprintf(
+		 stdout,
+		 "libgzipf_file_read_buffer_at_offset: at offset: %" PRIi64 " (0x%08" PRIx64 ") of size: %" PRIzd "\n",
+		 read_offset,
+		 read_offset,
+		 read_size );
+#endif
+		read_count = libgzipf_file_read_buffer_at_offset(
+		              file,
+		              buffer,
+		              read_size,
+		              read_offset,
+		              &error );
+
+		remaining_size = size - read_offset;
+
+		if( read_size > remaining_size )
+		{
+			read_size = (size_t) remaining_size;
+		}
+		GZIPF_TEST_ASSERT_EQUAL_SSIZE(
+		 "read_count",
+		 read_count,
+		 (ssize_t) read_size );
+
+		GZIPF_TEST_ASSERT_IS_NULL(
+		 "error",
+		 error );
+
+		read_offset += read_count;
+
+		result = libgzipf_file_get_offset(
+		          file,
+		          &offset,
+		          &error );
+
+		GZIPF_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 1 );
+
+		GZIPF_TEST_ASSERT_EQUAL_INT64(
+		 "offset",
+		 offset,
+		 read_offset );
+
+		GZIPF_TEST_ASSERT_IS_NULL(
+		 "error",
+		 error );
+	}
+	/* Test error cases
+	 */
+	read_count = libgzipf_file_read_buffer_at_offset(
+	              NULL,
+	              buffer,
+	              GZIPF_TEST_FILE_READ_BUFFER_SIZE,
+	              0,
+	              &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_SSIZE(
+	 "read_count",
+	 read_count,
+	 (ssize_t) -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	read_count = libgzipf_file_read_buffer_at_offset(
+	              file,
+	              NULL,
+	              GZIPF_TEST_FILE_READ_BUFFER_SIZE,
+	              0,
+	              &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_SSIZE(
+	 "read_count",
+	 read_count,
+	 (ssize_t) -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	read_count = libgzipf_file_read_buffer_at_offset(
+	              file,
+	              buffer,
+	              (size_t) SSIZE_MAX + 1,
+	              0,
+	              &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_SSIZE(
+	 "read_count",
+	 read_count,
+	 (ssize_t) -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	read_count = libgzipf_file_read_buffer_at_offset(
+	              file,
+	              buffer,
+	              GZIPF_TEST_FILE_READ_BUFFER_SIZE,
+	              -1,
+	              &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_SSIZE(
+	 "read_count",
+	 read_count,
+	 (ssize_t) -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+#if defined( HAVE_GZIPF_TEST_RWLOCK )
+
+	/* Test libgzipf_file_read_buffer_at_offset with pthread_rwlock_wrlock failing in libcthreads_read_write_lock_grab_for_write
+	 */
+	gzipf_test_pthread_rwlock_wrlock_attempts_before_fail = 0;
+
+	read_count = libgzipf_file_read_buffer_at_offset(
+	              file,
+	              buffer,
+	              GZIPF_TEST_FILE_READ_BUFFER_SIZE,
+	              0,
+	              &error );
+
+	if( gzipf_test_pthread_rwlock_wrlock_attempts_before_fail != -1 )
+	{
+		gzipf_test_pthread_rwlock_wrlock_attempts_before_fail = -1;
+	}
+	else
+	{
+		GZIPF_TEST_ASSERT_EQUAL_SSIZE(
+		 "read_count",
+		 read_count,
+		 (ssize_t) -1 );
+
+		GZIPF_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+	/* Test libgzipf_file_read_buffer_at_offset with pthread_rwlock_unlock failing in libcthreads_read_write_lock_release_for_write
+	 */
+	gzipf_test_pthread_rwlock_unlock_attempts_before_fail = 0;
+
+	read_count = libgzipf_file_read_buffer_at_offset(
+	              file,
+	              buffer,
+	              GZIPF_TEST_FILE_READ_BUFFER_SIZE,
+	              0,
+	              &error );
+
+	if( gzipf_test_pthread_rwlock_unlock_attempts_before_fail != -1 )
+	{
+		gzipf_test_pthread_rwlock_unlock_attempts_before_fail = -1;
+	}
+	else
+	{
+		GZIPF_TEST_ASSERT_EQUAL_SSIZE(
+		 "read_count",
+		 read_count,
+		 (ssize_t) -1 );
+
+		GZIPF_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+#endif /* defined( HAVE_GZIPF_TEST_RWLOCK ) */
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libgzipf_file_seek_offset function
+ * Returns 1 if successful or 0 if not
+ */
+int gzipf_test_file_seek_offset(
+     libgzipf_file_t *file )
+{
+	libcerror_error_t *error = NULL;
+	size64_t size            = 0;
+	off64_t offset           = 0;
+
+	/* Test regular cases
+	 */
+	offset = libgzipf_file_seek_offset(
+	          file,
+	          0,
+	          SEEK_END,
+	          &error );
+
+	GZIPF_TEST_ASSERT_NOT_EQUAL_INT64(
+	 "offset",
+	 offset,
+	 (int64_t) -1 );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	size = (size64_t) offset;
+
+	offset = libgzipf_file_seek_offset(
+	          file,
+	          1024,
+	          SEEK_SET,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT64(
+	 "offset",
+	 offset,
+	 (int64_t) 1024 );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	offset = libgzipf_file_seek_offset(
+	          file,
+	          -512,
+	          SEEK_CUR,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT64(
+	 "offset",
+	 offset,
+	 (int64_t) 512 );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	offset = libgzipf_file_seek_offset(
+	          file,
+	          (off64_t) ( size + 512 ),
+	          SEEK_SET,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT64(
+	 "offset",
+	 offset,
+	 (int64_t) ( size + 512 ) );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Reset offset to 0
+	 */
+	offset = libgzipf_file_seek_offset(
+	          file,
+	          0,
+	          SEEK_SET,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT64(
+	 "offset",
+	 offset,
+	 (int64_t) 0 );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	offset = libgzipf_file_seek_offset(
+	          NULL,
+	          0,
+	          SEEK_SET,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT64(
+	 "offset",
+	 offset,
+	 (int64_t) -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	offset = libgzipf_file_seek_offset(
+	          file,
+	          -1,
+	          SEEK_SET,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT64(
+	 "offset",
+	 offset,
+	 (int64_t) -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	offset = libgzipf_file_seek_offset(
+	          file,
+	          -1,
+	          SEEK_CUR,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT64(
+	 "offset",
+	 offset,
+	 (int64_t) -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	offset = libgzipf_file_seek_offset(
+	          file,
+	          (off64_t) ( -1 * ( size + 1 ) ),
+	          SEEK_END,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT64(
+	 "offset",
+	 offset,
+	 (int64_t) -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+#if defined( HAVE_GZIPF_TEST_RWLOCK )
+
+	/* Test libgzipf_file_seek_offset with pthread_rwlock_wrlock failing in libcthreads_read_write_lock_grab_for_write
+	 */
+	gzipf_test_pthread_rwlock_wrlock_attempts_before_fail = 0;
+
+	offset = libgzipf_file_seek_offset(
+	          file,
+	          0,
+	          SEEK_SET,
+	          &error );
+
+	if( gzipf_test_pthread_rwlock_wrlock_attempts_before_fail != -1 )
+	{
+		gzipf_test_pthread_rwlock_wrlock_attempts_before_fail = -1;
+	}
+	else
+	{
+		GZIPF_TEST_ASSERT_EQUAL_INT64(
+		 "offset",
+		 (int64_t) offset,
+		 (int64_t) -1 );
+
+		GZIPF_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+	/* Test libgzipf_file_seek_offset with pthread_rwlock_unlock failing in libcthreads_read_write_lock_release_for_write
+	 */
+	gzipf_test_pthread_rwlock_unlock_attempts_before_fail = 0;
+
+	offset = libgzipf_file_seek_offset(
+	          file,
+	          0,
+	          SEEK_SET,
+	          &error );
+
+	if( gzipf_test_pthread_rwlock_unlock_attempts_before_fail != -1 )
+	{
+		gzipf_test_pthread_rwlock_unlock_attempts_before_fail = -1;
+	}
+	else
+	{
+		GZIPF_TEST_ASSERT_EQUAL_INT64(
+		 "offset",
+		 (int64_t) offset,
+		 (int64_t) -1 );
+
+		GZIPF_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+#endif /* defined( HAVE_GZIPF_TEST_RWLOCK ) */
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libgzipf_file_get_offset function
+ * Returns 1 if successful or 0 if not
+ */
+int gzipf_test_file_get_offset(
+     libgzipf_file_t *file )
+{
+	libcerror_error_t *error = NULL;
+	off64_t offset           = 0;
+	int result               = 0;
+
+	/* Test regular cases
+	 */
+	result = libgzipf_file_get_offset(
+	          file,
+	          &offset,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libgzipf_file_get_offset(
+	          NULL,
+	          &offset,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libgzipf_file_get_offset(
+	          file,
+	          NULL,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libgzipf_file_get_uncompressed_data_size function
+ * Returns 1 if successful or 0 if not
+ */
+int gzipf_test_file_get_uncompressed_data_size(
+     libgzipf_file_t *file )
+{
+	libcerror_error_t *error        = NULL;
+	size64_t uncompressed_data_size = 0;
+	int result                      = 0;
+
+	/* Test regular cases
+	 */
+	result = libgzipf_file_get_uncompressed_data_size(
+	          file,
+	          &uncompressed_data_size,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libgzipf_file_get_uncompressed_data_size(
+	          NULL,
+	          &uncompressed_data_size,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libgzipf_file_get_uncompressed_data_size(
+	          file,
+	          NULL,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
 /* Tests the libgzipf_file_get_number_of_members function
  * Returns 1 if successful or 0 if not
  */
@@ -1609,7 +3044,45 @@ int main(
 
 		/* TODO: add tests for libgzipf_internal_file_open_read */
 
+		/* TODO: add tests for libgzipf_internal_file_read_deflate_compressed_stream */
+
+		GZIPF_TEST_RUN_WITH_ARGS(
+		 "libgzipf_internal_file_read_buffer_from_file_io_handle",
+		 gzipf_test_internal_file_read_buffer_from_file_io_handle,
+		 file );
+
 #endif /* defined( __GNUC__ ) && !defined( LIBGZIPF_DLL_IMPORT ) */
+
+		GZIPF_TEST_RUN_WITH_ARGS(
+		 "libgzipf_file_read_buffer",
+		 gzipf_test_file_read_buffer,
+		 file );
+
+		GZIPF_TEST_RUN_WITH_ARGS(
+		 "libgzipf_file_read_buffer_at_offset",
+		 gzipf_test_file_read_buffer_at_offset,
+		 file );
+
+#if defined( __GNUC__ ) && !defined( LIBGZIPF_DLL_IMPORT )
+
+		/* TODO: add tests for libgzipf_internal_file_seek_offset */
+
+#endif /* defined( __GNUC__ ) && !defined( LIBGZIPF_DLL_IMPORT ) */
+
+		GZIPF_TEST_RUN_WITH_ARGS(
+		 "libgzipf_file_seek_offset",
+		 gzipf_test_file_seek_offset,
+		 file );
+
+		GZIPF_TEST_RUN_WITH_ARGS(
+		 "libgzipf_file_get_offset",
+		 gzipf_test_file_get_offset,
+		 file );
+
+		GZIPF_TEST_RUN_WITH_ARGS(
+		 "libgzipf_file_get_uncompressed_data_size",
+		 gzipf_test_file_get_uncompressed_data_size,
+		 file );
 
 		GZIPF_TEST_RUN_WITH_ARGS(
 		 "libgzipf_file_get_number_of_members",

@@ -31,8 +31,8 @@
 #include "libgzipf_libcdata.h"
 #include "libgzipf_libcerror.h"
 #include "libgzipf_libcthreads.h"
-#include "libgzipf_libfcache.h"
 #include "libgzipf_libfdata.h"
+#include "libgzipf_libfcache.h"
 #include "libgzipf_types.h"
 
 #if defined( __cplusplus )
@@ -43,6 +43,10 @@ typedef struct libgzipf_internal_file libgzipf_internal_file_t;
 
 struct libgzipf_internal_file
 {
+	/* The current (uncompressed data) offset
+	 */
+	off64_t current_offset;
+
 	/* The IO handle
 	 */
 	libgzipf_io_handle_t *io_handle;
@@ -63,13 +67,17 @@ struct libgzipf_internal_file
 	 */
 	libcdata_array_t *member_descriptors_array;
 
-	/* The members list
+	/* The compressed blocks list
 	 */
-	libfdata_list_t *members_list;
+	libfdata_list_t *compressed_blocks_list;
 
-	/* The members cache
+	/* The uncompressed data size
 	 */
-	libfcache_cache_t *members_cache;
+	size64_t uncompressed_data_size;
+
+	/* The compressed blocks cache
+	 */
+	libfcache_cache_t *compressed_blocks_cache;
 
 #if defined( HAVE_LIBGZIPF_MULTI_THREAD_SUPPORT )
 	/* The read/write lock
@@ -126,6 +134,62 @@ int libgzipf_file_close(
 int libgzipf_internal_file_open_read(
      libgzipf_internal_file_t *internal_file,
      libbfio_handle_t *file_io_handle,
+     libcerror_error_t **error );
+
+int libgzipf_internal_file_read_deflate_compressed_stream(
+     libgzipf_internal_file_t *internal_file,
+     libbfio_handle_t *file_io_handle,
+     off64_t file_offset,
+     size64_t *compressed_stream_size,
+     size64_t *uncompressed_stream_size,
+     uint32_t *calculated_checksum,
+     libcerror_error_t **error );
+
+ssize_t libgzipf_internal_file_read_buffer_from_file_io_handle(
+         libgzipf_internal_file_t *internal_file,
+         libbfio_handle_t *file_io_handle,
+         void *buffer,
+         size_t buffer_size,
+         libcerror_error_t **error );
+
+LIBGZIPF_EXTERN \
+ssize_t libgzipf_file_read_buffer(
+         libgzipf_file_t *file,
+         void *buffer,
+         size_t buffer_size,
+         libcerror_error_t **error );
+
+LIBGZIPF_EXTERN \
+ssize_t libgzipf_file_read_buffer_at_offset(
+         libgzipf_file_t *file,
+         void *buffer,
+         size_t buffer_size,
+         off64_t offset,
+         libcerror_error_t **error );
+
+off64_t libgzipf_internal_file_seek_offset(
+         libgzipf_internal_file_t *internal_file,
+         off64_t offset,
+         int whence,
+         libcerror_error_t **error );
+
+LIBGZIPF_EXTERN \
+off64_t libgzipf_file_seek_offset(
+         libgzipf_file_t *file,
+         off64_t offset,
+         int whence,
+         libcerror_error_t **error );
+
+LIBGZIPF_EXTERN \
+int libgzipf_file_get_offset(
+     libgzipf_file_t *file,
+     off64_t *offset,
+     libcerror_error_t **error );
+
+LIBGZIPF_EXTERN \
+int libgzipf_file_get_uncompressed_data_size(
+     libgzipf_file_t *file,
+     size64_t *uncompressed_data_size,
      libcerror_error_t **error );
 
 LIBGZIPF_EXTERN \

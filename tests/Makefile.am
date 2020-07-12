@@ -25,8 +25,8 @@ TESTS_PYGZIPF = \
 endif
 
 TESTS = \
-	test_tools.sh \
 	test_library.sh \
+	test_tools.sh \
 	test_gzipfinfo.sh \
 	$(TESTS_PYGZIPF)
 
@@ -45,11 +45,13 @@ EXTRA_DIST = \
 
 check_PROGRAMS = \
 	gzipf_test_checksum \
+	gzipf_test_compressed_block \
 	gzipf_test_deflate \
 	gzipf_test_error \
 	gzipf_test_file \
 	gzipf_test_io_handle \
 	gzipf_test_member \
+	gzipf_test_member_descriptor \
 	gzipf_test_member_footer \
 	gzipf_test_member_header \
 	gzipf_test_notify \
@@ -66,6 +68,18 @@ gzipf_test_checksum_SOURCES = \
 	gzipf_test_unused.h
 
 gzipf_test_checksum_LDADD = \
+	../libgzipf/libgzipf.la \
+	@LIBCERROR_LIBADD@
+
+gzipf_test_compressed_block_SOURCES = \
+	gzipf_test_compressed_block.c \
+	gzipf_test_libcerror.h \
+	gzipf_test_libgzipf.h \
+	gzipf_test_macros.h \
+	gzipf_test_memory.c gzipf_test_memory.h \
+	gzipf_test_unused.h
+
+gzipf_test_compressed_block_LDADD = \
 	../libgzipf/libgzipf.la \
 	@LIBCERROR_LIBADD@
 
@@ -140,6 +154,18 @@ gzipf_test_member_SOURCES = \
 	gzipf_test_unused.h
 
 gzipf_test_member_LDADD = \
+	../libgzipf/libgzipf.la \
+	@LIBCERROR_LIBADD@
+
+gzipf_test_member_descriptor_SOURCES = \
+	gzipf_test_libcerror.h \
+	gzipf_test_libgzipf.h \
+	gzipf_test_macros.h \
+	gzipf_test_member_descriptor.c \
+	gzipf_test_memory.c gzipf_test_memory.h \
+	gzipf_test_unused.h
+
+gzipf_test_member_descriptor_LDADD = \
 	../libgzipf/libgzipf.la \
 	@LIBCERROR_LIBADD@
 

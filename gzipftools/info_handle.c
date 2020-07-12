@@ -298,8 +298,9 @@ int info_handle_file_fprint(
      info_handle_t *info_handle,
      libcerror_error_t **error )
 {
-	static char *function = "info_handle_file_fprint";
-	int number_of_members = 0;
+	static char *function           = "info_handle_file_fprint";
+	size64_t uncompressed_data_size = 0;
+	int number_of_members           = 0;
 
 	if( info_handle == NULL )
 	{
@@ -315,6 +316,25 @@ int info_handle_file_fprint(
 	fprintf(
 	 info_handle->notify_stream,
 	 "GZIP file information:\n" );
+
+	if( libgzipf_file_get_uncompressed_data_size(
+	     info_handle->input_file,
+	     &uncompressed_data_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve uncompressed data size.",
+		 function );
+
+		return( -1 );
+	}
+	fprintf(
+	 info_handle->notify_stream,
+	 "\tUncompressed data size\t\t: %" PRIu64 "\n",
+	 uncompressed_data_size );
 
 	if( libgzipf_file_get_number_of_members(
 	     info_handle->input_file,

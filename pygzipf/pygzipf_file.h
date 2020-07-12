@@ -77,6 +77,29 @@ PyObject *pygzipf_file_close(
            pygzipf_file_t *pygzipf_file,
            PyObject *arguments );
 
+PyObject *pygzipf_file_read_buffer(
+           pygzipf_file_t *pygzipf_file,
+           PyObject *arguments,
+           PyObject *keywords );
+
+PyObject *pygzipf_file_read_buffer_at_offset(
+           pygzipf_file_t *pygzipf_file,
+           PyObject *arguments,
+           PyObject *keywords );
+
+PyObject *pygzipf_file_seek_offset(
+           pygzipf_file_t *pygzipf_file,
+           PyObject *arguments,
+           PyObject *keywords );
+
+PyObject *pygzipf_file_get_offset(
+           pygzipf_file_t *pygzipf_file,
+           PyObject *arguments );
+
+PyObject *pygzipf_file_get_uncompressed_data_size(
+           pygzipf_file_t *pygzipf_file,
+           PyObject *arguments );
+
 PyObject *pygzipf_file_get_number_of_members(
            pygzipf_file_t *pygzipf_file,
            PyObject *arguments );

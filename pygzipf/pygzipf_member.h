@@ -62,6 +62,22 @@ int pygzipf_member_init(
 void pygzipf_member_free(
       pygzipf_member_t *pygzipf_member );
 
+PyObject *pygzipf_member_get_modification_time(
+           pygzipf_member_t *pygzipf_member,
+           PyObject *arguments );
+
+PyObject *pygzipf_member_get_modification_time_as_integer(
+           pygzipf_member_t *pygzipf_member,
+           PyObject *arguments );
+
+PyObject *pygzipf_member_get_name(
+           pygzipf_member_t *pygzipf_member,
+           PyObject *arguments );
+
+PyObject *pygzipf_member_get_comments(
+           pygzipf_member_t *pygzipf_member,
+           PyObject *arguments );
+
 #if defined( __cplusplus )
 }
 #endif

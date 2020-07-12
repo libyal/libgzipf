@@ -108,6 +108,7 @@ AX_ZLIB_CHECK_INFLATE
 
 dnl Check if libgzipf required headers and functions are available
 AX_LIBGZIPF_CHECK_LOCAL
+AX_LIBGZIPF_CHECK_DLL_SUPPORT
 
 dnl Check if libgzipf Python bindings (pygzipf) required headers and functions are available
 AX_PYTHON_CHECK_ENABLE
@@ -130,30 +131,7 @@ AX_GZIPFTOOLS_CHECK_LOCAL
 
 dnl Check if tests required headers and functions are available
 AX_TESTS_CHECK_LOCAL
-
-dnl Check if DLL support is needed
-AS_IF(
- [test "x$enable_shared" = xyes],
- [AS_CASE(
-  [$host],
-  [*cygwin* | *mingw* | *msys*],
-  [AC_DEFINE(
-   [HAVE_DLLMAIN],
-   [1],
-   [Define to 1 to enable the DllMain function.])
-  AC_SUBST(
-   [HAVE_DLLMAIN],
-   [1])
-
-  AC_SUBST(
-   [LIBGZIPF_DLL_EXPORT],
-   ["-DLIBGZIPF_DLL_EXPORT"])
-
-  AC_SUBST(
-   [LIBGZIPF_DLL_IMPORT],
-   ["-DLIBGZIPF_DLL_IMPORT"])
-  ])
- ])
+AX_TESTS_CHECK_OSSFUZZ
 
 dnl Set additional compiler flags
 CFLAGS="$CFLAGS -Wall";

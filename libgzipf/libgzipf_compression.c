@@ -49,18 +49,16 @@ int libgzipf_decompress_data(
      uint8_t *is_last_block,
      libcerror_error_t **error )
 {
-#if ! ( ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL ) )
+#if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL )
+	z_stream zlib_stream;
+#else
 	libgzipf_deflate_bit_stream_t bit_stream;
+
+	size_t uncompressed_data_offset    = 0;
 #endif
 
 	static char *function              = "libgzipf_decompress_data";
 	int result                         = 0;
-
-#if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL )
-	z_stream zlib_stream;
-#else
-	size_t uncompressed_data_offset    = 0;
-#endif
 
 	if( compressed_data == NULL )
 	{
@@ -173,11 +171,11 @@ int libgzipf_decompress_data(
 #if defined( HAVE_ZLIB_INFLATE_INIT2 ) || defined( ZLIB_DLL )
 	result = inflateInit2(
 	          &zlib_stream,
-	          -12 );
+	          -15 );
 #else
 	result = _inflateInit2(
 	          &zlib_stream,
-	          -12 );
+	          -15 );
 #endif
 	if( result != Z_OK )
 	{
@@ -197,9 +195,9 @@ int libgzipf_decompress_data(
 	if( ( result == Z_OK )
 	 || ( result == Z_STREAM_END ) )
 	{
-		*compressed_data_size   = (size_t) zlib_stream.total_in;
-		*uncompressed_data_size = (size_t) zlib_stream.total_out;
-		*is_last_block          = ( *compressed_data ) & 0x01;
+		*compressed_data_size   -= (size_t) zlib_stream.avail_in;
+		*uncompressed_data_size -= (size_t) zlib_stream.avail_out;
+		*is_last_block           =  ( result == Z_STREAM_END );
 
 		result = 1;
 	}

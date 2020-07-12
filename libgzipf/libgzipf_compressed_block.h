@@ -1,5 +1,5 @@
 /*
- * Members list functions
+ * Compressed block functions
  *
  * Copyright (C) 2019-2020, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,8 +19,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBGZIPF_MEMBERS_LIST_H )
-#define _LIBGZIPF_MEMBERS_LIST_H
+#if !defined( _LIBGZIPF_COMPRESSED_BLOCK_H )
+#define _LIBGZIPF_COMPRESSED_BLOCK_H
 
 #include <common.h>
 #include <types.h>
@@ -33,7 +33,44 @@
 extern "C" {
 #endif
 
-int libgzipf_members_list_read_element_data(
+typedef struct libgzipf_compressed_block libgzipf_compressed_block_t;
+
+struct libgzipf_compressed_block
+{
+	/* The compressed data
+	 */
+	uint8_t *compressed_data;
+
+	/* The compressed data size
+	 */
+	size_t compressed_data_size;
+
+	/* The uncompressed data
+	 */
+	uint8_t *uncompressed_data;
+
+	/* The uncompressed data size
+	 */
+	size_t uncompressed_data_size;
+};
+
+int libgzipf_compressed_block_initialize(
+     libgzipf_compressed_block_t **compressed_block,
+     size64_t compressed_data_size,
+     size64_t uncompressed_data_size,
+     libcerror_error_t **error );
+
+int libgzipf_compressed_block_free(
+     libgzipf_compressed_block_t **compressed_block,
+     libcerror_error_t **error );
+
+int libgzipf_compressed_block_read_file_io_handle(
+     libgzipf_compressed_block_t *compressed_block,
+     libbfio_handle_t *file_io_handle,
+     off64_t file_offset,
+     libcerror_error_t **error );
+
+int libgzipf_compressed_block_read_element_data(
      intptr_t *data_handle,
      libbfio_handle_t *file_io_handle,
      libfdata_list_element_t *element,
@@ -49,5 +86,5 @@ int libgzipf_members_list_read_element_data(
 }
 #endif
 
-#endif /* !defined( _LIBGZIPF_MEMBERS_LIST_H ) */
+#endif /* !defined( _LIBGZIPF_COMPRESSED_BLOCK_H ) */
 

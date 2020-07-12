@@ -1,4 +1,4 @@
-.Dd July  5, 2020
+.Dd July 12, 2020
 .Dt libgzipf 3
 .Os libgzipf
 .Sh NAME
@@ -60,6 +60,16 @@ File functions
 .Fn libgzipf_file_open "libgzipf_file_t *file" "const char *filename" "int access_flags" "libgzipf_error_t **error"
 .Ft int
 .Fn libgzipf_file_close "libgzipf_file_t *file" "libgzipf_error_t **error"
+.Ft ssize_t
+.Fn libgzipf_file_read_buffer "libgzipf_file_t *file" "void *buffer" "size_t buffer_size" "libgzipf_error_t **error"
+.Ft ssize_t
+.Fn libgzipf_file_read_buffer_at_offset "libgzipf_file_t *file" "void *buffer" "size_t buffer_size" "off64_t offset" "libgzipf_error_t **error"
+.Ft off64_t
+.Fn libgzipf_file_seek_offset "libgzipf_file_t *file" "off64_t offset" "int whence" "libgzipf_error_t **error"
+.Ft int
+.Fn libgzipf_file_get_offset "libgzipf_file_t *file" "off64_t *offset" "libgzipf_error_t **error"
+.Ft int
+.Fn libgzipf_file_get_uncompressed_data_size "libgzipf_file_t *file" "size64_t *uncompressed_data_size" "libgzipf_error_t **error"
 .Ft int
 .Fn libgzipf_file_get_number_of_members "libgzipf_file_t *file" "int *number_of_members" "libgzipf_error_t **error"
 .Ft int
@@ -76,6 +86,24 @@ Available when compiled with libbfio support:
 Member functions
 .Ft int
 .Fn libgzipf_member_free "libgzipf_member_t **member" "libgzipf_error_t **error"
+.Ft int
+.Fn libgzipf_member_get_modification_time "libgzipf_member_t *member" "uint32_t *posix_time" "libgzipf_error_t **error"
+.Ft int
+.Fn libgzipf_member_get_utf8_name_size "libgzipf_member_t *member" "size_t *utf8_string_size" "libgzipf_error_t **error"
+.Ft int
+.Fn libgzipf_member_get_utf8_name "libgzipf_member_t *member" "uint8_t *utf8_string" "size_t utf8_string_size" "libgzipf_error_t **error"
+.Ft int
+.Fn libgzipf_member_get_utf16_name_size "libgzipf_member_t *member" "size_t *utf16_string_size" "libgzipf_error_t **error"
+.Ft int
+.Fn libgzipf_member_get_utf16_name "libgzipf_member_t *member" "uint16_t *utf16_string" "size_t utf16_string_size" "libgzipf_error_t **error"
+.Ft int
+.Fn libgzipf_member_get_utf8_comments_size "libgzipf_member_t *member" "size_t *utf8_string_size" "libgzipf_error_t **error"
+.Ft int
+.Fn libgzipf_member_get_utf8_comments "libgzipf_member_t *member" "uint8_t *utf8_string" "size_t utf8_string_size" "libgzipf_error_t **error"
+.Ft int
+.Fn libgzipf_member_get_utf16_comments_size "libgzipf_member_t *member" "size_t *utf16_string_size" "libgzipf_error_t **error"
+.Ft int
+.Fn libgzipf_member_get_utf16_comments "libgzipf_member_t *member" "uint16_t *utf16_string" "size_t utf16_string_size" "libgzipf_error_t **error"
 .Sh DESCRIPTION
 The
 .Fn libgzipf_get_version

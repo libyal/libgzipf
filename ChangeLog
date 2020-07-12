@@ -1,4 +1,7 @@
 To do:
+* fix deflate fallback for more complex gzip files
+* member
+** tracked uncompressed data offset
 * gzipfinfo
 ** print information of members, such as name, comments, modification time
 * add bit stream with read on demand support?

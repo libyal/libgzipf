@@ -260,6 +260,55 @@ int libgzipf_file_close(
      libgzipf_file_t *file,
      libgzipf_error_t **error );
 
+/* Reads uncompressed data at the current offset
+ * Returns the number of bytes read or -1 on error
+ */
+LIBGZIPF_EXTERN \
+ssize_t libgzipf_file_read_buffer(
+         libgzipf_file_t *file,
+         void *buffer,
+         size_t buffer_size,
+         libgzipf_error_t **error );
+
+/* Reads uncompressed data at a specific offset
+ * Returns the number of bytes read or -1 on error
+ */
+LIBGZIPF_EXTERN \
+ssize_t libgzipf_file_read_buffer_at_offset(
+         libgzipf_file_t *file,
+         void *buffer,
+         size_t buffer_size,
+         off64_t offset,
+         libgzipf_error_t **error );
+
+/* Seeks a certain offset of the uncompressed data
+ * Returns the offset if seek is successful or -1 on error
+ */
+LIBGZIPF_EXTERN \
+off64_t libgzipf_file_seek_offset(
+         libgzipf_file_t *file,
+         off64_t offset,
+         int whence,
+         libgzipf_error_t **error );
+
+/* Retrieves the current offset of the uncompressed data
+ * Returns the offset if successful or -1 on error
+ */
+LIBGZIPF_EXTERN \
+int libgzipf_file_get_offset(
+     libgzipf_file_t *file,
+     off64_t *offset,
+     libgzipf_error_t **error );
+
+/* Retrieves the uncompressed data size
+ * Returns the 1 if succesful or -1 on error
+ */
+LIBGZIPF_EXTERN \
+int libgzipf_file_get_uncompressed_data_size(
+     libgzipf_file_t *file,
+     size64_t *uncompressed_data_size,
+     libgzipf_error_t **error );
+
 /* Retrieves the number of members
  * Returns 1 if successful or -1 on error
  */

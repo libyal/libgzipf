@@ -1,10 +1,12 @@
 MSVSCPP_FILES = \
 	gzipf_test_checksum/gzipf_test_checksum.vcproj \
+	gzipf_test_compressed_block/gzipf_test_compressed_block.vcproj \
 	gzipf_test_deflate/gzipf_test_deflate.vcproj \
 	gzipf_test_error/gzipf_test_error.vcproj \
 	gzipf_test_file/gzipf_test_file.vcproj \
 	gzipf_test_io_handle/gzipf_test_io_handle.vcproj \
 	gzipf_test_member/gzipf_test_member.vcproj \
+	gzipf_test_member_descriptor/gzipf_test_member_descriptor.vcproj \
 	gzipf_test_member_footer/gzipf_test_member_footer.vcproj \
 	gzipf_test_member_header/gzipf_test_member_header.vcproj \
 	gzipf_test_notify/gzipf_test_notify.vcproj \

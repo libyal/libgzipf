@@ -21,6 +21,7 @@
 
 import argparse
 import os
+import random
 import sys
 import unittest
 
@@ -121,6 +122,263 @@ class FileTypeTests(unittest.TestCase):
         gzipf_file.open_file_object(file_object)
         del file_object
         gzipf_file.close()
+
+  def test_read_buffer(self):
+    """Tests the read_buffer function."""
+    if not unittest.source:
+      raise unittest.SkipTest("missing source")
+
+    gzipf_file = pygzipf.file()
+
+    gzipf_file.open(unittest.source)
+
+    size = gzipf_file.get_uncompressed_data_size()
+
+    if size < 4096:
+      # Test read without maximum size.
+      gzipf_file.seek_offset(0, os.SEEK_SET)
+
+      data = gzipf_file.read_buffer()
+
+      self.assertIsNotNone(data)
+      self.assertEqual(len(data), size)
+
+    # Test read with maximum size.
+    gzipf_file.seek_offset(0, os.SEEK_SET)
+
+    data = gzipf_file.read_buffer(size=4096)
+
+    self.assertIsNotNone(data)
+    self.assertEqual(len(data), min(size, 4096))
+
+    if size > 8:
+      gzipf_file.seek_offset(-8, os.SEEK_END)
+
+      # Read buffer on size boundary.
+      data = gzipf_file.read_buffer(size=4096)
+
+      self.assertIsNotNone(data)
+      self.assertEqual(len(data), 8)
+
+      # Read buffer beyond size boundary.
+      data = gzipf_file.read_buffer(size=4096)
+
+      self.assertIsNotNone(data)
+      self.assertEqual(len(data), 0)
+
+    # Stress test read buffer.
+    gzipf_file.seek_offset(0, os.SEEK_SET)
+
+    remaining_size = size
+
+    for _ in range(1024):
+      read_size = int(random.random() * 4096)
+
+      data = gzipf_file.read_buffer(size=read_size)
+
+      self.assertIsNotNone(data)
+
+      data_size = len(data)
+
+      if read_size > remaining_size:
+        read_size = remaining_size
+
+      self.assertEqual(data_size, read_size)
+
+      remaining_size -= data_size
+
+      if not remaining_size:
+        gzipf_file.seek_offset(0, os.SEEK_SET)
+
+        remaining_size = size
+
+    with self.assertRaises(ValueError):
+      gzipf_file.read_buffer(size=-1)
+
+    gzipf_file.close()
+
+    # Test the read without open.
+    with self.assertRaises(IOError):
+      gzipf_file.read_buffer(size=4096)
+
+  def test_read_buffer_file_object(self):
+    """Tests the read_buffer function on a file-like object."""
+    if not unittest.source:
+      raise unittest.SkipTest("missing source")
+
+    if not os.path.isfile(unittest.source):
+      raise unittest.SkipTest("source not a regular file")
+
+    gzipf_file = pygzipf.file()
+
+    with open(unittest.source, "rb") as file_object:
+      gzipf_file.open_file_object(file_object)
+
+      size = gzipf_file.get_uncompressed_data_size()
+
+      # Test normal read.
+      data = gzipf_file.read_buffer(size=4096)
+
+      self.assertIsNotNone(data)
+      self.assertEqual(len(data), min(size, 4096))
+
+      gzipf_file.close()
+
+  def test_read_buffer_at_offset(self):
+    """Tests the read_buffer_at_offset function."""
+    if not unittest.source:
+      raise unittest.SkipTest("missing source")
+
+    gzipf_file = pygzipf.file()
+
+    gzipf_file.open(unittest.source)
+
+    size = gzipf_file.get_uncompressed_data_size()
+
+    # Test normal read.
+    data = gzipf_file.read_buffer_at_offset(4096, 0)
+
+    self.assertIsNotNone(data)
+    self.assertEqual(len(data), min(size, 4096))
+
+    if size > 8:
+      # Read buffer on size boundary.
+      data = gzipf_file.read_buffer_at_offset(4096, size - 8)
+
+      self.assertIsNotNone(data)
+      self.assertEqual(len(data), 8)
+
+      # Read buffer beyond size boundary.
+      data = gzipf_file.read_buffer_at_offset(4096, size + 8)
+
+      self.assertIsNotNone(data)
+      self.assertEqual(len(data), 0)
+
+    # Stress test read buffer.
+    for _ in range(1024):
+      random_number = random.random()
+
+      media_offset = int(random_number * size)
+      read_size = int(random_number * 4096)
+
+      data = gzipf_file.read_buffer_at_offset(read_size, media_offset)
+
+      self.assertIsNotNone(data)
+
+      remaining_size = size - media_offset
+
+      data_size = len(data)
+
+      if read_size > remaining_size:
+        read_size = remaining_size
+
+      self.assertEqual(data_size, read_size)
+
+      remaining_size -= data_size
+
+      if not remaining_size:
+        gzipf_file.seek_offset(0, os.SEEK_SET)
+
+    with self.assertRaises(ValueError):
+      gzipf_file.read_buffer_at_offset(-1, 0)
+
+    with self.assertRaises(ValueError):
+      gzipf_file.read_buffer_at_offset(4096, -1)
+
+    gzipf_file.close()
+
+    # Test the read without open.
+    with self.assertRaises(IOError):
+      gzipf_file.read_buffer_at_offset(4096, 0)
+
+  def test_seek_offset(self):
+    """Tests the seek_offset function."""
+    if not unittest.source:
+      raise unittest.SkipTest("missing source")
+
+    gzipf_file = pygzipf.file()
+
+    gzipf_file.open(unittest.source)
+
+    size = gzipf_file.get_uncompressed_data_size()
+
+    gzipf_file.seek_offset(16, os.SEEK_SET)
+
+    offset = gzipf_file.get_offset()
+    self.assertEqual(offset, 16)
+
+    gzipf_file.seek_offset(16, os.SEEK_CUR)
+
+    offset = gzipf_file.get_offset()
+    self.assertEqual(offset, 32)
+
+    gzipf_file.seek_offset(-16, os.SEEK_CUR)
+
+    offset = gzipf_file.get_offset()
+    self.assertEqual(offset, 16)
+
+    if size > 16:
+      gzipf_file.seek_offset(-16, os.SEEK_END)
+
+      offset = gzipf_file.get_offset()
+      self.assertEqual(offset, size - 16)
+
+    gzipf_file.seek_offset(16, os.SEEK_END)
+
+    offset = gzipf_file.get_offset()
+    self.assertEqual(offset, size + 16)
+
+    # TODO: change IOError into ValueError
+    with self.assertRaises(IOError):
+      gzipf_file.seek_offset(-1, os.SEEK_SET)
+
+    # TODO: change IOError into ValueError
+    with self.assertRaises(IOError):
+      gzipf_file.seek_offset(-32 - size, os.SEEK_CUR)
+
+    # TODO: change IOError into ValueError
+    with self.assertRaises(IOError):
+      gzipf_file.seek_offset(-32 - size, os.SEEK_END)
+
+    # TODO: change IOError into ValueError
+    with self.assertRaises(IOError):
+      gzipf_file.seek_offset(0, -1)
+
+    gzipf_file.close()
+
+    # Test the seek without open.
+    with self.assertRaises(IOError):
+      gzipf_file.seek_offset(16, os.SEEK_SET)
+
+  def test_get_offset(self):
+    """Tests the get_offset function."""
+    if not unittest.source:
+      raise unittest.SkipTest("missing source")
+
+    gzipf_file = pygzipf.file()
+
+    gzipf_file.open(unittest.source)
+
+    offset = gzipf_file.get_offset()
+    self.assertIsNotNone(offset)
+
+    gzipf_file.close()
+
+  def test_get_uncompressed_data_size(self):
+    """Tests the get_uncompressed_data_size function and uncompressed_data_size property."""
+    if not unittest.source:
+      raise unittest.SkipTest("missing source")
+
+    gzipf_file = pygzipf.file()
+
+    gzipf_file.open(unittest.source)
+
+    uncompressed_data_size = gzipf_file.get_uncompressed_data_size()
+    self.assertIsNotNone(uncompressed_data_size)
+
+    self.assertIsNotNone(gzipf_file.uncompressed_data_size)
+
+    gzipf_file.close()
 
   def test_get_number_of_members(self):
     """Tests the get_number_of_members function and number_of_members property."""

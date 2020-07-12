@@ -25,6 +25,7 @@
 #include <types.h>
 
 #include "libgzipf_debug.h"
+#include "libgzipf_definitions.h"
 #include "libgzipf_io_handle.h"
 #include "libgzipf_libcerror.h"
 #include "libgzipf_libcnotify.h"
@@ -325,6 +326,7 @@ int libgzipf_member_header_read_comments(
 	size_t read_size          = 0;
 	ssize_t read_count        = 0;
 	int found_end_of_string   = 0;
+	int recursion_depth       = 0;
 
 	if( member_header == NULL )
 	{
@@ -350,6 +352,17 @@ int libgzipf_member_header_read_comments(
 	}
 	while( found_end_of_string == 0 )
 	{
+		if( recursion_depth > LIBGZIP_MAXIMUM_RECURSION_DEPTH )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid recursion depth value out of bounds.",
+			 function );
+
+			goto on_error;
+		}
 		read_count = libbfio_handle_read_buffer(
 		              file_io_handle,
 		              string_data,
@@ -382,6 +395,7 @@ int libgzipf_member_header_read_comments(
 				break;
 			}
 		}
+		recursion_depth++;
 	}
 	if( libbfio_handle_seek_offset(
 	     file_io_handle,
@@ -507,6 +521,7 @@ int libgzipf_member_header_read_name(
 	size_t read_size          = 0;
 	ssize_t read_count        = 0;
 	int found_end_of_string   = 0;
+	int recursion_depth       = 0;
 
 	if( member_header == NULL )
 	{
@@ -532,6 +547,17 @@ int libgzipf_member_header_read_name(
 	}
 	while( found_end_of_string == 0 )
 	{
+		if( recursion_depth > LIBGZIP_MAXIMUM_RECURSION_DEPTH )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid recursion depth value out of bounds.",
+			 function );
+
+			goto on_error;
+		}
 		read_count = libbfio_handle_read_buffer(
 		              file_io_handle,
 		              string_data,
@@ -564,6 +590,7 @@ int libgzipf_member_header_read_name(
 				break;
 			}
 		}
+		recursion_depth++;
 	}
 	if( libbfio_handle_seek_offset(
 	     file_io_handle,

@@ -127,11 +127,13 @@ stamp-h[1-9]
 /gzipftools/gzipfinfo
 /tests/*.exe
 /tests/gzipf_test_checksum
+/tests/gzipf_test_compressed_block
 /tests/gzipf_test_deflate
 /tests/gzipf_test_error
 /tests/gzipf_test_file
 /tests/gzipf_test_io_handle
 /tests/gzipf_test_member
+/tests/gzipf_test_member_descriptor
 /tests/gzipf_test_member_footer
 /tests/gzipf_test_member_header
 /tests/gzipf_test_notify

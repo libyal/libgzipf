@@ -1,5 +1,5 @@
 /*
- * Library member type test program
+ * Library compressed_block type test program
  *
  * Copyright (C) 2019-2020, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -27,22 +27,22 @@
 #include <stdlib.h>
 #endif
 
+#include "gzipf_test_functions.h"
+#include "gzipf_test_libbfio.h"
 #include "gzipf_test_libcerror.h"
 #include "gzipf_test_libgzipf.h"
 #include "gzipf_test_macros.h"
 #include "gzipf_test_memory.h"
 #include "gzipf_test_unused.h"
 
-#include "../libgzipf/libgzipf_member.h"
+#include "../libgzipf/libgzipf_compressed_block.h"
 
 #if defined( __GNUC__ ) && !defined( LIBGZIPF_DLL_IMPORT )
 
-#endif /* defined( __GNUC__ ) && !defined( LIBGZIPF_DLL_IMPORT ) */
-
-/* Tests the libgzipf_member_free function
+/* Tests the libgzipf_compressed_block_free function
  * Returns 1 if successful or 0 if not
  */
-int gzipf_test_member_free(
+int gzipf_test_compressed_block_free(
      void )
 {
 	libcerror_error_t *error = NULL;
@@ -50,7 +50,7 @@ int gzipf_test_member_free(
 
 	/* Test error cases
 	 */
-	result = libgzipf_member_free(
+	result = libgzipf_compressed_block_free(
 	          NULL,
 	          &error );
 
@@ -77,6 +77,8 @@ on_error:
 	return( 0 );
 }
 
+#endif /* defined( __GNUC__ ) && !defined( LIBGZIPF_DLL_IMPORT ) */
+
 /* The main program
  */
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
@@ -94,31 +96,17 @@ int main(
 
 #if defined( __GNUC__ ) && !defined( LIBGZIPF_DLL_IMPORT )
 
-	/* TODO: add tests for libgzipf_member_initialize */
-
-#endif /* defined( __GNUC__ ) && !defined( LIBGZIPF_DLL_IMPORT ) */
+	/* TODO: add tests for libgzipf_compressed_block_initialize */
 
 	GZIPF_TEST_RUN(
-	 "libgzipf_member_free",
-	 gzipf_test_member_free );
+	 "libgzipf_compressed_block_free",
+	 gzipf_test_compressed_block_free );
 
-	/* TODO: add tests for libgzipf_member_get_modification_time */
+	/* TODO: add tests for libgzipf_compressed_block_read_file_io_handle */
 
-	/* TODO: add tests for libgzipf_member_get_utf8_name_size */
+	/* TODO: add tests for libgzipf_compressed_block_read_element_data */
 
-	/* TODO: add tests for libgzipf_member_get_utf8_name */
-
-	/* TODO: add tests for libgzipf_member_get_utf16_name_size */
-
-	/* TODO: add tests for libgzipf_member_get_utf16_name */
-
-	/* TODO: add tests for libgzipf_member_get_utf8_comments_size */
-
-	/* TODO: add tests for libgzipf_member_get_utf8_comments */
-
-	/* TODO: add tests for libgzipf_member_get_utf16_comments_size */
-
-	/* TODO: add tests for libgzipf_member_get_utf16_comments */
+#endif /* defined( __GNUC__ ) && !defined( LIBGZIPF_DLL_IMPORT ) */
 
 	return( EXIT_SUCCESS );
 

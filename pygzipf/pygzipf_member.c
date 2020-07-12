@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #endif
 
+#include "pygzipf_datetime.h"
 #include "pygzipf_error.h"
 #include "pygzipf_libcerror.h"
 #include "pygzipf_libgzipf.h"
@@ -35,11 +36,57 @@
 
 PyMethodDef pygzipf_member_object_methods[] = {
 
+	{ "get_modification_time",
+	  (PyCFunction) pygzipf_member_get_modification_time,
+	  METH_NOARGS,
+	  "get_modification_time() -> Datetime\n"
+	  "\n"
+	  "Retrieves the modification time." },
+
+	{ "get_modification_time_as_integer",
+	  (PyCFunction) pygzipf_member_get_modification_time_as_integer,
+	  METH_NOARGS,
+	  "get_modification_time_as_integer() -> Integer or None\n"
+	  "\n"
+	  "Retrieves the modification time as a 32-bit integer containing a POSIX timestamp value." },
+
+	{ "get_name",
+	  (PyCFunction) pygzipf_member_get_name,
+	  METH_NOARGS,
+	  "get_name() -> Unicode string or None\n"
+	  "\n"
+	  "Retrieves the name." },
+
+	{ "get_comments",
+	  (PyCFunction) pygzipf_member_get_comments,
+	  METH_NOARGS,
+	  "get_comments() -> Unicode string or None\n"
+	  "\n"
+	  "Retrieves the comments." },
+
 	/* Sentinel */
 	{ NULL, NULL, 0, NULL }
 };
 
 PyGetSetDef pygzipf_member_object_get_set_definitions[] = {
+
+	{ "modification_time",
+	  (getter) pygzipf_member_get_modification_time,
+	  (setter) 0,
+	  "The modification time.",
+	  NULL },
+
+	{ "name",
+	  (getter) pygzipf_member_get_name,
+	  (setter) 0,
+	  "The name.",
+	  NULL },
+
+	{ "comments",
+	  (getter) pygzipf_member_get_comments,
+	  (setter) 0,
+	  "The comments.",
+	  NULL },
 
 	/* Sentinel */
 	{ NULL, NULL, NULL, NULL, NULL }
@@ -291,5 +338,367 @@ void pygzipf_member_free(
 	}
 	ob_type->tp_free(
 	 (PyObject*) pygzipf_member );
+}
+
+/* Retrieves the modification time
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pygzipf_member_get_modification_time(
+           pygzipf_member_t *pygzipf_member,
+           PyObject *arguments PYGZIPF_ATTRIBUTE_UNUSED )
+{
+	PyObject *datetime_object = NULL;
+	libcerror_error_t *error  = NULL;
+	static char *function     = "pygzipf_member_get_modification_time";
+	uint32_t posix_time       = 0;
+	int result                = 0;
+
+	PYGZIPF_UNREFERENCED_PARAMETER( arguments )
+
+	if( pygzipf_member == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid member.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libgzipf_member_get_modification_time(
+	          pygzipf_member->member,
+	          &posix_time,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result == -1 )
+	{
+		pygzipf_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to retrieve modification time.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		return( NULL );
+	}
+	else if( result == 0 )
+	{
+		Py_IncRef(
+		 Py_None );
+
+		return( Py_None );
+	}
+	datetime_object = pygzipf_datetime_new_from_posix_time(
+	                   posix_time );
+
+	return( datetime_object );
+}
+
+/* Retrieves the modification time as an integer
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pygzipf_member_get_modification_time_as_integer(
+           pygzipf_member_t *pygzipf_member,
+           PyObject *arguments PYGZIPF_ATTRIBUTE_UNUSED )
+{
+	PyObject *integer_object = NULL;
+	libcerror_error_t *error = NULL;
+	static char *function    = "pygzipf_member_get_modification_time_as_integer";
+	uint32_t posix_time      = 0;
+	int result               = 0;
+
+	PYGZIPF_UNREFERENCED_PARAMETER( arguments )
+
+	if( pygzipf_member == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid member.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libgzipf_member_get_modification_time(
+	          pygzipf_member->member,
+	          &posix_time,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result == -1 )
+	{
+		pygzipf_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to retrieve modification time.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		return( NULL );
+	}
+	else if( result == 0 )
+	{
+		Py_IncRef(
+		 Py_None );
+
+		return( Py_None );
+	}
+	integer_object = PyLong_FromUnsignedLong(
+	                  (unsigned long) posix_time );
+
+	return( integer_object );
+}
+
+/* Retrieves the name
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pygzipf_member_get_name(
+           pygzipf_member_t *pygzipf_member,
+           PyObject *arguments PYGZIPF_ATTRIBUTE_UNUSED )
+{
+	PyObject *string_object  = NULL;
+	libcerror_error_t *error = NULL;
+	const char *errors       = NULL;
+	static char *function    = "pygzipf_member_get_name";
+	char *utf8_string        = NULL;
+	size_t utf8_string_size  = 0;
+	int result               = 0;
+
+	PYGZIPF_UNREFERENCED_PARAMETER( arguments )
+
+	if( pygzipf_member == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid member.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libgzipf_member_get_utf8_name_size(
+	          pygzipf_member->member,
+	          &utf8_string_size,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result == -1 )
+	{
+		pygzipf_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to determine size of name as UTF-8 string.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		goto on_error;
+	}
+	else if( ( result == 0 )
+	      || ( utf8_string_size == 0 ) )
+	{
+		Py_IncRef(
+		 Py_None );
+
+		return( Py_None );
+	}
+	utf8_string = (char *) PyMem_Malloc(
+	                        sizeof( char ) * utf8_string_size );
+
+	if( utf8_string == NULL )
+	{
+		PyErr_Format(
+		 PyExc_MemoryError,
+		 "%s: unable to create UTF-8 string.",
+		 function );
+
+		goto on_error;
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libgzipf_member_get_utf8_name(
+	          pygzipf_member->member,
+	          (uint8_t *) utf8_string,
+	          utf8_string_size,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result != 1 )
+	{
+		pygzipf_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to retrieve name as UTF-8 string.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		goto on_error;
+	}
+	/* Pass the string length to PyUnicode_DecodeUTF8 otherwise it makes
+	 * the end of string character is part of the string
+	 */
+	string_object = PyUnicode_DecodeUTF8(
+	                 utf8_string,
+	                 (Py_ssize_t) utf8_string_size - 1,
+	                 errors );
+
+	if( string_object == NULL )
+	{
+		PyErr_Format(
+		 PyExc_IOError,
+		 "%s: unable to convert UTF-8 string into Unicode object.",
+		 function );
+
+		goto on_error;
+	}
+	PyMem_Free(
+	 utf8_string );
+
+	return( string_object );
+
+on_error:
+	if( utf8_string != NULL )
+	{
+		PyMem_Free(
+		 utf8_string );
+	}
+	return( NULL );
+}
+
+/* Retrieves the comments
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pygzipf_member_get_comments(
+           pygzipf_member_t *pygzipf_member,
+           PyObject *arguments PYGZIPF_ATTRIBUTE_UNUSED )
+{
+	PyObject *string_object  = NULL;
+	libcerror_error_t *error = NULL;
+	const char *errors       = NULL;
+	static char *function    = "pygzipf_member_get_comments";
+	char *utf8_string        = NULL;
+	size_t utf8_string_size  = 0;
+	int result               = 0;
+
+	PYGZIPF_UNREFERENCED_PARAMETER( arguments )
+
+	if( pygzipf_member == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid member.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libgzipf_member_get_utf8_comments_size(
+	          pygzipf_member->member,
+	          &utf8_string_size,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result == -1 )
+	{
+		pygzipf_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to determine size of comments as UTF-8 string.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		goto on_error;
+	}
+	else if( ( result == 0 )
+	      || ( utf8_string_size == 0 ) )
+	{
+		Py_IncRef(
+		 Py_None );
+
+		return( Py_None );
+	}
+	utf8_string = (char *) PyMem_Malloc(
+	                        sizeof( char ) * utf8_string_size );
+
+	if( utf8_string == NULL )
+	{
+		PyErr_Format(
+		 PyExc_MemoryError,
+		 "%s: unable to create UTF-8 string.",
+		 function );
+
+		goto on_error;
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libgzipf_member_get_utf8_comments(
+	          pygzipf_member->member,
+	          (uint8_t *) utf8_string,
+	          utf8_string_size,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result != 1 )
+	{
+		pygzipf_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to retrieve comments as UTF-8 string.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		goto on_error;
+	}
+	/* Pass the string length to PyUnicode_DecodeUTF8 otherwise it makes
+	 * the end of string character is part of the string
+	 */
+	string_object = PyUnicode_DecodeUTF8(
+	                 utf8_string,
+	                 (Py_ssize_t) utf8_string_size - 1,
+	                 errors );
+
+	if( string_object == NULL )
+	{
+		PyErr_Format(
+		 PyExc_IOError,
+		 "%s: unable to convert UTF-8 string into Unicode object.",
+		 function );
+
+		goto on_error;
+	}
+	PyMem_Free(
+	 utf8_string );
+
+	return( string_object );
+
+on_error:
+	if( utf8_string != NULL )
+	{
+		PyMem_Free(
+		 utf8_string );
+	}
+	return( NULL );
 }
 
