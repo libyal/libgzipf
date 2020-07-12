@@ -1,10 +1,7 @@
 To do:
-* zlib use inflate?
+* gzipfinfo
+** print information of members, such as name, comments, modification time
 * add bit stream with read on demand support?
-* add support for members to API
-** get name
-** get comments
-** get modification time
 * member header add support for extra fields controlled by flags
 * complete library
 * complete Python bindings

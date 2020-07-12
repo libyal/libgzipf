@@ -1,7 +1,7 @@
 /*
  * Library member type test program
  *
- * Copyright (C) 2011-2020, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2019-2020, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -34,6 +34,10 @@
 #include "gzipf_test_unused.h"
 
 #include "../libgzipf/libgzipf_member.h"
+
+#if defined( __GNUC__ ) && !defined( LIBGZIPF_DLL_IMPORT )
+
+#endif /* defined( __GNUC__ ) && !defined( LIBGZIPF_DLL_IMPORT ) */
 
 /* Tests the libgzipf_member_free function
  * Returns 1 if successful or 0 if not
@@ -72,10 +76,6 @@ on_error:
 	}
 	return( 0 );
 }
-
-#if defined( __GNUC__ ) && !defined( LIBGZIPF_DLL_IMPORT )
-
-#endif /* defined( __GNUC__ ) && !defined( LIBGZIPF_DLL_IMPORT ) */
 
 /* The main program
  */

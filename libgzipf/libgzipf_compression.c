@@ -49,15 +49,15 @@ int libgzipf_decompress_data(
      uint8_t *is_last_block,
      libcerror_error_t **error )
 {
-#if ! ( ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_UNCOMPRESS ) ) || defined( ZLIB_DLL ) )
+#if ! ( ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL ) )
 	libgzipf_deflate_bit_stream_t bit_stream;
 #endif
 
 	static char *function              = "libgzipf_decompress_data";
 	int result                         = 0;
 
-#if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_UNCOMPRESS ) ) || defined( ZLIB_DLL )
-	uLongf zlib_uncompressed_data_size = 0;
+#if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL )
+	z_stream zlib_stream;
 #else
 	size_t uncompressed_data_offset    = 0;
 #endif
@@ -117,7 +117,7 @@ int libgzipf_decompress_data(
 
 		return( -1 );
 	}
-#if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_UNCOMPRESS ) ) || defined( ZLIB_DLL )
+#if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL )
 	if( *compressed_data_size > (size_t) ULONG_MAX )
 	{
 		libcerror_error_set(
@@ -140,17 +140,6 @@ int libgzipf_decompress_data(
 
 		return( -1 );
 	}
-	if( uncompressed_data_size == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid uncompressed data size.",
-		 function );
-
-		return( -1 );
-	}
 	if( is_last_block == NULL )
 	{
 		libcerror_error_set(
@@ -162,18 +151,55 @@ int libgzipf_decompress_data(
 
 		return( -1 );
 	}
-	zlib_uncompressed_data_size = (uLongf) *uncompressed_data_size;
-
-	result = uncompress(
-		  (Bytef *) uncompressed_data,
-		  &zlib_uncompressed_data_size,
-		  (Bytef *) compressed_data,
-		  (uLong) *compressed_data_size );
-
-	if( result == Z_OK )
+	if( memory_set(
+	     &zlib_stream,
+	     0,
+	     sizeof( z_stream ) ) == NULL )
 	{
-/* TODO set compressed_data_size */
-		*uncompressed_data_size = (size_t) zlib_uncompressed_data_size;
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+		 "%s: unable to clear zlib stream.",
+		 function );
+
+		return( -1 );
+	}
+	zlib_stream.next_in   = (Bytef *) compressed_data;
+	zlib_stream.avail_in  = (uInt) *compressed_data_size;
+	zlib_stream.next_out  = (Bytef *) uncompressed_data;
+	zlib_stream.avail_out = (uInt) *uncompressed_data_size;
+
+#if defined( HAVE_ZLIB_INFLATE_INIT2 ) || defined( ZLIB_DLL )
+	result = inflateInit2(
+	          &zlib_stream,
+	          -12 );
+#else
+	result = _inflateInit2(
+	          &zlib_stream,
+	          -12 );
+#endif
+	if( result != Z_OK )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to initialize zlib stream.",
+		 function );
+
+		return( -1 );
+	}
+	result = inflate(
+	          &zlib_stream,
+	          Z_BLOCK );
+
+	if( ( result == Z_OK )
+	 || ( result == Z_STREAM_END ) )
+	{
+		*compressed_data_size   = (size_t) zlib_stream.total_in;
+		*uncompressed_data_size = (size_t) zlib_stream.total_out;
+		*is_last_block          = ( *compressed_data ) & 0x01;
 
 		result = 1;
 	}
@@ -234,6 +260,26 @@ int libgzipf_decompress_data(
 
 		result = -1;
 	}
+	if( result == -1 )
+	{
+		inflateEnd(
+		 &zlib_stream );
+	}
+	else
+	{
+		if( inflateEnd(
+		     &zlib_stream ) != Z_OK )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to finalize zlib stream.",
+			 function );
+
+			return( -1 );
+		}
+	}
 #else
 	if( *compressed_data_size > (size_t) SSIZE_MAX )
 	{
@@ -281,7 +327,7 @@ int libgzipf_decompress_data(
 	*compressed_data_size   = bit_stream.byte_stream_offset;
 	*uncompressed_data_size = uncompressed_data_offset;
 
-#endif /* ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_UNCOMPRESS ) ) || defined( ZLIB_DLL ) */
+#endif /* ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL ) */
 
 	return( result );
 }

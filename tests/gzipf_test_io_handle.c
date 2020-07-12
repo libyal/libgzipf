@@ -44,7 +44,7 @@ int gzipf_test_io_handle_initialize(
      void )
 {
 	libcerror_error_t *error        = NULL;
-	libgzipf_io_handle_t *io_handle   = NULL;
+	libgzipf_io_handle_t *io_handle = NULL;
 	int result                      = 0;
 
 #if defined( HAVE_GZIPF_TEST_MEMORY )
@@ -276,9 +276,9 @@ on_error:
 int gzipf_test_io_handle_clear(
      void )
 {
-	libcerror_error_t *error      = NULL;
+	libcerror_error_t *error        = NULL;
 	libgzipf_io_handle_t *io_handle = NULL;
-	int result                    = 0;
+	int result                      = 0;
 
 	/* Initialize test
 	 */

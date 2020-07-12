@@ -29,6 +29,8 @@
 #include "libgzipf_io_handle.h"
 #include "libgzipf_libbfio.h"
 #include "libgzipf_libcerror.h"
+#include "libgzipf_libcthreads.h"
+#include "libgzipf_member_descriptor.h"
 #include "libgzipf_types.h"
 
 #if defined( __cplusplus )
@@ -46,17 +48,86 @@ struct libgzipf_internal_member
 	/* The file IO handle
 	 */
 	libbfio_handle_t *file_io_handle;
+
+	/* The member descriptor
+	 */
+	libgzipf_member_descriptor_t *member_descriptor;
+
+#if defined( HAVE_LIBGZIPF_MULTI_THREAD_SUPPORT )
+	/* The read/write lock
+	 */
+	libcthreads_read_write_lock_t *read_write_lock;
+#endif
 };
 
 int libgzipf_member_initialize(
      libgzipf_member_t **member,
      libgzipf_io_handle_t *io_handle,
      libbfio_handle_t *file_io_handle,
+     libgzipf_member_descriptor_t *member_descriptor,
      libcerror_error_t **error );
 
 LIBGZIPF_EXTERN \
 int libgzipf_member_free(
      libgzipf_member_t **member,
+     libcerror_error_t **error );
+
+LIBGZIPF_EXTERN \
+int libgzipf_member_get_modification_time(
+     libgzipf_member_t *member,
+     uint32_t *posix_time,
+     libcerror_error_t **error );
+
+LIBGZIPF_EXTERN \
+int libgzipf_member_get_utf8_name_size(
+     libgzipf_member_t *member,
+     size_t *utf8_string_size,
+     libcerror_error_t **error );
+
+LIBGZIPF_EXTERN \
+int libgzipf_member_get_utf8_name(
+     libgzipf_member_t *member,
+     uint8_t *utf8_string,
+     size_t utf8_string_size,
+     libcerror_error_t **error );
+
+LIBGZIPF_EXTERN \
+int libgzipf_member_get_utf16_name_size(
+     libgzipf_member_t *member,
+     size_t *utf16_string_size,
+     libcerror_error_t **error );
+
+LIBGZIPF_EXTERN \
+int libgzipf_member_get_utf16_name(
+     libgzipf_member_t *member,
+     uint16_t *utf16_string,
+     size_t utf16_string_size,
+     libcerror_error_t **error );
+
+LIBGZIPF_EXTERN \
+int libgzipf_member_get_utf8_comments_size(
+     libgzipf_member_t *member,
+     size_t *utf8_string_size,
+     libcerror_error_t **error );
+
+LIBGZIPF_EXTERN \
+int libgzipf_member_get_utf8_comments(
+     libgzipf_member_t *member,
+     uint8_t *utf8_string,
+     size_t utf8_string_size,
+     libcerror_error_t **error );
+
+LIBGZIPF_EXTERN \
+int libgzipf_member_get_utf16_comments_size(
+     libgzipf_member_t *member,
+     size_t *utf16_string_size,
+     libcerror_error_t **error );
+
+LIBGZIPF_EXTERN \
+int libgzipf_member_get_utf16_comments(
+     libgzipf_member_t *member,
+     uint16_t *utf16_string,
+     size_t utf16_string_size,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

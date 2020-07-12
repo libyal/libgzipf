@@ -1,5 +1,5 @@
 /*
- * Input/Output (IO) handle
+ * The libgzipf header wrapper
  *
  * Copyright (C) 2019-2020, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,46 +19,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBGZIPF_IO_HANDLE_H )
-#define _LIBGZIPF_IO_HANDLE_H
+#if !defined( _OSSFUZZ_LIBGZIPF_H )
+#define _OSSFUZZ_LIBGZIPF_H
 
 #include <common.h>
-#include <types.h>
 
-#include "libgzipf_libcerror.h"
+#include <libgzipf.h>
 
-#if defined( __cplusplus )
-extern "C" {
-#endif
-
-typedef struct libgzipf_io_handle libgzipf_io_handle_t;
-
-struct libgzipf_io_handle
-{
-	/* Flags
-	 */
-	uint8_t flags;
-
-	/* Value to indicate if abort was signalled
-	 */
-	int abort;
-};
-
-int libgzipf_io_handle_initialize(
-     libgzipf_io_handle_t **io_handle,
-     libcerror_error_t **error );
-
-int libgzipf_io_handle_free(
-     libgzipf_io_handle_t **io_handle,
-     libcerror_error_t **error );
-
-int libgzipf_io_handle_clear(
-     libgzipf_io_handle_t *io_handle,
-     libcerror_error_t **error );
-
-#if defined( __cplusplus )
-}
-#endif
-
-#endif /* !defined( _LIBGZIPF_IO_HANDLE_H ) */
+#endif /* !defined( _OSSFUZZ_LIBGZIPF_H ) */
 

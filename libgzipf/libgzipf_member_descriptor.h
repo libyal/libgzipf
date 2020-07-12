@@ -81,6 +81,55 @@ int libgzipf_member_descriptor_free(
      libgzipf_member_descriptor_t **member_descriptor,
      libcerror_error_t **error );
 
+int libgzipf_member_descriptor_get_modification_time(
+     libgzipf_member_descriptor_t *member_descriptor,
+     uint32_t *posix_time,
+     libcerror_error_t **error );
+
+int libgzipf_member_descriptor_get_utf8_name_size(
+     libgzipf_member_descriptor_t *member_descriptor,
+     size_t *utf8_string_size,
+     libcerror_error_t **error );
+
+int libgzipf_member_descriptor_get_utf8_name(
+     libgzipf_member_descriptor_t *member_descriptor,
+     uint8_t *utf8_string,
+     size_t utf8_string_size,
+     libcerror_error_t **error );
+
+int libgzipf_member_descriptor_get_utf16_name_size(
+     libgzipf_member_descriptor_t *member_descriptor,
+     size_t *utf16_string_size,
+     libcerror_error_t **error );
+
+int libgzipf_member_descriptor_get_utf16_name(
+     libgzipf_member_descriptor_t *member_descriptor,
+     uint16_t *utf16_string,
+     size_t utf16_string_size,
+     libcerror_error_t **error );
+
+int libgzipf_member_descriptor_get_utf8_comments_size(
+     libgzipf_member_descriptor_t *member_descriptor,
+     size_t *utf8_string_size,
+     libcerror_error_t **error );
+
+int libgzipf_member_descriptor_get_utf8_comments(
+     libgzipf_member_descriptor_t *member_descriptor,
+     uint8_t *utf8_string,
+     size_t utf8_string_size,
+     libcerror_error_t **error );
+
+int libgzipf_member_descriptor_get_utf16_comments_size(
+     libgzipf_member_descriptor_t *member_descriptor,
+     size_t *utf16_string_size,
+     libcerror_error_t **error );
+
+int libgzipf_member_descriptor_get_utf16_comments(
+     libgzipf_member_descriptor_t *member_descriptor,
+     uint16_t *utf16_string,
+     size_t utf16_string_size,
+     libcerror_error_t **error );
+
 #if defined( __cplusplus )
 }
 #endif

@@ -37,9 +37,16 @@
 #include "gzipf_test_libgzipf.h"
 #include "gzipf_test_macros.h"
 #include "gzipf_test_memory.h"
-#include "gzipf_test_unused.h"
 
 #include "../libgzipf/libgzipf_file.h"
+
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER ) && SIZEOF_WCHAR_T != 2 && SIZEOF_WCHAR_T != 4
+#error Unsupported size of wchar_t
+#endif
+
+/* Define to make gzipf_test_file generate verbose output
+#define GZIPF_TEST_FILE_VERBOSE
+ */
 
 #if !defined( LIBGZIPF_HAVE_BFIO )
 
@@ -56,14 +63,6 @@ int libgzipf_file_open_file_io_handle(
      libgzipf_error_t **error );
 
 #endif /* !defined( LIBGZIPF_HAVE_BFIO ) */
-
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER ) && SIZEOF_WCHAR_T != 2 && SIZEOF_WCHAR_T != 4
-#error Unsupported size of wchar_t
-#endif
-
-/* Define to make gzipf_test_file generate verbose output
-#define GZIPF_TEST_FILE_VERBOSE
- */
 
 /* Creates and opens a source file
  * Returns 1 if successful or -1 on error
@@ -197,7 +196,7 @@ int gzipf_test_file_initialize(
      void )
 {
 	libcerror_error_t *error        = NULL;
-	libgzipf_file_t *file             = NULL;
+	libgzipf_file_t *file           = NULL;
 	int result                      = 0;
 
 #if defined( HAVE_GZIPF_TEST_MEMORY )
@@ -432,7 +431,7 @@ int gzipf_test_file_open(
 	char narrow_source[ 256 ];
 
 	libcerror_error_t *error = NULL;
-	libgzipf_file_t *file      = NULL;
+	libgzipf_file_t *file    = NULL;
 	int result               = 0;
 
 	/* Initialize test
@@ -609,7 +608,7 @@ int gzipf_test_file_open_wide(
 	wchar_t wide_source[ 256 ];
 
 	libcerror_error_t *error = NULL;
-	libgzipf_file_t *file      = NULL;
+	libgzipf_file_t *file    = NULL;
 	int result               = 0;
 
 	/* Initialize test
@@ -785,7 +784,7 @@ int gzipf_test_file_open_file_io_handle(
 {
 	libbfio_handle_t *file_io_handle = NULL;
 	libcerror_error_t *error         = NULL;
-	libgzipf_file_t *file              = NULL;
+	libgzipf_file_t *file            = NULL;
 	size_t string_length             = 0;
 	int result                       = 0;
 
@@ -800,13 +799,13 @@ int gzipf_test_file_open_file_io_handle(
 	 result,
 	 1 );
 
-        GZIPF_TEST_ASSERT_IS_NOT_NULL(
-         "file_io_handle",
-         file_io_handle );
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "file_io_handle",
+	 file_io_handle );
 
-        GZIPF_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	string_length = system_string_length(
 	                 source );
@@ -829,9 +828,9 @@ int gzipf_test_file_open_file_io_handle(
 	 result,
 	 1 );
 
-        GZIPF_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	result = libgzipf_file_initialize(
 	          &file,
@@ -972,12 +971,12 @@ int gzipf_test_file_open_file_io_handle(
 	 1 );
 
 	GZIPF_TEST_ASSERT_IS_NULL(
-         "file_io_handle",
-         file_io_handle );
+	 "file_io_handle",
+	 file_io_handle );
 
-        GZIPF_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	return( 1 );
 
@@ -1047,7 +1046,7 @@ int gzipf_test_file_open_close(
      const system_character_t *source )
 {
 	libcerror_error_t *error = NULL;
-	libgzipf_file_t *file      = NULL;
+	libgzipf_file_t *file    = NULL;
 	int result               = 0;
 
 	/* Initialize test
@@ -1234,6 +1233,208 @@ on_error:
 	return( 0 );
 }
 
+/* Tests the libgzipf_file_get_number_of_members function
+ * Returns 1 if successful or 0 if not
+ */
+int gzipf_test_file_get_number_of_members(
+     libgzipf_file_t *file )
+{
+	libcerror_error_t *error = NULL;
+	int number_of_members    = 0;
+	int result               = 0;
+
+	/* Test regular cases
+	 */
+	result = libgzipf_file_get_number_of_members(
+	          file,
+	          &number_of_members,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libgzipf_file_get_number_of_members(
+	          NULL,
+	          &number_of_members,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libgzipf_file_get_number_of_members(
+	          file,
+	          NULL,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libgzipf_file_get_member_by_index function
+ * Returns 1 if successful or 0 if not
+ */
+int gzipf_test_file_get_member_by_index(
+     libgzipf_file_t *file )
+{
+	libcerror_error_t *error  = NULL;
+	libgzipf_member_t *member = NULL;
+	int result                = 0;
+
+	/* Test regular cases
+	 */
+	result = libgzipf_file_get_member_by_index(
+	          file,
+	          0,
+	          &member,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "member",
+	 member );
+
+	result = libgzipf_member_free(
+	          &member,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libgzipf_file_get_member_by_index(
+	          NULL,
+	          0,
+	          &member,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "member",
+	 member );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libgzipf_file_get_member_by_index(
+	          file,
+	          -1,
+	          &member,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "member",
+	 member );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	result = libgzipf_file_get_member_by_index(
+	          file,
+	          0,
+	          NULL,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	GZIPF_TEST_ASSERT_IS_NULL(
+	 "member",
+	 member );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	if( member != NULL )
+	{
+		libgzipf_member_free(
+		 &member,
+		 NULL );
+	}
+	return( 0 );
+}
+
 /* The main program
  */
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
@@ -1409,6 +1610,16 @@ int main(
 		/* TODO: add tests for libgzipf_internal_file_open_read */
 
 #endif /* defined( __GNUC__ ) && !defined( LIBGZIPF_DLL_IMPORT ) */
+
+		GZIPF_TEST_RUN_WITH_ARGS(
+		 "libgzipf_file_get_number_of_members",
+		 gzipf_test_file_get_number_of_members,
+		 file );
+
+		GZIPF_TEST_RUN_WITH_ARGS(
+		 "libgzipf_file_get_member_by_index",
+		 gzipf_test_file_get_member_by_index,
+		 file );
 
 		/* Clean up
 		 */

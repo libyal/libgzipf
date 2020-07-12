@@ -290,6 +290,100 @@ int libgzipf_member_free(
      libgzipf_member_t **member,
      libgzipf_error_t **error );
 
+/* Retrieves the modification time
+ * The timestamp is a signed 32-bit POSIX date and time value in number of seconds
+ * Returns 1 if successful or -1 on error
+ */
+LIBGZIPF_EXTERN \
+int libgzipf_member_get_modification_time(
+     libgzipf_member_t *member,
+     uint32_t *posix_time,
+     libgzipf_error_t **error );
+
+/* Retrieves the size of the UTF-8 encoded name
+ * The returned size includes the end of string character
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+LIBGZIPF_EXTERN \
+int libgzipf_member_get_utf8_name_size(
+     libgzipf_member_t *member,
+     size_t *utf8_string_size,
+     libgzipf_error_t **error );
+
+/* Retrieves the UTF-8 encoded name
+ * The size should include the end of string character
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+LIBGZIPF_EXTERN \
+int libgzipf_member_get_utf8_name(
+     libgzipf_member_t *member,
+     uint8_t *utf8_string,
+     size_t utf8_string_size,
+     libgzipf_error_t **error );
+
+/* Retrieves the size of the UTF-16 encoded name
+ * The returned size includes the end of string character
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+LIBGZIPF_EXTERN \
+int libgzipf_member_get_utf16_name_size(
+     libgzipf_member_t *member,
+     size_t *utf16_string_size,
+     libgzipf_error_t **error );
+
+/* Retrieves the UTF-16 encoded name
+ * The size should include the end of string character
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+LIBGZIPF_EXTERN \
+int libgzipf_member_get_utf16_name(
+     libgzipf_member_t *member,
+     uint16_t *utf16_string,
+     size_t utf16_string_size,
+     libgzipf_error_t **error );
+
+/* Retrieves the size of the UTF-8 encoded comments
+ * The returned size includes the end of string character
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+LIBGZIPF_EXTERN \
+int libgzipf_member_get_utf8_comments_size(
+     libgzipf_member_t *member,
+     size_t *utf8_string_size,
+     libgzipf_error_t **error );
+
+/* Retrieves the UTF-8 encoded comments
+ * The size should include the end of string character
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+LIBGZIPF_EXTERN \
+int libgzipf_member_get_utf8_comments(
+     libgzipf_member_t *member,
+     uint8_t *utf8_string,
+     size_t utf8_string_size,
+     libgzipf_error_t **error );
+
+/* Retrieves the size of the UTF-16 encoded comments
+ * The returned size includes the end of string character
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+LIBGZIPF_EXTERN \
+int libgzipf_member_get_utf16_comments_size(
+     libgzipf_member_t *member,
+     size_t *utf16_string_size,
+     libgzipf_error_t **error );
+
+/* Retrieves the UTF-16 encoded comments
+ * The size should include the end of string character
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+LIBGZIPF_EXTERN \
+int libgzipf_member_get_utf16_comments(
+     libgzipf_member_t *member,
+     uint16_t *utf16_string,
+     size_t utf16_string_size,
+     libgzipf_error_t **error );
+
 #if defined( __cplusplus )
 }
 #endif

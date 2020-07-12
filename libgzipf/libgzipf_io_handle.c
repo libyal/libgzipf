@@ -89,8 +89,6 @@ int libgzipf_io_handle_initialize(
 
 		goto on_error;
 	}
-	( *io_handle )->ascii_codepage = LIBGZIPF_CODEPAGE_WINDOWS_1252;
-
 	return( 1 );
 
 on_error:
@@ -168,8 +166,6 @@ int libgzipf_io_handle_clear(
 
 		return( -1 );
 	}
-	io_handle->ascii_codepage = LIBGZIPF_CODEPAGE_WINDOWS_1252;
-
 	return( 1 );
 }
 

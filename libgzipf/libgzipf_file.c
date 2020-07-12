@@ -1048,6 +1048,7 @@ int libgzipf_internal_file_open_read(
 	uint8_t is_last_block                           = 0;
 	int entry_index                                 = 0;
 	int member_descriptor_index                     = 0;
+	int result                                      = 0;
 
 	if( internal_file == NULL )
 	{
@@ -1108,19 +1109,6 @@ int libgzipf_internal_file_open_read(
 	}
 	while( (size64_t) file_offset < file_size )
 	{
-		if( libgzipf_member_descriptor_initialize(
-		     &member_descriptor,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create member descriptor.",
-			 function );
-
-			goto on_error;
-		}
 		if( libgzipf_member_header_initialize(
 		     &member_header,
 		     error ) != 1 )
@@ -1134,11 +1122,13 @@ int libgzipf_internal_file_open_read(
 
 			goto on_error;
 		}
-		if( libgzipf_member_header_read_file_io_handle(
-		     member_header,
-		     file_io_handle,
-		     file_offset,
-		     error ) != 1 )
+		result = libgzipf_member_header_read_file_io_handle(
+		          member_header,
+		          file_io_handle,
+		          file_offset,
+		          error );
+
+		if( result != 1 )
 		{
 			libcerror_error_set(
 			 error,
@@ -1149,7 +1139,24 @@ int libgzipf_internal_file_open_read(
 			 file_offset,
 			 file_offset );
 
-			goto on_error;
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( ( error != NULL )
+			 && ( *error != NULL ) )
+			{
+				libcnotify_print_error_backtrace(
+				 *error );
+			}
+#endif
+			libcerror_error_free(
+			 error );
+
+			libgzipf_member_header_free(
+			 &member_header,
+			 NULL );
+
+/* TODO flag file a corrupt */
+
+			break;
 		}
 		if( libbfio_handle_get_offset(
 		     file_io_handle,
@@ -1161,6 +1168,19 @@ int libgzipf_internal_file_open_read(
 			 LIBCERROR_ERROR_DOMAIN_IO,
 			 LIBCERROR_IO_ERROR_SEEK_FAILED,
 			 "%s: unable to determine offset.",
+			 function );
+
+			goto on_error;
+		}
+		if( libgzipf_member_descriptor_initialize(
+		     &member_descriptor,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create member descriptor.",
 			 function );
 
 			goto on_error;
@@ -1245,8 +1265,10 @@ int libgzipf_internal_file_open_read(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
 				 LIBCERROR_ENCRYPTION_ERROR_GENERIC,
-				 "%s: unable to decompress data.",
-				 function );
+				 "%s: unable to decompress data at offset: %" PRIi64 " (0x%08" PRIx64 ").",
+				 function,
+				 file_offset,
+				 file_offset );
 
 				goto on_error;
 			}
@@ -1497,9 +1519,10 @@ int libgzipf_file_get_member_by_index(
      libgzipf_member_t **member,
      libcerror_error_t **error )
 {
-	libgzipf_internal_file_t *internal_file = NULL;
-	static char *function                   = "libgzipf_file_get_member_by_index";
-	int result                              = 1;
+	libgzipf_internal_file_t *internal_file         = NULL;
+	libgzipf_member_descriptor_t *member_descriptor = NULL;
+	static char *function                           = "libgzipf_file_get_member_by_index";
+	int result                                      = 1;
 
 	if( file == NULL )
 	{
@@ -1551,21 +1574,17 @@ int libgzipf_file_get_member_by_index(
 		return( -1 );
 	}
 #endif
-/* TODO implement
-	if( libfdata_list_get_element_value_by_index(
-	     internal_file->members_list,
-	     (intptr_t *) internal_file->file_io_handle,
-	     (libfdata_cache_t *) internal_file->members_cache,
+	if( libcdata_array_get_entry_by_index(
+	     internal_file->member_descriptors_array,
 	     member_index,
-	     (intptr_t **) &member_values,
-	     0,
+	     (intptr_t **) &member_descriptor,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve member values: %d.",
+		 "%s: unable to retrieve member descriptor: %d.",
 		 function,
 		 member_index );
 
@@ -1575,7 +1594,7 @@ int libgzipf_file_get_member_by_index(
 	          member,
 	          internal_file->io_handle,
 	          internal_file->file_io_handle,
-	          member_values,
+	          member_descriptor,
 	          error ) != 1 )
 	{
 		libcerror_error_set(
@@ -1587,7 +1606,6 @@ int libgzipf_file_get_member_by_index(
 
 		result = -1;
 	}
-*/
 #if defined( HAVE_LIBGZIPF_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_file->read_write_lock,
