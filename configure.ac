@@ -2,7 +2,7 @@ AC_PREREQ( 2.59 )
 
 AC_INIT(
  [libgzipf],
- [20200712],
+ [20200713],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -44,6 +44,9 @@ AC_SYS_LARGEFILE
 
 dnl Check if shared library support should be disabled
 AX_COMMON_CHECK_DISABLE_SHARED_LIBS
+
+dnl Check if tools should be build as static executables
+AX_COMMON_CHECK_ENABLE_STATIC_EXECUTABLES
 
 dnl Check if WINAPI support should be enabled
 AX_COMMON_CHECK_ENABLE_WINAPI
@@ -108,7 +111,6 @@ AX_ZLIB_CHECK_INFLATE
 
 dnl Check if libgzipf required headers and functions are available
 AX_LIBGZIPF_CHECK_LOCAL
-AX_LIBGZIPF_CHECK_DLL_SUPPORT
 
 dnl Check if libgzipf Python bindings (pygzipf) required headers and functions are available
 AX_PYTHON_CHECK_ENABLE
@@ -128,6 +130,9 @@ AS_IF(
 
 dnl Check if gzipftools required headers and functions are available
 AX_GZIPFTOOLS_CHECK_LOCAL
+
+dnl Check if DLL support is needed
+AX_LIBGZIPF_CHECK_DLL_SUPPORT
 
 dnl Check if tests required headers and functions are available
 AX_TESTS_CHECK_LOCAL
