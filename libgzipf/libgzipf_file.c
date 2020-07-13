@@ -1412,6 +1412,7 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 	size64_t safe_compressed_stream_size = 0;
 	size64_t safe_uncompressed_data_size = 0;
 	size_t compressed_block_size         = 0;
+	size_t uncompressed_block_offset     = 0;
 	size_t uncompressed_block_size       = 0;
 	ssize_t read_count                   = 0;
 	off64_t compressed_block_offset      = 0;
@@ -1419,6 +1420,8 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 	uint8_t is_last_block                = 0;
 	int element_index                    = 0;
 	int result                           = 0;
+
+	#define LIBGZIPF_MAXIMUM_COMPRESSED_BLOCK_SIZE		64 * 1024
 
 	if( internal_file == NULL )
 	{
@@ -1465,7 +1468,7 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 		return( -1 );
 	}
 	compressed_data = (uint8_t *) memory_allocate(
-	                               sizeof( uint8_t ) * ( 128 * 1024 ) );
+	                               sizeof( uint8_t ) * LIBGZIPF_MAXIMUM_COMPRESSED_BLOCK_SIZE );
 
 	if( compressed_data == NULL )
 	{
@@ -1527,6 +1530,21 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 
 		goto on_error;
 	}
+#else
+	if( memory_set(
+	     &bit_stream,
+	     0,
+	     sizeof( libgzipf_deflate_bit_stream_t ) ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+		 "%s: unable to clear bit stream.",
+		 function );
+
+		goto on_error;
+	}
 #endif /* ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL ) */
 
 	compressed_block_offset = file_offset;
@@ -1553,7 +1571,7 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 		read_count = libbfio_handle_read_buffer(
 		              file_io_handle,
 		              compressed_data,
-		              128 * 1024,
+		              LIBGZIPF_MAXIMUM_COMPRESSED_BLOCK_SIZE,
 		              error );
 
 		if( read_count <= -1 )
@@ -1584,18 +1602,11 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 		zlib_stream.avail_in  = (uInt) read_count;
 		zlib_stream.next_out  = (Bytef *) uncompressed_data;
 		zlib_stream.avail_out = (uInt) 16 * 1024 * 1024;
-#else
-		bit_stream.byte_stream        = compressed_data;
-		bit_stream.byte_stream_size   = (size_t) read_count;
-		bit_stream.byte_stream_offset = 0;
-		bit_stream.bit_buffer         = 0;
-		bit_stream.bit_buffer_size    = 0;
-#endif
 
-#if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL )
-		compressed_block_size   = 0;
-		uncompressed_block_size = 0;
-		end_of_block            = 0;
+		compressed_block_size     = 0;
+		uncompressed_block_offset = 0;
+		uncompressed_block_size   = 0;
+		end_of_block              = 0;
 
 		while( ( end_of_block == 0 )
 		    && ( is_last_block == 0 ) )
@@ -1669,13 +1680,19 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 			break;
 		}
 #else
-		uncompressed_block_size = 0;
+		bit_stream.byte_stream        = compressed_data;
+		bit_stream.byte_stream_size   = (size_t) read_count;
+		bit_stream.byte_stream_offset = 0;
+
+		/* Do not flush the bit buffer */
+
+		uncompressed_block_size = uncompressed_block_offset;
 
 		result = libgzipf_deflate_read_block(
 		          &bit_stream,
 		          uncompressed_data,
 		          16 * 1024 * 1024,
-		          &uncompressed_block_size,
+		          &uncompressed_block_offset,
 		          &is_last_block,
 		          error );
 
@@ -1697,13 +1714,15 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 			bit_stream.byte_stream_offset -= 1;
 			bit_stream.bit_buffer_size    -= 8;
 		}
-		compressed_block_size = bit_stream.byte_stream_offset;
+		compressed_block_size      = bit_stream.byte_stream_offset;
+		uncompressed_block_size    = uncompressed_block_offset - uncompressed_block_size;
+		uncompressed_block_offset -= uncompressed_block_size;
 
 #endif /* ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL ) */
 
 		if( libgzipf_checksum_calculate_crc32(
 		     &safe_calculated_checksum,
-		     uncompressed_data,
+		     &( uncompressed_data[ uncompressed_block_offset ] ),
 		     uncompressed_block_size,
 		     safe_calculated_checksum,
 		     error ) != 1 )
@@ -1717,6 +1736,8 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 
 			goto on_error;
 		}
+		uncompressed_block_offset += uncompressed_block_size;
+
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
@@ -1734,6 +1755,8 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 			 "\n" );
 		}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
+/* TODO preserve bit buffer */
 
 		if( libfdata_list_append_element_with_mapped_size(
 		     internal_file->compressed_blocks_list,
@@ -1760,6 +1783,7 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 
 		file_offset = compressed_block_offset;
 	}
+#if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL )
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -1768,7 +1792,6 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 	}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
-#if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL )
 	if( inflateEnd(
 	     &zlib_stream ) != Z_OK )
 	{

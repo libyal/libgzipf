@@ -20,6 +20,7 @@
  */
 
 #include <common.h>
+#include <byte_stream.h>
 #include <file_stream.h>
 #include <types.h>
 
@@ -38,14 +39,6 @@
 
 uint8_t gzipf_test_member_header_data1[ 19 ] = {
 	0x1f, 0x8b, 0x08, 0x08, 0xd7, 0x16, 0x14, 0x50, 0x00, 0x03, 0x73, 0x79, 0x73, 0x6c, 0x6f, 0x67,
-	0x2e, 0x31, 0x00 };
-
-uint8_t gzipf_test_member_header_error_data1[ 19 ] = {
-	0xff, 0xff, 0x08, 0x08, 0xd7, 0x16, 0x14, 0x50, 0x00, 0x03, 0x73, 0x79, 0x73, 0x6c, 0x6f, 0x67,
-	0x2e, 0x31, 0x00 };
-
-uint8_t gzipf_test_member_header_error_data2[ 19 ] = {
-	0x1f, 0x8b, 0xff, 0x08, 0xd7, 0x16, 0x14, 0x50, 0x00, 0x03, 0x73, 0x79, 0x73, 0x6c, 0x6f, 0x67,
 	0x2e, 0x31, 0x00 };
 
 #if defined( __GNUC__ ) && !defined( LIBGZIPF_DLL_IMPORT )
@@ -410,11 +403,19 @@ int gzipf_test_member_header_read_data(
 
 	/* Test error case where signature is invalid
 	 */
+	byte_stream_copy_from_uint16_little_endian(
+	 gzipf_test_member_header_data1,
+	 0xffffUL );
+
 	result = libgzipf_member_header_read_data(
 	          member_header,
-	          gzipf_test_member_header_error_data1,
+	          gzipf_test_member_header_data1,
 	          19,
 	          &error );
+
+	byte_stream_copy_from_uint16_little_endian(
+	 gzipf_test_member_header_data1,
+	 0x8b1f );
 
 	GZIPF_TEST_ASSERT_EQUAL_INT(
 	 "result",
@@ -430,11 +431,15 @@ int gzipf_test_member_header_read_data(
 
 	/* Test error case where compression method is unsupported
 	 */
+	gzipf_test_member_header_data1[ 2 ] = 0xff;
+
 	result = libgzipf_member_header_read_data(
 	          member_header,
-	          gzipf_test_member_header_error_data2,
+	          gzipf_test_member_header_data1,
 	          19,
 	          &error );
+
+	gzipf_test_member_header_data1[ 2 ] = 0x08;
 
 	GZIPF_TEST_ASSERT_EQUAL_INT(
 	 "result",
@@ -661,7 +666,7 @@ int gzipf_test_member_header_read_file_io_handle(
 	 */
 	result = gzipf_test_open_file_io_handle(
 	          &file_io_handle,
-	          gzipf_test_member_header_error_data1,
+	          gzipf_test_member_header_data1,
 	          19,
 	          &error );
 
@@ -678,11 +683,19 @@ int gzipf_test_member_header_read_file_io_handle(
 	 "error",
 	 error );
 
+	byte_stream_copy_from_uint16_little_endian(
+	 gzipf_test_member_header_data1,
+	 0xffffUL );
+
 	result = libgzipf_member_header_read_file_io_handle(
 	          member_header,
 	          file_io_handle,
 	          0,
 	          &error );
+
+	byte_stream_copy_from_uint16_little_endian(
+	 gzipf_test_member_header_data1,
+	 0x8b1f );
 
 	GZIPF_TEST_ASSERT_EQUAL_INT(
 	 "result",
