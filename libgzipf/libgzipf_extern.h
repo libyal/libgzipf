@@ -30,7 +30,11 @@
 
 #include <libgzipf/extern.h>
 
+#if defined( __CYGWIN__ )
+#define LIBGZIPF_EXTERN_VARIABLE	extern
+#else
 #define LIBGZIPF_EXTERN_VARIABLE	LIBGZIPF_EXTERN
+#endif
 
 #else
 #define LIBGZIPF_EXTERN		/* extern */

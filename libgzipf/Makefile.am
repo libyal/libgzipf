@@ -26,7 +26,7 @@ libgzipf_la_SOURCES = \
 	libgzipf.c \
 	libgzipf_checksum.c libgzipf_checksum.h \
 	libgzipf_codepage.h \
-	libgzipf_compressed_block.c libgzipf_compressed_block.h \
+	libgzipf_compressed_segment.c libgzipf_compressed_segment.h \
 	libgzipf_compression.c libgzipf_compression.h \
 	libgzipf_debug.c libgzipf_debug.h \
 	libgzipf_definitions.h \
@@ -50,6 +50,7 @@ libgzipf_la_SOURCES = \
 	libgzipf_member_header.c libgzipf_member_header.h \
 	libgzipf_member_footer.c libgzipf_member_footer.h \
 	libgzipf_notify.c libgzipf_notify.h \
+	libgzipf_segment_descriptor.c libgzipf_segment_descriptor.h \
 	libgzipf_support.c libgzipf_support.h \
 	libgzipf_types.h \
 	libgzipf_unused.h

@@ -67,17 +67,21 @@ struct libgzipf_internal_file
 	 */
 	libcdata_array_t *member_descriptors_array;
 
-	/* The compressed blocks list
+	/* The segment descriptors array
 	 */
-	libfdata_list_t *compressed_blocks_list;
+	libcdata_array_t *segment_descriptors_array;
+
+	/* The compressed segments list
+	 */
+	libfdata_list_t *compressed_segments_list;
 
 	/* The uncompressed data size
 	 */
 	size64_t uncompressed_data_size;
 
-	/* The compressed blocks cache
+	/* The compressed segments cache
 	 */
-	libfcache_cache_t *compressed_blocks_cache;
+	libfcache_cache_t *compressed_segments_cache;
 
 #if defined( HAVE_LIBGZIPF_MULTI_THREAD_SUPPORT )
 	/* The read/write lock

@@ -1,5 +1,5 @@
 /*
- * Library compressed_block type test program
+ * Library compressed_segment type test program
  *
  * Copyright (C) 2019-2020, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -35,14 +35,14 @@
 #include "gzipf_test_memory.h"
 #include "gzipf_test_unused.h"
 
-#include "../libgzipf/libgzipf_compressed_block.h"
+#include "../libgzipf/libgzipf_compressed_segment.h"
 
 #if defined( __GNUC__ ) && !defined( LIBGZIPF_DLL_IMPORT )
 
-/* Tests the libgzipf_compressed_block_free function
+/* Tests the libgzipf_compressed_segment_free function
  * Returns 1 if successful or 0 if not
  */
-int gzipf_test_compressed_block_free(
+int gzipf_test_compressed_segment_free(
      void )
 {
 	libcerror_error_t *error = NULL;
@@ -50,7 +50,7 @@ int gzipf_test_compressed_block_free(
 
 	/* Test error cases
 	 */
-	result = libgzipf_compressed_block_free(
+	result = libgzipf_compressed_segment_free(
 	          NULL,
 	          &error );
 
@@ -96,15 +96,15 @@ int main(
 
 #if defined( __GNUC__ ) && !defined( LIBGZIPF_DLL_IMPORT )
 
-	/* TODO: add tests for libgzipf_compressed_block_initialize */
+	/* TODO: add tests for libgzipf_compressed_segment_initialize */
 
 	GZIPF_TEST_RUN(
-	 "libgzipf_compressed_block_free",
-	 gzipf_test_compressed_block_free );
+	 "libgzipf_compressed_segment_free",
+	 gzipf_test_compressed_segment_free );
 
-	/* TODO: add tests for libgzipf_compressed_block_read_file_io_handle */
+	/* TODO: add tests for libgzipf_compressed_segment_read_file_io_handle */
 
-	/* TODO: add tests for libgzipf_compressed_block_read_element_data */
+	/* TODO: add tests for libgzipf_compressed_segment_read_element_data */
 
 #endif /* defined( __GNUC__ ) && !defined( LIBGZIPF_DLL_IMPORT ) */
 

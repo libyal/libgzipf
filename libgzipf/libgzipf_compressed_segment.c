@@ -1,5 +1,5 @@
 /*
- * Compressed block functions
+ * Compressed segment functions
  *
  * Copyright (C) 2019-2020, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -23,7 +23,7 @@
 #include <memory.h>
 #include <types.h>
 
-#include "libgzipf_compressed_block.h"
+#include "libgzipf_compressed_segment.h"
 #include "libgzipf_compression.h"
 #include "libgzipf_definitions.h"
 #include "libgzipf_libbfio.h"
@@ -32,36 +32,36 @@
 #include "libgzipf_libfdata.h"
 #include "libgzipf_unused.h"
 
-/* Creates compressed block
- * Make sure the value compressed_block is referencing, is set to NULL
+/* Creates compressed segment
+ * Make sure the value compressed_segment is referencing, is set to NULL
  * Returns 1 if successful or -1 on error
  */
-int libgzipf_compressed_block_initialize(
-     libgzipf_compressed_block_t **compressed_block,
+int libgzipf_compressed_segment_initialize(
+     libgzipf_compressed_segment_t **compressed_segment,
      size64_t compressed_data_size,
      size64_t uncompressed_data_size,
      libcerror_error_t **error )
 {
-	static char *function = "libgzipf_compressed_block_initialize";
+	static char *function = "libgzipf_compressed_segment_initialize";
 
-	if( compressed_block == NULL )
+	if( compressed_segment == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid compressed block.",
+		 "%s: invalid compressed segment.",
 		 function );
 
 		return( -1 );
 	}
-	if( *compressed_block != NULL )
+	if( *compressed_segment != NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid compressed block value already set.",
+		 "%s: invalid compressed segment value already set.",
 		 function );
 
 		return( -1 );
@@ -90,43 +90,43 @@ int libgzipf_compressed_block_initialize(
 
 		return( -1 );
 	}
-	*compressed_block = memory_allocate_structure(
-	                     libgzipf_compressed_block_t );
+	*compressed_segment = memory_allocate_structure(
+	                       libgzipf_compressed_segment_t );
 
-	if( *compressed_block == NULL )
+	if( *compressed_segment == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_MEMORY,
 		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-		 "%s: unable to create compressed block.",
+		 "%s: unable to create compressed segment.",
 		 function );
 
 		goto on_error;
 	}
 	if( memory_set(
-	     *compressed_block,
+	     *compressed_segment,
 	     0,
-	     sizeof( libgzipf_compressed_block_t ) ) == NULL )
+	     sizeof( libgzipf_compressed_segment_t ) ) == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_MEMORY,
 		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-		 "%s: unable to clear compressed block.",
+		 "%s: unable to clear compressed segment.",
 		 function );
 
 		memory_free(
-		 *compressed_block );
+		 *compressed_segment );
 
-		*compressed_block = NULL;
+		*compressed_segment = NULL;
 
 		return( -1 );
 	}
-	( *compressed_block )->compressed_data = (uint8_t *) memory_allocate(
-	                                                      sizeof( uint8_t ) * (size_t) compressed_data_size );
+	( *compressed_segment )->compressed_data = (uint8_t *) memory_allocate(
+	                                                        sizeof( uint8_t ) * (size_t) compressed_data_size );
 
-	if( ( *compressed_block )->compressed_data == NULL )
+	if( ( *compressed_segment )->compressed_data == NULL )
 	{
 		libcerror_error_set(
 		 error,
@@ -137,12 +137,12 @@ int libgzipf_compressed_block_initialize(
 
 		goto on_error;
 	}
-	( *compressed_block )->compressed_data_size = compressed_data_size;
+	( *compressed_segment )->compressed_data_size = compressed_data_size;
 
-	( *compressed_block )->uncompressed_data = (uint8_t *) memory_allocate(
-	                                                        sizeof( uint8_t ) * (size_t) uncompressed_data_size );
+	( *compressed_segment )->uncompressed_data = (uint8_t *) memory_allocate(
+	                                                          sizeof( uint8_t ) * (size_t) uncompressed_data_size );
 
-	if( ( *compressed_block )->uncompressed_data == NULL )
+	if( ( *compressed_segment )->uncompressed_data == NULL )
 	{
 		libcerror_error_set(
 		 error,
@@ -153,55 +153,55 @@ int libgzipf_compressed_block_initialize(
 
 		goto on_error;
 	}
-	( *compressed_block )->uncompressed_data_size = uncompressed_data_size;
+	( *compressed_segment )->uncompressed_data_size = uncompressed_data_size;
 
 	return( 1 );
 
 on_error:
-	if( *compressed_block != NULL )
+	if( *compressed_segment != NULL )
 	{
-		if( ( *compressed_block )->compressed_data != NULL )
+		if( ( *compressed_segment )->compressed_data != NULL )
 		{
 			memory_free(
-			 ( *compressed_block )->compressed_data );
+			 ( *compressed_segment )->compressed_data );
 		}
 		memory_free(
-		 *compressed_block );
+		 *compressed_segment );
 
-		*compressed_block = NULL;
+		*compressed_segment = NULL;
 	}
 	return( -1 );
 }
 
-/* Frees compressed block
+/* Frees compressed segment
  * Returns 1 if successful or -1 on error
  */
-int libgzipf_compressed_block_free(
-     libgzipf_compressed_block_t **compressed_block,
+int libgzipf_compressed_segment_free(
+     libgzipf_compressed_segment_t **compressed_segment,
      libcerror_error_t **error )
 {
-	static char *function = "libgzipf_compressed_block_free";
+	static char *function = "libgzipf_compressed_segment_free";
 	int result            = 1;
 
-	if( compressed_block == NULL )
+	if( compressed_segment == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid compressed block.",
+		 "%s: invalid compressed segment.",
 		 function );
 
 		return( -1 );
 	}
-	if( *compressed_block != NULL )
+	if( *compressed_segment != NULL )
 	{
-		if( ( *compressed_block )->uncompressed_data != NULL )
+		if( ( *compressed_segment )->uncompressed_data != NULL )
 		{
 			if( memory_set(
-			     ( *compressed_block )->uncompressed_data,
+			     ( *compressed_segment )->uncompressed_data,
 			     0,
-			     ( *compressed_block )->uncompressed_data_size ) == NULL )
+			     ( *compressed_segment )->uncompressed_data_size ) == NULL )
 			{
 				libcerror_error_set(
 				 error,
@@ -213,14 +213,14 @@ int libgzipf_compressed_block_free(
 				result = -1;
 			}
 			memory_free(
-			 ( *compressed_block )->uncompressed_data );
+			 ( *compressed_segment )->uncompressed_data );
 		}
-		if( ( *compressed_block )->compressed_data != NULL )
+		if( ( *compressed_segment )->compressed_data != NULL )
 		{
 			if( memory_set(
-			     ( *compressed_block )->compressed_data,
+			     ( *compressed_segment )->compressed_data,
 			     0,
-			     ( *compressed_block )->compressed_data_size ) == NULL )
+			     ( *compressed_segment )->compressed_data_size ) == NULL )
 			{
 				libcerror_error_set(
 				 error,
@@ -232,59 +232,59 @@ int libgzipf_compressed_block_free(
 				result = -1;
 			}
 			memory_free(
-			 ( *compressed_block )->compressed_data );
+			 ( *compressed_segment )->compressed_data );
 		}
 		memory_free(
-		 *compressed_block );
+		 *compressed_segment );
 
-		*compressed_block = NULL;
+		*compressed_segment = NULL;
 	}
 	return( result );
 }
 
-/* Reads the compressed block
+/* Reads the compressed segment
  * Returns 1 if successful or -1 on error
  */
-int libgzipf_compressed_block_read_file_io_handle(
-     libgzipf_compressed_block_t *compressed_block,
+int libgzipf_compressed_segment_read_file_io_handle(
+     libgzipf_compressed_segment_t *compressed_segment,
      libbfio_handle_t *file_io_handle,
      off64_t file_offset,
      libcerror_error_t **error )
 {
-	static char *function         = "libgzipf_compressed_block_read_file_io_handle";
+	static char *function         = "libgzipf_compressed_segment_read_file_io_handle";
 	size_t uncompressed_data_size = 0;
 	ssize_t read_count            = 0;
-	uint8_t is_last_block         = 0;
+	uint8_t is_last_segment       = 0;
 
-	if( compressed_block == NULL )
+	if( compressed_segment == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid compressed block.",
+		 "%s: invalid compressed segment.",
 		 function );
 
 		return( -1 );
 	}
-	if( compressed_block->compressed_data == NULL )
+	if( compressed_segment->compressed_data == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid compressed block - missing compressed data value.",
+		 "%s: invalid compressed segment - missing compressed data value.",
 		 function );
 
 		return( -1 );
 	}
-	if( compressed_block->uncompressed_data == NULL )
+	if( compressed_segment->uncompressed_data == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid compressed block - missing uncompressed data value.",
+		 "%s: invalid compressed segment - missing uncompressed data value.",
 		 function );
 
 		return( -1 );
@@ -293,7 +293,7 @@ int libgzipf_compressed_block_read_file_io_handle(
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: reading compressed block at offset: %" PRIi64 " (0x%08" PRIx64 ").\n",
+		 "%s: reading compressed segment at offset: %" PRIi64 " (0x%08" PRIx64 ").\n",
 		 function,
 		 file_offset,
 		 file_offset );
@@ -309,7 +309,7 @@ int libgzipf_compressed_block_read_file_io_handle(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek compressed block offset: %" PRIi64 " (0x%08" PRIx64 ").",
+		 "%s: unable to seek compressed segment offset: %" PRIi64 " (0x%08" PRIx64 ").",
 		 function,
 		 file_offset,
 		 file_offset );
@@ -318,11 +318,11 @@ int libgzipf_compressed_block_read_file_io_handle(
 	}
 	read_count = libbfio_handle_read_buffer(
 	              file_io_handle,
-	              compressed_block->compressed_data,
-	              compressed_block->compressed_data_size,
+	              compressed_segment->compressed_data,
+	              compressed_segment->compressed_data_size,
 	              error );
 
-	if( read_count != (ssize_t) compressed_block->compressed_data_size )
+	if( read_count != (ssize_t) compressed_segment->compressed_data_size )
 	{
 		libcerror_error_set(
 		 error,
@@ -333,15 +333,16 @@ int libgzipf_compressed_block_read_file_io_handle(
 
 		return( -1 );
 	}
-	uncompressed_data_size = compressed_block->uncompressed_data_size;
+	uncompressed_data_size = compressed_segment->uncompressed_data_size;
 
+/* TODO decompress more than 1 block */
 	if( libgzipf_decompress_data(
-	     compressed_block->compressed_data,
+	     compressed_segment->compressed_data,
 	     (size_t *) &read_count,
 	     LIBGZIPF_COMPRESSION_METHOD_DEFLATE,
-	     compressed_block->uncompressed_data,
+	     compressed_segment->uncompressed_data,
 	     &uncompressed_data_size,
-	     &is_last_block,
+	     &is_last_segment,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -355,15 +356,15 @@ int libgzipf_compressed_block_read_file_io_handle(
 
 		return( -1 );
 	}
-/* TODO compare uncompressed_data_size  and compressed_block->uncompressed_data_size */
+/* TODO compare uncompressed_data_size  and compressed_segment->uncompressed_data_size */
 
 	return( 1 );
 }
 
-/* Reads a compressed block
+/* Reads a compressed segment
  * Returns 1 if successful or -1 on error
  */
-int libgzipf_compressed_block_read_element_data(
+int libgzipf_compressed_segment_read_element_data(
      intptr_t *data_handle LIBGZIPF_ATTRIBUTE_UNUSED,
      libbfio_handle_t *file_io_handle,
      libfdata_list_element_t *element,
@@ -375,9 +376,9 @@ int libgzipf_compressed_block_read_element_data(
      uint8_t read_flags LIBGZIPF_ATTRIBUTE_UNUSED,
      libcerror_error_t **error )
 {
-	libgzipf_compressed_block_t *compressed_block = NULL;
-	static char *function                         = "libgzipf_compressed_block_read_element_data";
-	size64_t mapped_size                          = 0;
+	libgzipf_compressed_segment_t *compressed_segment = NULL;
+	static char *function                             = "libgzipf_compressed_segment_read_element_data";
+	size64_t mapped_size                              = 0;
 
 	LIBGZIPF_UNREFERENCED_PARAMETER( data_handle )
 	LIBGZIPF_UNREFERENCED_PARAMETER( data_range_file_index )
@@ -398,8 +399,8 @@ int libgzipf_compressed_block_read_element_data(
 
 		goto on_error;
 	}
-	if( libgzipf_compressed_block_initialize(
-	     &compressed_block,
+	if( libgzipf_compressed_segment_initialize(
+	     &compressed_segment,
 	     data_range_size,
 	     mapped_size,
 	     error ) != 1 )
@@ -408,13 +409,13 @@ int libgzipf_compressed_block_read_element_data(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create compressed block.",
+		 "%s: unable to create compressed segment.",
 		 function );
 
 		goto on_error;
 	}
-	if( libgzipf_compressed_block_read_file_io_handle(
-	     compressed_block,
+	if( libgzipf_compressed_segment_read_file_io_handle(
+	     compressed_segment,
 	     file_io_handle,
 	     data_range_offset,
 	     error ) != 1 )
@@ -423,7 +424,7 @@ int libgzipf_compressed_block_read_element_data(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read compressed block at offset: %" PRIi64 " (0x%08" PRIx64 ").",
+		 "%s: unable to read compressed segment at offset: %" PRIi64 " (0x%08" PRIx64 ").",
 		 function,
 		 data_range_offset,
 		 data_range_offset );
@@ -434,8 +435,8 @@ int libgzipf_compressed_block_read_element_data(
 	     element,
 	     (intptr_t *) file_io_handle,
 	     cache,
-	     (intptr_t *) compressed_block,
-	     (int (*)(intptr_t **, libcerror_error_t **)) &libgzipf_compressed_block_free,
+	     (intptr_t *) compressed_segment,
+	     (int (*)(intptr_t **, libcerror_error_t **)) &libgzipf_compressed_segment_free,
 	     LIBFDATA_LIST_ELEMENT_VALUE_FLAG_MANAGED,
 	     error ) != 1 )
 	{
@@ -443,7 +444,7 @@ int libgzipf_compressed_block_read_element_data(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set compressed block as element value.",
+		 "%s: unable to set compressed segment as element value.",
 		 function );
 
 		goto on_error;
@@ -451,10 +452,10 @@ int libgzipf_compressed_block_read_element_data(
 	return( 1 );
 
 on_error:
-	if( compressed_block != NULL )
+	if( compressed_segment != NULL )
 	{
-		libgzipf_compressed_block_free(
-		 &compressed_block,
+		libgzipf_compressed_segment_free(
+		 &compressed_segment,
 		 NULL );
 	}
 	return( -1 );

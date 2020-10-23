@@ -272,7 +272,7 @@ PyTypeObject pygzipf_file_type_object = {
 	0
 };
 
-/* Intializes a file object
+/* Initializes a file object
  * Returns 0 if successful or -1 on error
  */
 int pygzipf_file_init(

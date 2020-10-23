@@ -30,7 +30,7 @@
 #endif
 
 #include "libgzipf_checksum.h"
-#include "libgzipf_compressed_block.h"
+#include "libgzipf_compressed_segment.h"
 #include "libgzipf_compression.h"
 #include "libgzipf_debug.h"
 #include "libgzipf_definitions.h"
@@ -48,6 +48,7 @@
 #include "libgzipf_member_descriptor.h"
 #include "libgzipf_member_footer.h"
 #include "libgzipf_member_header.h"
+#include "libgzipf_segment_descriptor.h"
 #include "libgzipf_types.h"
 
 /* Creates a file
@@ -138,6 +139,20 @@ int libgzipf_file_initialize(
 
 		goto on_error;
 	}
+	if( libcdata_array_initialize(
+	     &( internal_file->segment_descriptors_array ),
+	     0,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create segment descriptors array.",
+		 function );
+
+		goto on_error;
+	}
 #if defined( HAVE_LIBGZIPF_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_initialize(
 	     &( internal_file->read_write_lock ),
@@ -160,6 +175,13 @@ int libgzipf_file_initialize(
 on_error:
 	if( internal_file != NULL )
 	{
+		if( internal_file->member_descriptors_array != NULL )
+		{
+			libcdata_array_free(
+			 &( internal_file->member_descriptors_array ),
+			 NULL,
+			 NULL );
+		}
 		memory_free(
 		 internal_file );
 	}
@@ -226,8 +248,22 @@ int libgzipf_file_free(
 		}
 #endif
 		if( libcdata_array_free(
+		     &( internal_file->segment_descriptors_array ),
+		     (int (*)(intptr_t **, libcerror_error_t **)) &libgzipf_segment_descriptor_free,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free the segment descriptors array.",
+			 function );
+
+			result = -1;
+		}
+		if( libcdata_array_free(
 		     &( internal_file->member_descriptors_array ),
-		     (int (*)(intptr_t **, libcerror_error_t **)) &libgzipf_member_descriptor_free,
+		     (int (*)(intptr_t **, libcerror_error_t **)) &libgzipf_segment_descriptor_free,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -949,33 +985,47 @@ int libgzipf_file_close(
 
 		result = -1;
 	}
-	if( internal_file->compressed_blocks_list != NULL )
+	if( libcdata_array_empty(
+	     internal_file->segment_descriptors_array,
+	     (int (*)(intptr_t **, libcerror_error_t **)) &libgzipf_segment_descriptor_free,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to empty the segment descriptors array.",
+		 function );
+
+		result = -1;
+	}
+	if( internal_file->compressed_segments_list != NULL )
 	{
 		if( libfdata_list_free(
-		     &( internal_file->compressed_blocks_list ),
+		     &( internal_file->compressed_segments_list ),
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free compressed blocks list.",
+			 "%s: unable to free compressed segments list.",
 			 function );
 
 			result = -1;
 		}
 	}
-	if( internal_file->compressed_blocks_cache != NULL )
+	if( internal_file->compressed_segments_cache != NULL )
 	{
 		if( libfcache_cache_free(
-		     &( internal_file->compressed_blocks_cache ),
+		     &( internal_file->compressed_segments_cache ),
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free compressed blocks cache.",
+			 "%s: unable to free compressed segments cache.",
 			 function );
 
 			result = -1;
@@ -1041,24 +1091,24 @@ int libgzipf_internal_file_open_read(
 
 		return( -1 );
 	}
-	if( internal_file->compressed_blocks_list != NULL )
+	if( internal_file->compressed_segments_list != NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid file - compressed blocks list value already set.",
+		 "%s: invalid file - compressed segments list value already set.",
 		 function );
 
 		return( -1 );
 	}
-	if( internal_file->compressed_blocks_cache != NULL )
+	if( internal_file->compressed_segments_cache != NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid file - compressed blocks cache value already set.",
+		 "%s: invalid file - compressed segments cache value already set.",
 		 function );
 
 		return( -1 );
@@ -1078,11 +1128,11 @@ int libgzipf_internal_file_open_read(
 		goto on_error;
 	}
 	if( libfdata_list_initialize(
-	     &( internal_file->compressed_blocks_list ),
-	     (intptr_t *) internal_file->io_handle,
+	     &( internal_file->compressed_segments_list ),
+	     (intptr_t *) internal_file->segment_descriptors_array,
 	     NULL,
 	     NULL,
-	     (int (*)(intptr_t *, intptr_t *, libfdata_list_element_t *, libfdata_cache_t *, int, off64_t, size64_t, uint32_t, uint8_t, libcerror_error_t **)) &libgzipf_compressed_block_read_element_data,
+	     (int (*)(intptr_t *, intptr_t *, libfdata_list_element_t *, libfdata_cache_t *, int, off64_t, size64_t, uint32_t, uint8_t, libcerror_error_t **)) &libgzipf_compressed_segment_read_element_data,
 	     NULL,
 	     LIBFDATA_DATA_HANDLE_FLAG_NON_MANAGED,
 	     error ) != 1 )
@@ -1091,7 +1141,7 @@ int libgzipf_internal_file_open_read(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create compressed blocks list.",
+		 "%s: unable to create compressed segments list.",
 		 function );
 
 		goto on_error;
@@ -1324,7 +1374,7 @@ int libgzipf_internal_file_open_read(
 		member_descriptor_index++;
 	}
 	if( libfdata_list_get_size(
-	     internal_file->compressed_blocks_list,
+	     internal_file->compressed_segments_list,
 	     &( internal_file->uncompressed_data_size ),
 	     error ) != 1 )
 	{
@@ -1332,13 +1382,13 @@ int libgzipf_internal_file_open_read(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve size of compressed blocks list.",
+		 "%s: unable to retrieve size of compressed segments list.",
 		 function );
 
 		goto on_error;
 	}
 	if( libfcache_cache_initialize(
-	     &( internal_file->compressed_blocks_cache ),
+	     &( internal_file->compressed_segments_cache ),
 	     LIBGZIPF_MAXIMUM_CACHE_ENTRIES_COMPRESSED_BLOCKS,
 	     error ) != 1 )
 	{
@@ -1346,7 +1396,7 @@ int libgzipf_internal_file_open_read(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create compressed blocks cache.",
+		 "%s: unable to create compressed segments cache.",
 		 function );
 
 		goto on_error;
@@ -1372,12 +1422,17 @@ on_error:
 		 &member_descriptor,
 		 NULL );
 	}
-	if( internal_file->compressed_blocks_list != NULL )
+	if( internal_file->compressed_segments_list != NULL )
 	{
 		libfdata_list_free(
-		 &( internal_file->compressed_blocks_list ),
+		 &( internal_file->compressed_segments_list ),
 		 NULL );
 	}
+	libcdata_array_free(
+	 &( internal_file->segment_descriptors_array ),
+	 (int (*)(intptr_t **, libcerror_error_t **)) &libgzipf_segment_descriptor_free,
+	 NULL );
+
 	libcdata_array_free(
 	 &( internal_file->member_descriptors_array ),
 	 (int (*)(intptr_t **, libcerror_error_t **)) &libgzipf_member_descriptor_free,
@@ -1401,27 +1456,29 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 #if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL )
 	z_stream zlib_stream;
 
-	uint8_t end_of_block                 = 0;
+	uint8_t end_of_block                              = 0;
 #else
 	libgzipf_deflate_bit_stream_t bit_stream;
 #endif
 
-	uint8_t *compressed_data             = NULL;
-	uint8_t *uncompressed_data           = NULL;
-	static char *function                = "libgzipf_internal_file_read_deflate_compressed_stream";
-	size64_t safe_compressed_stream_size = 0;
-	size64_t safe_uncompressed_data_size = 0;
-	size_t compressed_block_size         = 0;
-	size_t uncompressed_block_offset     = 0;
-	size_t uncompressed_block_size       = 0;
-	ssize_t read_count                   = 0;
-	off64_t compressed_block_offset      = 0;
-	uint32_t safe_calculated_checksum    = 0;
-	uint8_t is_last_block                = 0;
-	int element_index                    = 0;
-	int result                           = 0;
-
-	#define LIBGZIPF_MAXIMUM_COMPRESSED_BLOCK_SIZE		64 * 1024
+	libgzipf_segment_descriptor_t *segment_descriptor = NULL;
+	uint8_t *compressed_data                          = NULL;
+	uint8_t *uncompressed_data                        = NULL;
+	static char *function                             = "libgzipf_internal_file_read_deflate_compressed_stream";
+	size64_t safe_compressed_stream_size              = 0;
+	size64_t safe_uncompressed_data_size              = 0;
+	size_t compressed_block_size                      = 0;
+	size_t copy_size                                  = 0;
+	size_t uncompressed_block_offset                  = 0;
+	size_t uncompressed_block_size                    = 0;
+	ssize_t read_count                                = 0;
+	off64_t compressed_block_offset                   = 0;
+	uint32_t safe_calculated_checksum                 = 0;
+	uint8_t bit_buffer                                = 0;
+	uint8_t is_last_block                             = 0;
+	int element_index                                 = 0;
+	int entry_index                                   = 0;
+	int result                                        = 0;
 
 	if( internal_file == NULL )
 	{
@@ -1468,7 +1525,7 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 		return( -1 );
 	}
 	compressed_data = (uint8_t *) memory_allocate(
-	                               sizeof( uint8_t ) * LIBGZIPF_MAXIMUM_COMPRESSED_BLOCK_SIZE );
+	                               sizeof( uint8_t ) * LIBGZIPF_MAXIMUM_DEFLATE_BLOCK_SIZE );
 
 	if( compressed_data == NULL )
 	{
@@ -1571,7 +1628,7 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 		read_count = libbfio_handle_read_buffer(
 		              file_io_handle,
 		              compressed_data,
-		              LIBGZIPF_MAXIMUM_COMPRESSED_BLOCK_SIZE,
+		              LIBGZIPF_MAXIMUM_DEFLATE_BLOCK_SIZE,
 		              error );
 
 		if( read_count <= -1 )
@@ -1597,6 +1654,50 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 		}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
+		if( segment_descriptor == NULL )
+		{
+			if( libgzipf_segment_descriptor_initialize(
+			     &segment_descriptor,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+				 "%s: unable to create segment descriptor.",
+				 function );
+
+				goto on_error;
+			}
+			segment_descriptor->compressed_data_offset = compressed_block_offset;
+			segment_descriptor->bit_buffer             = bit_buffer;
+
+			if( uncompressed_block_size > 0 )
+			{
+				copy_size = LIBGZIPF_MAXIMUM_DEFLATE_DISTANCE;
+
+				if( copy_size > uncompressed_block_size )
+				{
+					copy_size = uncompressed_block_size;
+				}
+				uncompressed_block_offset = uncompressed_block_size - copy_size;
+
+				if( memory_copy(
+				     segment_descriptor->distance_data,
+				     &( uncompressed_data[ uncompressed_block_offset ] ),
+				     copy_size ) == NULL )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_MEMORY,
+					 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+					 "%s: unable to copy uncompressed data to distance data.",
+					 function );
+
+					return( -1 );
+				}
+			}
+		}
 #if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL )
 		zlib_stream.next_in   = (Bytef *) compressed_data;
 		zlib_stream.avail_in  = (uInt) read_count;
@@ -1624,6 +1725,7 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 			if( ( result == Z_OK )
 			 || ( result == Z_STREAM_END ) )
 			{
+				bit_buffer    = (uint8_t) ( zlib_stream.data_type & 0x07 );
 				end_of_block  = ( ( zlib_stream.data_type & 0x80 ) != 0 );
 				is_last_block = ( result == Z_STREAM_END );
 			}
@@ -1680,6 +1782,34 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 			break;
 		}
 #else
+		if( uncompressed_block_size > 0 )
+		{
+			copy_size = LIBGZIPF_MAXIMUM_DEFLATE_DISTANCE;
+
+			if( copy_size > uncompressed_block_size )
+			{
+				copy_size = uncompressed_block_size;
+			}
+			uncompressed_block_offset = uncompressed_block_size - copy_size;
+
+			if( memory_copy(
+			     uncompressed_data,
+			     &( uncompressed_data[ uncompressed_block_offset ] ),
+			     LIBGZIPF_MAXIMUM_DEFLATE_DISTANCE ) == NULL )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_MEMORY,
+				 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+				 "%s: unable to copy uncompressed data to beginning of buffer.",
+				 function );
+
+				return( -1 );
+			}
+			uncompressed_block_offset = copy_size;
+		}
+		bit_buffer = (uint8_t) bit_stream.bit_buffer;
+
 		bit_stream.byte_stream        = compressed_data;
 		bit_stream.byte_stream_size   = (size_t) read_count;
 		bit_stream.byte_stream_offset = 0;
@@ -1756,32 +1886,53 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 		}
 #endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
-/* TODO preserve bit buffer */
-
-		if( libfdata_list_append_element_with_mapped_size(
-		     internal_file->compressed_blocks_list,
-		     &element_index,
-		     0,
-		     compressed_block_offset,
-		     compressed_block_size,
-		     0,
-		     uncompressed_block_size,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-			 "%s: unable to append element to compressed blocks list.",
-			 function );
-
-			goto on_error;
-		}
 		compressed_block_offset     += compressed_block_size;
 		safe_compressed_stream_size += compressed_block_size;
 		safe_uncompressed_data_size += uncompressed_block_size;
 
+		segment_descriptor->compressed_data_size   += compressed_block_size;
+		segment_descriptor->uncompressed_data_size += uncompressed_block_size;
+
 		file_offset = compressed_block_offset;
+
+		if( segment_descriptor->compressed_data_size >= LIBGZIPF_COMPRESSED_SEGMENT_SIZE )
+		{
+			if( libfdata_list_append_element_with_mapped_size(
+			     internal_file->compressed_segments_list,
+			     &element_index,
+			     0,
+			     segment_descriptor->compressed_data_offset,
+			     segment_descriptor->compressed_data_size,
+			     0,
+			     segment_descriptor->uncompressed_data_size,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+				 "%s: unable to append element to compressed segments list.",
+				 function );
+
+				goto on_error;
+			}
+			if( libcdata_array_append_entry(
+			     internal_file->segment_descriptors_array,
+			     &entry_index,
+			     (intptr_t *) segment_descriptor,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+				 "%s: unable to append segment descriptor.",
+				 function );
+
+				goto on_error;
+			}
+			segment_descriptor = NULL;
+		}
 	}
 #if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL )
 #if defined( HAVE_DEBUG_OUTPUT )
@@ -1815,6 +1966,44 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 
 	compressed_data = NULL;
 
+	if( segment_descriptor != NULL )
+	{
+		if( libfdata_list_append_element_with_mapped_size(
+		     internal_file->compressed_segments_list,
+		     &element_index,
+		     0,
+		     segment_descriptor->compressed_data_offset,
+		     segment_descriptor->compressed_data_size,
+		     0,
+		     segment_descriptor->uncompressed_data_size,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+			 "%s: unable to append element to compressed segments list.",
+			 function );
+
+			goto on_error;
+		}
+		if( libcdata_array_append_entry(
+		     internal_file->segment_descriptors_array,
+		     &entry_index,
+		     (intptr_t *) segment_descriptor,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+			 "%s: unable to append segment descriptor.",
+			 function );
+
+			goto on_error;
+		}
+		segment_descriptor = NULL;
+	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -1845,11 +2034,16 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 	return( 1 );
 
 on_error:
+	if( segment_descriptor != NULL )
+	{
+		libgzipf_segment_descriptor_free(
+		 &segment_descriptor,
+		 NULL );
+	}
 #if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL )
 	inflateEnd(
 	 &zlib_stream );
 #endif
-
 	if( uncompressed_data != NULL )
 	{
 		memory_free(
@@ -1874,12 +2068,12 @@ ssize_t libgzipf_internal_file_read_buffer_from_file_io_handle(
          size_t buffer_size,
          libcerror_error_t **error )
 {
-	libgzipf_compressed_block_t *compressed_block = NULL;
-	static char *function                         = "libgzipf_internal_file_read_buffer_from_file_io_handle";
-	size_t buffer_offset                          = 0;
-	size_t read_size                              = 0;
-	off64_t element_data_offset                   = 0;
-	int element_index                             = 0;
+	libgzipf_compressed_segment_t *compressed_segment = NULL;
+	static char *function                             = "libgzipf_internal_file_read_buffer_from_file_io_handle";
+	size_t buffer_offset                              = 0;
+	size_t read_size                                  = 0;
+	off64_t element_data_offset                       = 0;
+	int element_index                                 = 0;
 
 	if( internal_file == NULL )
 	{
@@ -1941,13 +2135,13 @@ ssize_t libgzipf_internal_file_read_buffer_from_file_io_handle(
 		}
 #endif
 		if( libfdata_list_get_element_value_at_offset(
-		     internal_file->compressed_blocks_list,
+		     internal_file->compressed_segments_list,
 		     (intptr_t *) file_io_handle,
-		     (libfdata_cache_t *) internal_file->compressed_blocks_cache,
+		     (libfdata_cache_t *) internal_file->compressed_segments_cache,
 		     internal_file->current_offset,
 		     &element_index,
 		     &element_data_offset,
-		     (intptr_t **) &compressed_block,
+		     (intptr_t **) &compressed_segment,
 		     0,
 		     error ) != 1 )
 		{
@@ -1955,25 +2149,25 @@ ssize_t libgzipf_internal_file_read_buffer_from_file_io_handle(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve compressed block for offset: %" PRIi64 " (0x%08" PRIx64 ").",
+			 "%s: unable to retrieve compressed segment for offset: %" PRIi64 " (0x%08" PRIx64 ").",
 			 function,
 			 internal_file->current_offset,
 			 internal_file->current_offset );
 
 			return( -1 );
 		}
-		if( compressed_block == NULL )
+		if( compressed_segment == NULL )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing compressed block.",
+			 "%s: missing compressed segment.",
 			 function );
 
 			return( -1 );
 		}
-		if( (size64_t) element_data_offset > compressed_block->uncompressed_data_size )
+		if( (size64_t) element_data_offset > compressed_segment->uncompressed_data_size )
 		{
 			libcerror_error_set(
 			 error,
@@ -1984,7 +2178,7 @@ ssize_t libgzipf_internal_file_read_buffer_from_file_io_handle(
 
 			return( -1 );
 		}
-		read_size = compressed_block->uncompressed_data_size - element_data_offset;
+		read_size = compressed_segment->uncompressed_data_size - element_data_offset;
 
 		if( read_size > ( buffer_size - buffer_offset ) )
 		{
@@ -1992,14 +2186,14 @@ ssize_t libgzipf_internal_file_read_buffer_from_file_io_handle(
 		}
 		if( memory_copy(
 		     &( ( (uint8_t *) buffer )[ buffer_offset ] ),
-		     &( compressed_block->uncompressed_data[ element_data_offset ] ),
+		     &( compressed_segment->uncompressed_data[ element_data_offset ] ),
 		     read_size ) == NULL )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_MEMORY,
 			 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-			 "%s: unable to copy compressed block data to buffer.",
+			 "%s: unable to copy compressed segment data to buffer.",
 			 function );
 
 			return( -1 );

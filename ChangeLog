@@ -1,4 +1,9 @@
 To do:
+* compressed segment support
+** add support for compressed segment descriptor
+** use compressed segment descriptor to read compressed segment
+** if file size < compressed segment size, read file entirely into memory?
+
 * fix deflate fallback for more complex gzip files
 * member
 ** tracked uncompressed data offset

@@ -178,7 +178,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\libgzipf\libgzipf_compressed_block.c"
+				RelativePath="..\..\libgzipf\libgzipf_compressed_segment.c"
 				>
 			</File>
 			<File
@@ -226,6 +226,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libgzipf\libgzipf_segment_descriptor.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libgzipf\libgzipf_support.c"
 				>
 			</File>
@@ -252,7 +256,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\libgzipf\libgzipf_compressed_block.h"
+				RelativePath="..\..\libgzipf\libgzipf_compressed_segment.h"
 				>
 			</File>
 			<File
@@ -345,6 +349,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libgzipf\libgzipf_notify.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libgzipf\libgzipf_segment_descriptor.h"
 				>
 			</File>
 			<File

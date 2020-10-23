@@ -45,7 +45,7 @@ EXTRA_DIST = \
 
 check_PROGRAMS = \
 	gzipf_test_checksum \
-	gzipf_test_compressed_block \
+	gzipf_test_compressed_segment \
 	gzipf_test_deflate \
 	gzipf_test_error \
 	gzipf_test_file \
@@ -71,15 +71,15 @@ gzipf_test_checksum_LDADD = \
 	../libgzipf/libgzipf.la \
 	@LIBCERROR_LIBADD@
 
-gzipf_test_compressed_block_SOURCES = \
-	gzipf_test_compressed_block.c \
+gzipf_test_compressed_segment_SOURCES = \
+	gzipf_test_compressed_segment.c \
 	gzipf_test_libcerror.h \
 	gzipf_test_libgzipf.h \
 	gzipf_test_macros.h \
 	gzipf_test_memory.c gzipf_test_memory.h \
 	gzipf_test_unused.h
 
-gzipf_test_compressed_block_LDADD = \
+gzipf_test_compressed_segment_LDADD = \
 	../libgzipf/libgzipf.la \
 	@LIBCERROR_LIBADD@
 

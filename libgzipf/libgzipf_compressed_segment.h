@@ -1,5 +1,5 @@
 /*
- * Compressed block functions
+ * Compressed segment functions
  *
  * Copyright (C) 2019-2020, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,8 +19,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBGZIPF_COMPRESSED_BLOCK_H )
-#define _LIBGZIPF_COMPRESSED_BLOCK_H
+#if !defined( _LIBGZIPF_COMPRESSED_SEGMENT_H )
+#define _LIBGZIPF_COMPRESSED_SEGMENT_H
 
 #include <common.h>
 #include <types.h>
@@ -33,9 +33,9 @@
 extern "C" {
 #endif
 
-typedef struct libgzipf_compressed_block libgzipf_compressed_block_t;
+typedef struct libgzipf_compressed_segment libgzipf_compressed_segment_t;
 
-struct libgzipf_compressed_block
+struct libgzipf_compressed_segment
 {
 	/* The compressed data
 	 */
@@ -54,23 +54,23 @@ struct libgzipf_compressed_block
 	size_t uncompressed_data_size;
 };
 
-int libgzipf_compressed_block_initialize(
-     libgzipf_compressed_block_t **compressed_block,
+int libgzipf_compressed_segment_initialize(
+     libgzipf_compressed_segment_t **compressed_segment,
      size64_t compressed_data_size,
      size64_t uncompressed_data_size,
      libcerror_error_t **error );
 
-int libgzipf_compressed_block_free(
-     libgzipf_compressed_block_t **compressed_block,
+int libgzipf_compressed_segment_free(
+     libgzipf_compressed_segment_t **compressed_segment,
      libcerror_error_t **error );
 
-int libgzipf_compressed_block_read_file_io_handle(
-     libgzipf_compressed_block_t *compressed_block,
+int libgzipf_compressed_segment_read_file_io_handle(
+     libgzipf_compressed_segment_t *compressed_segment,
      libbfio_handle_t *file_io_handle,
      off64_t file_offset,
      libcerror_error_t **error );
 
-int libgzipf_compressed_block_read_element_data(
+int libgzipf_compressed_segment_read_element_data(
      intptr_t *data_handle,
      libbfio_handle_t *file_io_handle,
      libfdata_list_element_t *element,
@@ -86,5 +86,5 @@ int libgzipf_compressed_block_read_element_data(
 }
 #endif
 
-#endif /* !defined( _LIBGZIPF_COMPRESSED_BLOCK_H ) */
+#endif /* !defined( _LIBGZIPF_COMPRESSED_SEGMENT_H ) */
 

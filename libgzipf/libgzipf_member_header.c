@@ -352,7 +352,7 @@ int libgzipf_member_header_read_comments(
 	}
 	while( found_end_of_string == 0 )
 	{
-		if( recursion_depth > LIBGZIP_MAXIMUM_RECURSION_DEPTH )
+		if( recursion_depth > LIBGZIPF_MAXIMUM_RECURSION_DEPTH )
 		{
 			libcerror_error_set(
 			 error,
@@ -547,7 +547,7 @@ int libgzipf_member_header_read_name(
 	}
 	while( found_end_of_string == 0 )
 	{
-		if( recursion_depth > LIBGZIP_MAXIMUM_RECURSION_DEPTH )
+		if( recursion_depth > LIBGZIPF_MAXIMUM_RECURSION_DEPTH )
 		{
 			libcerror_error_set(
 			 error,

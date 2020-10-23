@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="gzipf_test_compressed_block"
-	ProjectGUID="{C882F4BC-E9F2-4C1F-AB6D-BE2E8B532324}"
-	RootNamespace="gzipf_test_compressed_block"
+	Name="gzipf_test_compressed_segment"
+	ProjectGUID="{69D38C21-6EF5-49F9-B92A-58191017AC6A}"
+	RootNamespace="gzipf_test_compressed_segment"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -176,7 +176,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\tests\gzipf_test_compressed_block.c"
+				RelativePath="..\..\tests\gzipf_test_compressed_segment.c"
 				>
 			</File>
 			<File

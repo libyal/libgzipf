@@ -240,7 +240,7 @@ on_error:
 	return( NULL );
 }
 
-/* Intializes a member object
+/* Initializes a member object
  * Returns 0 if successful or -1 on error
  */
 int pygzipf_member_init(
