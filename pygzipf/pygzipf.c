@@ -131,12 +131,12 @@ PyObject *pygzipf_check_file_signature(
            PyObject *arguments,
            PyObject *keywords )
 {
-	PyObject *string_object      = NULL;
-	libcerror_error_t *error     = NULL;
-	static char *function        = "pygzipf_check_file_signature";
-	static char *keyword_list[]  = { "filename", NULL };
-	const char *filename_narrow  = NULL;
-	int result                   = 0;
+	PyObject *string_object     = NULL;
+	libcerror_error_t *error    = NULL;
+	const char *filename_narrow = NULL;
+	static char *function       = "pygzipf_check_file_signature";
+	static char *keyword_list[] = { "filename", NULL };
+	int result                  = 0;
 
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	const wchar_t *filename_wide = NULL;
@@ -169,7 +169,7 @@ PyObject *pygzipf_check_file_signature(
 	if( result == -1 )
 	{
 		pygzipf_error_fetch_and_raise(
-	         PyExc_RuntimeError,
+		 PyExc_RuntimeError,
 		 "%s: unable to determine if string object is of type Unicode.",
 		 function );
 
@@ -204,10 +204,10 @@ PyObject *pygzipf_check_file_signature(
 		}
 #if PY_MAJOR_VERSION >= 3
 		filename_narrow = PyBytes_AsString(
-				   utf8_string_object );
+		                   utf8_string_object );
 #else
 		filename_narrow = PyString_AsString(
-				   utf8_string_object );
+		                   utf8_string_object );
 #endif
 		Py_BEGIN_ALLOW_THREADS
 
@@ -251,17 +251,17 @@ PyObject *pygzipf_check_file_signature(
 
 #if PY_MAJOR_VERSION >= 3
 	result = PyObject_IsInstance(
-		  string_object,
-		  (PyObject *) &PyBytes_Type );
+	          string_object,
+	          (PyObject *) &PyBytes_Type );
 #else
 	result = PyObject_IsInstance(
-		  string_object,
-		  (PyObject *) &PyString_Type );
+	          string_object,
+	          (PyObject *) &PyString_Type );
 #endif
 	if( result == -1 )
 	{
 		pygzipf_error_fetch_and_raise(
-	         PyExc_RuntimeError,
+		 PyExc_RuntimeError,
 		 "%s: unable to determine if string object is of type string.",
 		 function );
 
@@ -273,10 +273,10 @@ PyObject *pygzipf_check_file_signature(
 
 #if PY_MAJOR_VERSION >= 3
 		filename_narrow = PyBytes_AsString(
-				   string_object );
+		                   string_object );
 #else
 		filename_narrow = PyString_AsString(
-				   string_object );
+		                   string_object );
 #endif
 		Py_BEGIN_ALLOW_THREADS
 
@@ -327,9 +327,9 @@ PyObject *pygzipf_check_file_signature_file_object(
            PyObject *arguments,
            PyObject *keywords )
 {
-	libcerror_error_t *error         = NULL;
-	libbfio_handle_t *file_io_handle = NULL;
 	PyObject *file_object            = NULL;
+	libbfio_handle_t *file_io_handle = NULL;
+	libcerror_error_t *error         = NULL;
 	static char *function            = "pygzipf_check_file_signature_file_object";
 	static char *keyword_list[]      = { "file_object", NULL };
 	int result                       = 0;
@@ -339,7 +339,7 @@ PyObject *pygzipf_check_file_signature_file_object(
 	if( PyArg_ParseTupleAndKeywords(
 	     arguments,
 	     keywords,
-	     "|O",
+	     "O|",
 	     keyword_list,
 	     &file_object ) == 0 )
 	{
@@ -590,8 +590,9 @@ PyMODINIT_FUNC initpygzipf(
 		return;
 #endif
 	}
+#if PY_VERSION_HEX < 0x03070000
 	PyEval_InitThreads();
-
+#endif
 	gil_state = PyGILState_Ensure();
 
 	/* Setup the file type object
