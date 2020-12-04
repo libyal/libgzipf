@@ -39,7 +39,7 @@
 
 #include "../gzipftools/gzipftools_output.h"
 
-/* Tests the gzipftools_output_initialize and function
+/* Tests the gzipftools_output_initialize function
  * Returns 1 if successful or 0 if not
  */
 int gzipf_test_tools_output_initialize(

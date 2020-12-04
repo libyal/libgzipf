@@ -39,7 +39,7 @@ void gzipf_test_tools_signal_handler(
 	GZIPF_TEST_UNREFERENCED_PARAMETER( signal )
 }
 
-/* Tests the gzipftools_signal_attach and function
+/* Tests the gzipftools_signal_attach function
  * Returns 1 if successful or 0 if not
  */
 int gzipf_test_tools_signal_attach(
@@ -72,7 +72,7 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the gzipftools_signal_detach and function
+/* Tests the gzipftools_signal_detach function
  * Returns 1 if successful or 0 if not
  */
 int gzipf_test_tools_signal_detach(
