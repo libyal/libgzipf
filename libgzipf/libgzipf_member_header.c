@@ -323,8 +323,8 @@ int libgzipf_member_header_read_comments(
 	static char *function     = "libgzipf_member_header_read_comments";
 	size_t string_data_offset = 0;
 	size_t string_size        = 0;
-	size_t read_size          = 0;
 	ssize_t read_count        = 0;
+	off64_t read_size         = 0;
 	int found_end_of_string   = 0;
 	int recursion_depth       = 0;
 
@@ -369,7 +369,7 @@ int libgzipf_member_header_read_comments(
 		              64,
 		              error );
 
-		if( read_count <= -1 )
+		if( read_count < 0 )
 		{
 			libcerror_error_set(
 			 error,
@@ -396,21 +396,6 @@ int libgzipf_member_header_read_comments(
 			}
 		}
 		recursion_depth++;
-	}
-	if( libbfio_handle_seek_offset(
-	     file_io_handle,
-	     -read_size,
-	     SEEK_CUR,
-	     error ) == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek start of comments.",
-		 function );
-
-		goto on_error;
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -449,6 +434,21 @@ int libgzipf_member_header_read_comments(
 	}
 	member_header->comments_size = string_size;
 
+	if( libbfio_handle_seek_offset(
+	     file_io_handle,
+	     -read_size,
+	     SEEK_CUR,
+	     error ) == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_SEEK_FAILED,
+		 "%s: unable to seek start of comments.",
+		 function );
+
+		goto on_error;
+	}
 	read_count = libbfio_handle_read_buffer(
 	              file_io_handle,
 	              member_header->comments,
@@ -518,8 +518,8 @@ int libgzipf_member_header_read_name(
 	static char *function     = "libgzipf_member_header_read_name";
 	size_t string_data_offset = 0;
 	size_t string_size        = 0;
-	size_t read_size          = 0;
 	ssize_t read_count        = 0;
+	off64_t read_size         = 0;
 	int found_end_of_string   = 0;
 	int recursion_depth       = 0;
 
@@ -564,7 +564,7 @@ int libgzipf_member_header_read_name(
 		              64,
 		              error );
 
-		if( read_count <= -1 )
+		if( read_count < 0 )
 		{
 			libcerror_error_set(
 			 error,
@@ -592,21 +592,6 @@ int libgzipf_member_header_read_name(
 		}
 		recursion_depth++;
 	}
-	if( libbfio_handle_seek_offset(
-	     file_io_handle,
-	     -read_size,
-	     SEEK_CUR,
-	     error ) == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek start of name.",
-		 function );
-
-		goto on_error;
-	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -626,7 +611,7 @@ int libgzipf_member_header_read_name(
 		 "%s: invalid name string size value out of bounds.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	member_header->name = (uint8_t *) memory_allocate(
 	                                   sizeof( uint8_t ) * string_size );
@@ -644,6 +629,21 @@ int libgzipf_member_header_read_name(
 	}
 	member_header->name_size = string_size;
 
+	if( libbfio_handle_seek_offset(
+	     file_io_handle,
+	     -read_size,
+	     SEEK_CUR,
+	     error ) == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_SEEK_FAILED,
+		 "%s: unable to seek start of name.",
+		 function );
+
+		goto on_error;
+	}
 	read_count = libbfio_handle_read_buffer(
 	              file_io_handle,
 	              member_header->name,
@@ -684,7 +684,8 @@ int libgzipf_member_header_read_name(
 		libcnotify_printf(
 		 "\n" );
 	}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 	return( 1 );
 
 on_error:
@@ -757,27 +758,11 @@ int libgzipf_member_header_read_file_io_handle(
 		 file_offset );
 	}
 #endif
-	if( libbfio_handle_seek_offset(
-	     file_io_handle,
-	     file_offset,
-	     SEEK_SET,
-	     error ) == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek member header offset: %" PRIi64 " (0x%08" PRIx64 ").",
-		 function,
-		 file_offset,
-		 file_offset );
-
-		goto on_error;
-	}
-	read_count = libbfio_handle_read_buffer(
+	read_count = libbfio_handle_read_buffer_at_offset(
 	              file_io_handle,
 	              member_header_data,
 	              sizeof( gzipf_member_header_t ),
+	              file_offset,
 	              error );
 
 	if( read_count != (ssize_t) sizeof( gzipf_member_header_t ) )
@@ -786,8 +771,10 @@ int libgzipf_member_header_read_file_io_handle(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read member header data.",
-		 function );
+		 "%s: unable to read member header data at offset: %" PRIi64 " (0x%08" PRIx64 ").",
+		 function,
+		 file_offset,
+		 file_offset );
 
 		goto on_error;
 	}

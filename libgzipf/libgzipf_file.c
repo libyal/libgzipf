@@ -1061,9 +1061,9 @@ int libgzipf_internal_file_open_read(
 	libgzipf_member_footer_t *member_footer         = NULL;
 	libgzipf_member_header_t *member_header         = NULL;
 	static char *function                           = "libgzipf_internal_file_open_read";
-	size64_t compresseed_stream_size                = 0;
-	size64_t uncompresseed_stream_size              = 0;
+	size64_t compressed_stream_size                 = 0;
 	size64_t file_size                              = 0;
+	size64_t uncompressed_stream_size               = 0;
 	off64_t file_offset                             = 0;
 	uint32_t calculated_checksum                    = 0;
 	int entry_index                                 = 0;
@@ -1259,8 +1259,8 @@ int libgzipf_internal_file_open_read(
 		     internal_file,
 		     file_io_handle,
 		     file_offset,
-		     &compresseed_stream_size,
-		     &uncompresseed_stream_size,
+		     &compressed_stream_size,
+		     &uncompressed_stream_size,
 		     &calculated_checksum,
 		     error ) != 1 )
 		{
@@ -1277,7 +1277,7 @@ int libgzipf_internal_file_open_read(
 
 			goto on_error;
 		}
-		file_offset += compresseed_stream_size;
+		file_offset += compressed_stream_size;
 
 		if( libgzipf_member_footer_initialize(
 		     &member_footer,
@@ -1327,7 +1327,7 @@ int libgzipf_internal_file_open_read(
 
 			goto on_error;
 		}
-		if( member_descriptor->uncompressed_data_size != uncompresseed_stream_size )
+		if( member_descriptor->uncompressed_data_size != uncompressed_stream_size )
 		{
 			libcerror_error_set(
 			 error,
@@ -1336,7 +1336,7 @@ int libgzipf_internal_file_open_read(
 			 "%s: mismatch in uncompressed stream size ( 0x%08" PRIx32 " != 0x%08" PRIx32 " ).",
 			 function,
 			 member_descriptor->uncompressed_data_size,
-			 uncompresseed_stream_size );
+			 uncompressed_stream_size );
 
 			goto on_error;
 		}
@@ -1608,27 +1608,11 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 
 	while( is_last_block == 0 )
 	{
-		if( libbfio_handle_seek_offset(
-		     file_io_handle,
-		     file_offset,
-		     SEEK_SET,
-		     error ) == -1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_IO,
-			 LIBCERROR_IO_ERROR_SEEK_FAILED,
-			 "%s: unable to seek offset: %" PRIi64 " (0x%08" PRIx64 ").",
-			 function,
-			 file_offset,
-			 file_offset );
-
-			goto on_error;
-		}
-		read_count = libbfio_handle_read_buffer(
+		read_count = libbfio_handle_read_buffer_at_offset(
 		              file_io_handle,
 		              compressed_data,
 		              LIBGZIPF_MAXIMUM_DEFLATE_BLOCK_SIZE,
+		              file_offset,
 		              error );
 
 		if( read_count <= -1 )
@@ -1637,8 +1621,10 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_IO,
 			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to read compressed data.",
-			 function );
+			 "%s: unable to read compressed data at offset: %" PRIi64 " (0x%08" PRIx64 ").",
+			 function,
+			 file_offset,
+			 file_offset );
 
 			goto on_error;
 		}
