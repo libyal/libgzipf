@@ -230,6 +230,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\gzipftools\gzipftools_libgzipf.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\gzipftools\gzipftools_libuna.h"
 				>
 			</File>

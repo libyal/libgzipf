@@ -300,6 +300,14 @@ int libgzipf_file_get_offset(
      off64_t *offset,
      libgzipf_error_t **error );
 
+/* Determine if the file is corrupted
+ * Returns 1 if corrupted, 0 if not or -1 on error
+ */
+LIBGZIPF_EXTERN \
+int libgzipf_file_is_corrupted(
+     libgzipf_file_t *file,
+     libgzipf_error_t **error );
+
 /* Retrieves the uncompressed data size
  * Returns the 1 if succesful or -1 on error
  */
@@ -431,6 +439,15 @@ int libgzipf_member_get_utf16_comments(
      libgzipf_member_t *member,
      uint16_t *utf16_string,
      size_t utf16_string_size,
+     libgzipf_error_t **error );
+
+/* Retrieves the operating system
+ * Returns 1 if successful or -1 on error
+ */
+LIBGZIPF_EXTERN \
+int libgzipf_member_get_operating_system(
+     libgzipf_member_t *member,
+     uint8_t *operating_system,
      libgzipf_error_t **error );
 
 #if defined( __cplusplus )

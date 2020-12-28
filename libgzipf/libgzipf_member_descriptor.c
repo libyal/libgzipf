@@ -586,3 +586,40 @@ int libgzipf_member_descriptor_get_utf16_comments(
 	return( 1 );
 }
 
+/* Retrieves the operating system
+ * Returns 1 if successful or -1 on error
+ */
+int libgzipf_member_descriptor_get_operating_system(
+     libgzipf_member_descriptor_t *member_descriptor,
+     uint8_t *operating_system,
+     libcerror_error_t **error )
+{
+	static char *function = "libgzipf_member_descriptor_get_operating_system";
+
+	if( member_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid member descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	if( operating_system == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid operating system.",
+		 function );
+
+		return( -1 );
+	}
+	*operating_system = member_descriptor->operating_system;
+
+	return( 1 );
+}
+

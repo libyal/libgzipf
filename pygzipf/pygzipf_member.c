@@ -64,6 +64,13 @@ PyMethodDef pygzipf_member_object_methods[] = {
 	  "\n"
 	  "Retrieves the comments." },
 
+	{ "get_operating_system",
+	  (PyCFunction) pygzipf_member_get_operating_system,
+	  METH_NOARGS,
+	  "get_operating_system() -> Integer or None\n"
+	  "\n"
+	  "Retrieves the operating system." },
+
 	/* Sentinel */
 	{ NULL, NULL, 0, NULL }
 };
@@ -86,6 +93,12 @@ PyGetSetDef pygzipf_member_object_get_set_definitions[] = {
 	  (getter) pygzipf_member_get_comments,
 	  (setter) 0,
 	  "The comments.",
+	  NULL },
+
+	{ "operating_system",
+	  (getter) pygzipf_member_get_operating_system,
+	  (setter) 0,
+	  "The operating system.",
 	  NULL },
 
 	/* Sentinel */
@@ -700,5 +713,64 @@ on_error:
 		 utf8_string );
 	}
 	return( NULL );
+}
+
+/* Retrieves the operating system
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pygzipf_member_get_operating_system(
+           pygzipf_member_t *pygzipf_member,
+           PyObject *arguments PYGZIPF_ATTRIBUTE_UNUSED )
+{
+	PyObject *integer_object = NULL;
+	libcerror_error_t *error = NULL;
+	static char *function    = "pygzipf_member_get_operating_system";
+	uint8_t operating_system = 0;
+	int result               = 0;
+
+	PYGZIPF_UNREFERENCED_PARAMETER( arguments )
+
+	if( pygzipf_member == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid member.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libgzipf_member_get_operating_system(
+	          pygzipf_member->member,
+	          &operating_system,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result == -1 )
+	{
+		pygzipf_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to retrieve operating system.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		return( NULL );
+	}
+	else if( result == 0 )
+	{
+		Py_IncRef(
+		 Py_None );
+
+		return( Py_None );
+	}
+	integer_object = PyLong_FromUnsignedLong(
+	                  (unsigned long) operating_system );
+
+	return( integer_object );
 }
 

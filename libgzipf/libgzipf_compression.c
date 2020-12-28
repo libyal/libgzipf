@@ -51,6 +51,12 @@ int libgzipf_decompress_data(
 {
 #if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL )
 	z_stream zlib_stream;
+
+	size_t last_compressed_data_size   = 0;
+	size_t safe_compressed_data_size   = 0;
+	size_t safe_uncompressed_data_size = 0;
+	uint8_t decompression_error        = 0;
+	uint8_t safe_is_last_block         = 0;
 #else
 	libgzipf_deflate_bit_stream_t bit_stream;
 
@@ -163,11 +169,6 @@ int libgzipf_decompress_data(
 
 		return( -1 );
 	}
-	zlib_stream.next_in   = (Bytef *) compressed_data;
-	zlib_stream.avail_in  = (uInt) *compressed_data_size;
-	zlib_stream.next_out  = (Bytef *) uncompressed_data;
-	zlib_stream.avail_out = (uInt) *uncompressed_data_size;
-
 #if defined( HAVE_ZLIB_INFLATE_INIT2 ) || defined( ZLIB_DLL )
 	result = inflateInit2(
 	          &zlib_stream,
@@ -188,96 +189,104 @@ int libgzipf_decompress_data(
 
 		return( -1 );
 	}
-	result = inflate(
-	          &zlib_stream,
-	          Z_BLOCK );
+	zlib_stream.next_in   = (Bytef *) compressed_data;
+	zlib_stream.avail_in  = (uInt) *compressed_data_size;
+	zlib_stream.next_out  = (Bytef *) uncompressed_data;
+	zlib_stream.avail_out = (uInt) *uncompressed_data_size;
 
-	if( ( result == Z_OK )
-	 || ( result == Z_STREAM_END ) )
+	while( ( safe_is_last_block == 0 )
+	    && ( decompression_error == 0 ) )
 	{
-		*compressed_data_size   -= (size_t) zlib_stream.avail_in;
-		*uncompressed_data_size -= (size_t) zlib_stream.avail_out;
-		*is_last_block           =  ( result == Z_STREAM_END );
+		last_compressed_data_size = safe_compressed_data_size;
 
-		result = 1;
-	}
-	else if( result == Z_DATA_ERROR )
-	{
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
+		safe_compressed_data_size   += (size_t) zlib_stream.avail_in;
+		safe_uncompressed_data_size += (size_t) zlib_stream.avail_out;
+
+		result = inflate(
+			  &zlib_stream,
+			  Z_BLOCK );
+
+		safe_compressed_data_size   -= (size_t) zlib_stream.avail_in;
+		safe_uncompressed_data_size -= (size_t) zlib_stream.avail_out;
+
+		if( ( result == Z_OK )
+		 || ( result == Z_STREAM_END ) )
 		{
-			libcnotify_printf(
-			 "%s: unable to read compressed data: data error.\n",
-			 function );
+			safe_is_last_block = ( result == Z_STREAM_END );
 		}
-#endif
-		*uncompressed_data_size = 0;
-
-		result = -1;
-	}
-	else if( result == Z_BUF_ERROR )
-	{
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
+		else if( result == Z_DATA_ERROR )
 		{
-			libcnotify_printf(
-			"%s: unable to read compressed data: target buffer too small.\n",
-			 function );
-		}
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				 "%s: unable to read compressed data: data error.\n",
+				 function );
+			}
 #endif
-		/* Estimate that a factor 2 enlargement should suffice
-		 */
-		*uncompressed_data_size *= 2;
-
-		result = 0;
-	}
-	else if( result == Z_MEM_ERROR )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-		 "%s: unable to read compressed data: insufficient memory.",
-		 function );
-
-		*uncompressed_data_size = 0;
-
-		result = -1;
-	}
-	else
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_COMPRESSION,
-		 LIBCERROR_COMPRESSION_ERROR_DECOMPRESS_FAILED,
-		 "%s: zlib returned undefined error: %d.",
-		 function,
-		 result );
-
-		*uncompressed_data_size = 0;
-
-		result = -1;
-	}
-	if( result == -1 )
-	{
-		inflateEnd(
-		 &zlib_stream );
-	}
-	else
-	{
-		if( inflateEnd(
-		     &zlib_stream ) != Z_OK )
+			return( -1 );
+		}
+		else if( result == Z_BUF_ERROR )
+		{
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				"%s: unable to read compressed data: no progress possible.\n",
+				 function );
+			}
+#endif
+			if( safe_compressed_data_size == last_compressed_data_size )
+			{
+				decompression_error = 1;
+			}
+			else
+			{
+				return( -1 );
+			}
+		}
+		else if( result == Z_MEM_ERROR )
 		{
 			libcerror_error_set(
 			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to finalize zlib stream.",
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+			 "%s: unable to read compressed data: insufficient memory.",
 			 function );
 
 			return( -1 );
 		}
+		else
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_COMPRESSION,
+			 LIBCERROR_COMPRESSION_ERROR_DECOMPRESS_FAILED,
+			 "%s: zlib returned undefined error: %d.",
+			 function,
+			 result );
+
+			return( -1 );
+		}
 	}
+	if( inflateEnd(
+	     &zlib_stream ) != Z_OK )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to finalize zlib stream.",
+		 function );
+
+		return( -1 );
+	}
+	result = 1;
+
+	*compressed_data_size   = safe_compressed_data_size;
+	*uncompressed_data_size = safe_uncompressed_data_size;
+	*is_last_block          = safe_is_last_block;
+
 #else
 	if( *compressed_data_size > (size_t) SSIZE_MAX )
 	{

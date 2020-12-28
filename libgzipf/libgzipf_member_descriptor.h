@@ -60,6 +60,10 @@ struct libgzipf_member_descriptor
 	 */
 	size_t comments_size;
 
+	/* The operating system
+	 */
+	uint8_t operating_system;
+
 	/* The compressed data offset
 	 */
 	off64_t compressed_data_offset;
@@ -128,6 +132,11 @@ int libgzipf_member_descriptor_get_utf16_comments(
      libgzipf_member_descriptor_t *member_descriptor,
      uint16_t *utf16_string,
      size_t utf16_string_size,
+     libcerror_error_t **error );
+
+int libgzipf_member_descriptor_get_operating_system(
+     libgzipf_member_descriptor_t *member_descriptor,
+     uint8_t *operating_system,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

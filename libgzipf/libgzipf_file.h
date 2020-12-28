@@ -83,6 +83,10 @@ struct libgzipf_internal_file
 	 */
 	libfcache_cache_t *compressed_segments_cache;
 
+	/* Various flags
+	 */
+	uint8_t flags;
+
 #if defined( HAVE_LIBGZIPF_MULTI_THREAD_SUPPORT )
 	/* The read/write lock
 	 */
@@ -188,6 +192,11 @@ LIBGZIPF_EXTERN \
 int libgzipf_file_get_offset(
      libgzipf_file_t *file,
      off64_t *offset,
+     libcerror_error_t **error );
+
+LIBGZIPF_EXTERN \
+int libgzipf_file_is_corrupted(
+     libgzipf_file_t *file,
      libcerror_error_t **error );
 
 LIBGZIPF_EXTERN \

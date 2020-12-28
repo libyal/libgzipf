@@ -1,4 +1,4 @@
-.Dd July 12, 2020
+.Dd December 28, 2020
 .Dt libgzipf 3
 .Os libgzipf
 .Sh NAME
@@ -69,6 +69,8 @@ File functions
 .Ft int
 .Fn libgzipf_file_get_offset "libgzipf_file_t *file" "off64_t *offset" "libgzipf_error_t **error"
 .Ft int
+.Fn libgzipf_file_is_corrupted "libgzipf_file_t *file" "libgzipf_error_t **error"
+.Ft int
 .Fn libgzipf_file_get_uncompressed_data_size "libgzipf_file_t *file" "size64_t *uncompressed_data_size" "libgzipf_error_t **error"
 .Ft int
 .Fn libgzipf_file_get_number_of_members "libgzipf_file_t *file" "int *number_of_members" "libgzipf_error_t **error"
@@ -104,6 +106,8 @@ Member functions
 .Fn libgzipf_member_get_utf16_comments_size "libgzipf_member_t *member" "size_t *utf16_string_size" "libgzipf_error_t **error"
 .Ft int
 .Fn libgzipf_member_get_utf16_comments "libgzipf_member_t *member" "uint16_t *utf16_string" "size_t utf16_string_size" "libgzipf_error_t **error"
+.Ft int
+.Fn libgzipf_member_get_operating_system "libgzipf_member_t *member" "uint8_t *operating_system" "libgzipf_error_t **error"
 .Sh DESCRIPTION
 The
 .Fn libgzipf_get_version

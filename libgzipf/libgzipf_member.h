@@ -130,6 +130,12 @@ int libgzipf_member_get_utf16_comments(
      size_t utf16_string_size,
      libcerror_error_t **error );
 
+LIBGZIPF_EXTERN \
+int libgzipf_member_get_operating_system(
+     libgzipf_member_t *member,
+     uint8_t *operating_system,
+     libcerror_error_t **error );
+
 #if defined( __cplusplus )
 }
 #endif

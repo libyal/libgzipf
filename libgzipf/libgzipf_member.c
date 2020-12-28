@@ -870,3 +870,75 @@ int libgzipf_member_get_utf16_comments(
 	return( result );
 }
 
+/* Retrieves the operating system
+ * Returns 1 if successful or -1 on error
+ */
+int libgzipf_member_get_operating_system(
+     libgzipf_member_t *member,
+     uint8_t *operating_system,
+     libcerror_error_t **error )
+{
+	libgzipf_internal_member_t *internal_member = NULL;
+	static char *function                       = "libgzipf_member_get_operating_system";
+	int result                                  = 1;
+
+	if( member == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid member.",
+		 function );
+
+		return( -1 );
+	}
+	internal_member = (libgzipf_internal_member_t *) member;
+
+#if defined( HAVE_LIBGZIPF_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_read(
+	     internal_member->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( libgzipf_member_descriptor_get_operating_system(
+	     internal_member->member_descriptor,
+	     operating_system,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve operating system from member descriptor.",
+		 function );
+
+		result = -1;
+	}
+#if defined( HAVE_LIBGZIPF_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_read(
+	     internal_member->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+

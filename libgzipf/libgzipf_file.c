@@ -1057,17 +1057,18 @@ int libgzipf_internal_file_open_read(
      libbfio_handle_t *file_io_handle,
      libcerror_error_t **error )
 {
-	libgzipf_member_descriptor_t *member_descriptor = NULL;
-	libgzipf_member_footer_t *member_footer         = NULL;
-	libgzipf_member_header_t *member_header         = NULL;
-	static char *function                           = "libgzipf_internal_file_open_read";
-	size64_t compressed_stream_size                 = 0;
-	size64_t file_size                              = 0;
-	size64_t uncompressed_stream_size               = 0;
-	off64_t file_offset                             = 0;
-	uint32_t calculated_checksum                    = 0;
-	int entry_index                                 = 0;
-	int member_descriptor_index                     = 0;
+	libgzipf_member_descriptor_t *member_descriptor      = NULL;
+	libgzipf_member_descriptor_t *safe_member_descriptor = NULL;
+	libgzipf_member_footer_t *member_footer              = NULL;
+	libgzipf_member_header_t *member_header              = NULL;
+	static char *function                                = "libgzipf_internal_file_open_read";
+	size64_t compressed_stream_size                      = 0;
+	size64_t file_size                                   = 0;
+	size64_t uncompressed_stream_size                    = 0;
+	off64_t file_offset                                  = 0;
+	uint32_t calculated_checksum                         = 0;
+	int entry_index                                      = 0;
+	int member_descriptor_index                          = 0;
 
 	if( internal_file == NULL )
 	{
@@ -1198,7 +1199,7 @@ int libgzipf_internal_file_open_read(
 			 &member_header,
 			 NULL );
 
-/* TODO flag file a corrupt */
+			internal_file->flags |= LIBGZIPF_FILE_FLAG_IS_CORRUPTED;
 
 			break;
 		}
@@ -1217,7 +1218,7 @@ int libgzipf_internal_file_open_read(
 			goto on_error;
 		}
 		if( libgzipf_member_descriptor_initialize(
-		     &member_descriptor,
+		     &safe_member_descriptor,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -1229,18 +1230,38 @@ int libgzipf_internal_file_open_read(
 
 			goto on_error;
 		}
-		member_descriptor->flags                  = member_header->flags;
-		member_descriptor->modification_time      = member_header->modification_time;
-		member_descriptor->name                   = member_header->name;
-		member_descriptor->name_size              = member_header->name_size;
-		member_descriptor->comments               = member_header->comments;
-		member_descriptor->comments_size          = member_header->comments_size;
-		member_descriptor->compressed_data_offset = file_offset;
+		safe_member_descriptor->flags                  = member_header->flags;
+		safe_member_descriptor->modification_time      = member_header->modification_time;
+		safe_member_descriptor->name                   = member_header->name;
+		safe_member_descriptor->name_size              = member_header->name_size;
+		safe_member_descriptor->comments               = member_header->comments;
+		safe_member_descriptor->comments_size          = member_header->comments_size;
+		safe_member_descriptor->operating_system       = member_header->operating_system;
+		safe_member_descriptor->compressed_data_offset = file_offset;
 
 		member_header->name          = NULL;
 		member_header->name_size     = 0;
 		member_header->comments      = NULL;
 		member_header->comments_size = 0;
+
+		if( libcdata_array_append_entry(
+		     internal_file->member_descriptors_array,
+		     &entry_index,
+		     (intptr_t *) safe_member_descriptor,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+			 "%s: unable to append member descriptor: %d.",
+			 function,
+			 member_descriptor_index );
+
+			goto on_error;
+		}
+		member_descriptor      = safe_member_descriptor;
+		safe_member_descriptor = NULL;
 
 		if( libgzipf_member_header_free(
 		     &member_header,
@@ -1273,9 +1294,20 @@ int libgzipf_internal_file_open_read(
 			 file_offset,
 			 file_offset );
 
-/* TODO flag file a corrupt */
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( ( error != NULL )
+			 && ( *error != NULL ) )
+			{
+				libcnotify_print_error_backtrace(
+				 *error );
+			}
+#endif
+			libcerror_error_free(
+			 error );
 
-			goto on_error;
+			internal_file->flags |= LIBGZIPF_FILE_FLAG_IS_CORRUPTED;
+
+			break;
 		}
 		file_offset += compressed_stream_size;
 
@@ -1353,24 +1385,6 @@ int libgzipf_internal_file_open_read(
 
 			goto on_error;
 		}
-		if( libcdata_array_append_entry(
-		     internal_file->member_descriptors_array,
-		     &entry_index,
-		     (intptr_t *) member_descriptor,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-			 "%s: unable to append member descriptor: %d.",
-			 function,
-			 member_descriptor_index );
-
-			goto on_error;
-		}
-		member_descriptor = NULL;
-
 		member_descriptor_index++;
 	}
 	if( libfdata_list_get_size(
@@ -1416,10 +1430,10 @@ on_error:
 		 &member_header,
 		 NULL );
 	}
-	if( member_descriptor != NULL )
+	if( safe_member_descriptor != NULL )
 	{
 		libgzipf_member_descriptor_free(
-		 &member_descriptor,
+		 &safe_member_descriptor,
 		 NULL );
 	}
 	if( internal_file->compressed_segments_list != NULL )
@@ -1456,6 +1470,7 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 #if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL )
 	z_stream zlib_stream;
 
+	size_t last_compressed_block_size                 = 0;
 	uint8_t end_of_block                              = 0;
 #else
 	libgzipf_deflate_bit_stream_t bit_stream;
@@ -1471,10 +1486,12 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 	size_t copy_size                                  = 0;
 	size_t uncompressed_block_offset                  = 0;
 	size_t uncompressed_block_size                    = 0;
+	size_t uncompressed_data_size                     = 16 * 1024 * 1024;
 	ssize_t read_count                                = 0;
 	off64_t compressed_block_offset                   = 0;
 	uint32_t safe_calculated_checksum                 = 0;
 	uint8_t bit_buffer                                = 0;
+	uint8_t decompression_error                       = 0;
 	uint8_t is_last_block                             = 0;
 	int element_index                                 = 0;
 	int entry_index                                   = 0;
@@ -1539,7 +1556,7 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 		goto on_error;
 	}
 	uncompressed_data = (uint8_t *) memory_allocate(
-	                                 sizeof( uint8_t ) * ( 16 * 1024 * 1024 ) );
+	                                 sizeof( uint8_t ) * uncompressed_data_size );
 
 	if( uncompressed_data == NULL )
 	{
@@ -1552,6 +1569,7 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 
 		goto on_error;
 	}
+/* TODO use libgzipf_decompress_data ? */
 #if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL )
 	if( memory_set(
 	     &zlib_stream,
@@ -1615,7 +1633,7 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 		              file_offset,
 		              error );
 
-		if( read_count <= -1 )
+		if( read_count < 0 )
 		{
 			libcerror_error_set(
 			 error,
@@ -1680,7 +1698,7 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 					 "%s: unable to copy uncompressed data to distance data.",
 					 function );
 
-					return( -1 );
+					goto on_error;
 				}
 			}
 		}
@@ -1688,7 +1706,7 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 		zlib_stream.next_in   = (Bytef *) compressed_data;
 		zlib_stream.avail_in  = (uInt) read_count;
 		zlib_stream.next_out  = (Bytef *) uncompressed_data;
-		zlib_stream.avail_out = (uInt) 16 * 1024 * 1024;
+		zlib_stream.avail_out = (uInt) uncompressed_data_size;
 
 		compressed_block_size     = 0;
 		uncompressed_block_offset = 0;
@@ -1696,8 +1714,11 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 		end_of_block              = 0;
 
 		while( ( end_of_block == 0 )
-		    && ( is_last_block == 0 ) )
+		    && ( is_last_block == 0 )
+		    && ( decompression_error == 0 ) )
 		{
+			last_compressed_block_size = compressed_block_size;
+
 			compressed_block_size   += (size_t) zlib_stream.avail_in;
 			uncompressed_block_size += (size_t) zlib_stream.avail_out;
 
@@ -1733,11 +1754,18 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 				if( libcnotify_verbose != 0 )
 				{
 					libcnotify_printf(
-					"%s: unable to read compressed data: target buffer too small.\n",
+					"%s: unable to read compressed data: no progress possible.\n",
 					 function );
 				}
 #endif
-				goto on_error;
+				if( compressed_block_size == last_compressed_block_size )
+				{
+					decompression_error = 1;
+				}
+				else
+				{
+					goto on_error;
+				}
 			}
 			else if( result == Z_MEM_ERROR )
 			{
@@ -1763,10 +1791,6 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 				goto on_error;
 			}
 		}
-		if( is_last_block != 0 )
-		{
-			break;
-		}
 #else
 		if( uncompressed_block_size > 0 )
 		{
@@ -1790,7 +1814,7 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 				 "%s: unable to copy uncompressed data to beginning of buffer.",
 				 function );
 
-				return( -1 );
+				goto on_error;
 			}
 			uncompressed_block_offset = copy_size;
 		}
@@ -1807,7 +1831,7 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 		result = libgzipf_deflate_read_block(
 		          &bit_stream,
 		          uncompressed_data,
-		          16 * 1024 * 1024,
+		          uncompressed_data_size,
 		          &uncompressed_block_offset,
 		          &is_last_block,
 		          error );
@@ -1881,7 +1905,9 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 
 		file_offset = compressed_block_offset;
 
-		if( segment_descriptor->compressed_data_size >= LIBGZIPF_COMPRESSED_SEGMENT_SIZE )
+		if( ( segment_descriptor->compressed_data_size >= LIBGZIPF_COMPRESSED_SEGMENT_SIZE )
+		 || ( is_last_block != 0 )
+		 || ( decompression_error != 0 ) )
 		{
 			if( libfdata_list_append_element_with_mapped_size(
 			     internal_file->compressed_segments_list,
@@ -1918,6 +1944,11 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 				goto on_error;
 			}
 			segment_descriptor = NULL;
+		}
+		if( ( is_last_block != 0 )
+		 || ( decompression_error != 0 ) )
+		{
+			break;
 		}
 	}
 #if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL )
@@ -2017,6 +2048,10 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 	*uncompressed_stream_size = safe_uncompressed_data_size;
 	*calculated_checksum      = safe_calculated_checksum;
 
+	if( decompression_error != 0 )
+	{
+		return( -1 );
+	}
 	return( 1 );
 
 on_error:
@@ -2115,7 +2150,7 @@ ssize_t libgzipf_internal_file_read_buffer_from_file_io_handle(
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: current offset\t\t\t\t: 0x%08" PRIx64 "\n",
+			 "%s: current offset\t: 0x%08" PRIx64 "\n",
 			 function,
 			 internal_file->current_offset );
 		}
@@ -2615,6 +2650,67 @@ int libgzipf_file_get_offset(
 	}
 #endif
 	return( 1 );
+}
+
+/* Determine if the file corrupted
+ * Returns 1 if corrupted, 0 if not or -1 on error
+ */
+int libgzipf_file_is_corrupted(
+     libgzipf_file_t *file,
+     libcerror_error_t **error )
+{
+	libgzipf_internal_file_t *internal_file = NULL;
+	static char *function                  = "libgzipf_file_is_corrupted";
+	int result                             = 0;
+
+	if( file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file.",
+		 function );
+
+		return( -1 );
+	}
+	internal_file = (libgzipf_internal_file_t *) file;
+
+#if defined( HAVE_LIBGZIPF_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_read(
+	     internal_file->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( ( internal_file->flags & LIBGZIPF_FILE_FLAG_IS_CORRUPTED ) != 0 )
+	{
+		result = 1;
+	}
+#if defined( HAVE_LIBGZIPF_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_read(
+	     internal_file->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
 }
 
 /* Retrieves the uncompressed data size

@@ -27,6 +27,7 @@ gzipfinfo_SOURCES = \
 	gzipftools_libclocale.h \
 	gzipftools_libcnotify.h \
 	gzipftools_libfdatetime.h \
+	gzipftools_libgzipf.h \
 	gzipftools_libuna.h \
 	gzipftools_output.c gzipftools_output.h \
 	gzipftools_signal.c gzipftools_signal.h \

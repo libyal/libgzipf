@@ -224,6 +224,8 @@ int libgzipf_member_header_read_data(
 	 ( (gzipf_member_header_t *) data )->modification_time,
 	 member_header->modification_time );
 
+	member_header->operating_system = ( (gzipf_member_header_t *) data )->operating_system;
+
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{

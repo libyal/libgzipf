@@ -300,6 +300,7 @@ int info_handle_file_fprint(
 {
 	static char *function           = "info_handle_file_fprint";
 	size64_t uncompressed_data_size = 0;
+	int is_corrupted                = 0;
 	int number_of_members           = 0;
 
 	if( info_handle == NULL )
@@ -357,6 +358,27 @@ int info_handle_file_fprint(
 
 /* TODO print more info */
 
+	is_corrupted = libgzipf_file_is_corrupted(
+	                info_handle->input_file,
+	                error );
+
+	if( is_corrupted == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to determine if file is corrupted.",
+		 function );
+
+		return( -1 );
+	}
+	if( is_corrupted != 0 )
+	{
+		fprintf(
+		 info_handle->notify_stream,
+		 "\tIs corrupted\n" );
+	}
 	fprintf(
 	 info_handle->notify_stream,
 	 "\n" );

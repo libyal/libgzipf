@@ -78,6 +78,10 @@ PyObject *pygzipf_member_get_comments(
            pygzipf_member_t *pygzipf_member,
            PyObject *arguments );
 
+PyObject *pygzipf_member_get_operating_system(
+           pygzipf_member_t *pygzipf_member,
+           PyObject *arguments );
+
 #if defined( __cplusplus )
 }
 #endif

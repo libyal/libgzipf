@@ -59,6 +59,10 @@ struct libgzipf_member_header
 	/* The comments size
 	 */
 	size_t comments_size;
+
+	/* The operating system
+	 */
+	uint8_t operating_system;
 };
 
 int libgzipf_member_header_initialize(

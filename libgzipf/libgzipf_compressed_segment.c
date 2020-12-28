@@ -251,10 +251,10 @@ int libgzipf_compressed_segment_read_file_io_handle(
      off64_t file_offset,
      libcerror_error_t **error )
 {
-	static char *function         = "libgzipf_compressed_segment_read_file_io_handle";
-	size_t uncompressed_data_size = 0;
-	ssize_t read_count            = 0;
-	uint8_t is_last_segment       = 0;
+	static char *function              = "libgzipf_compressed_segment_read_file_io_handle";
+	size_t safe_uncompressed_data_size = 0;
+	ssize_t read_count                 = 0;
+	uint8_t is_last_segment            = 0;
 
 	if( compressed_segment == NULL )
 	{
@@ -319,7 +319,7 @@ int libgzipf_compressed_segment_read_file_io_handle(
 
 		return( -1 );
 	}
-	uncompressed_data_size = compressed_segment->uncompressed_data_size;
+	safe_uncompressed_data_size = compressed_segment->uncompressed_data_size;
 
 /* TODO decompress more than 1 block */
 	if( libgzipf_decompress_data(
@@ -327,7 +327,7 @@ int libgzipf_compressed_segment_read_file_io_handle(
 	     (size_t *) &read_count,
 	     LIBGZIPF_COMPRESSION_METHOD_DEFLATE,
 	     compressed_segment->uncompressed_data,
-	     &uncompressed_data_size,
+	     &safe_uncompressed_data_size,
 	     &is_last_segment,
 	     error ) != 1 )
 	{
@@ -342,8 +342,17 @@ int libgzipf_compressed_segment_read_file_io_handle(
 
 		return( -1 );
 	}
-/* TODO compare uncompressed_data_size  and compressed_segment->uncompressed_data_size */
+	if( safe_uncompressed_data_size != compressed_segment->uncompressed_data_size )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid uncompressed data size value out of bounds.",
+		 function );
 
+		return( -1 );
+	}
 	return( 1 );
 }
 
