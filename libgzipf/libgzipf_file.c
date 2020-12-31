@@ -31,7 +31,6 @@
 
 #include "libgzipf_checksum.h"
 #include "libgzipf_compressed_segment.h"
-#include "libgzipf_compression.h"
 #include "libgzipf_debug.h"
 #include "libgzipf_definitions.h"
 #include "libgzipf_deflate.h"
@@ -1470,10 +1469,13 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 #if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL )
 	z_stream zlib_stream;
 
+	uInt safe_distance_data_size                      = 0;
 	size_t last_compressed_block_size                 = 0;
 	uint8_t end_of_block                              = 0;
 #else
 	libgzipf_deflate_bit_stream_t bit_stream;
+
+	size_t copy_size                                  = 0;
 #endif
 
 	libgzipf_segment_descriptor_t *segment_descriptor = NULL;
@@ -1483,19 +1485,19 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 	size64_t safe_compressed_stream_size              = 0;
 	size64_t safe_uncompressed_data_size              = 0;
 	size_t compressed_block_size                      = 0;
-	size_t copy_size                                  = 0;
 	size_t uncompressed_block_offset                  = 0;
 	size_t uncompressed_block_size                    = 0;
-	size_t uncompressed_data_size                     = 16 * 1024 * 1024;
 	ssize_t read_count                                = 0;
 	off64_t compressed_block_offset                   = 0;
+	off64_t uncompressed_data_offset                  = 0;
 	uint32_t safe_calculated_checksum                 = 0;
-	uint8_t bit_buffer                                = 0;
 	uint8_t decompression_error                       = 0;
 	uint8_t is_last_block                             = 0;
+	uint8_t number_of_compressed_stream_bits          = 0;
 	int element_index                                 = 0;
 	int entry_index                                   = 0;
 	int result                                        = 0;
+	int segment_descriptor_index                      = 0;
 
 	if( internal_file == NULL )
 	{
@@ -1556,7 +1558,7 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 		goto on_error;
 	}
 	uncompressed_data = (uint8_t *) memory_allocate(
-	                                 sizeof( uint8_t ) * uncompressed_data_size );
+	                                 sizeof( uint8_t ) * LIBGZIPF_UNCOMPRESSED_BLOCK_SIZE );
 
 	if( uncompressed_data == NULL )
 	{
@@ -1569,7 +1571,6 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 
 		goto on_error;
 	}
-/* TODO use libgzipf_decompress_data ? */
 #if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL )
 	if( memory_set(
 	     &zlib_stream,
@@ -1674,9 +1675,31 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 				goto on_error;
 			}
 			segment_descriptor->compressed_data_offset = compressed_block_offset;
-			segment_descriptor->bit_buffer             = bit_buffer;
 
-			if( uncompressed_block_size > 0 )
+			segment_descriptor->number_of_bits = number_of_compressed_stream_bits;
+
+#if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL )
+			safe_distance_data_size = (uInt) LIBGZIPF_MAXIMUM_DEFLATE_DISTANCE;
+
+			result = inflateGetDictionary(
+			          &zlib_stream,
+			          segment_descriptor->distance_data,
+			          &safe_distance_data_size );
+
+			if( result != Z_OK )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve dictionary from zlib stream.",
+				 function );
+
+				goto on_error;
+			}
+			segment_descriptor->distance_data_size = (size_t) safe_distance_data_size;
+#else
+			if( uncompressed_data_offset > 0 )
 			{
 				copy_size = LIBGZIPF_MAXIMUM_DEFLATE_DISTANCE;
 
@@ -1701,12 +1724,13 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 					goto on_error;
 				}
 			}
+#endif /* ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL ) */
 		}
 #if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL )
 		zlib_stream.next_in   = (Bytef *) compressed_data;
 		zlib_stream.avail_in  = (uInt) read_count;
 		zlib_stream.next_out  = (Bytef *) uncompressed_data;
-		zlib_stream.avail_out = (uInt) uncompressed_data_size;
+		zlib_stream.avail_out = (uInt) LIBGZIPF_UNCOMPRESSED_BLOCK_SIZE;
 
 		compressed_block_size     = 0;
 		uncompressed_block_offset = 0;
@@ -1732,9 +1756,9 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 			if( ( result == Z_OK )
 			 || ( result == Z_STREAM_END ) )
 			{
-				bit_buffer    = (uint8_t) ( zlib_stream.data_type & 0x07 );
-				end_of_block  = ( ( zlib_stream.data_type & 0x80 ) != 0 );
-				is_last_block = ( result == Z_STREAM_END );
+				number_of_compressed_stream_bits = (uint8_t) ( zlib_stream.data_type & 0x07 );
+				end_of_block                     = ( ( zlib_stream.data_type & 0x80 ) != 0 );
+				is_last_block                    = ( result == Z_STREAM_END );
 			}
 			else if( result == Z_DATA_ERROR )
 			{
@@ -1818,8 +1842,6 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 			}
 			uncompressed_block_offset = copy_size;
 		}
-		bit_buffer = (uint8_t) bit_stream.bit_buffer;
-
 		bit_stream.byte_stream        = compressed_data;
 		bit_stream.byte_stream_size   = (size_t) read_count;
 		bit_stream.byte_stream_offset = 0;
@@ -1831,7 +1853,7 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 		result = libgzipf_deflate_read_block(
 		          &bit_stream,
 		          uncompressed_data,
-		          uncompressed_data_size,
+		          LIBGZIPF_UNCOMPRESSED_BLOCK_SIZE,
 		          &uncompressed_block_offset,
 		          &is_last_block,
 		          error );
@@ -1909,10 +1931,15 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 		 || ( is_last_block != 0 )
 		 || ( decompression_error != 0 ) )
 		{
+			if( segment_descriptor->number_of_bits > 0 )
+			{
+				segment_descriptor->compressed_data_offset -= 1;
+				segment_descriptor->compressed_data_size   += 1;
+			}
 			if( libfdata_list_append_element_with_mapped_size(
 			     internal_file->compressed_segments_list,
 			     &element_index,
-			     0,
+			     segment_descriptor_index,
 			     segment_descriptor->compressed_data_offset,
 			     segment_descriptor->compressed_data_size,
 			     0,
@@ -1943,7 +1970,11 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 
 				goto on_error;
 			}
+			uncompressed_data_offset += segment_descriptor->uncompressed_data_size;
+
 			segment_descriptor = NULL;
+
+			segment_descriptor_index++;
 		}
 		if( ( is_last_block != 0 )
 		 || ( decompression_error != 0 ) )
@@ -1972,7 +2003,8 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 
 		goto on_error;
 	}
-#endif
+#endif /* ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL ) */
+
 	memory_free(
 	 uncompressed_data );
 

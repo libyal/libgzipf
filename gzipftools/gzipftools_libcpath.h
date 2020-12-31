@@ -1,5 +1,5 @@
 /*
- * Compression functions
+ * The libcpath header wrapper
  *
  * Copyright (C) 2019-2020, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,30 +19,30 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBGZIPF_COMPRESSION_H )
-#define _LIBGZIPF_COMPRESSION_H
+#if !defined( _GZIPFTOOLS_LIBCPATH_H )
+#define _GZIPFTOOLS_LIBCPATH_H
 
 #include <common.h>
-#include <types.h>
 
-#include "libgzipf_libcerror.h"
+/* Define HAVE_LOCAL_LIBCPATH for local use of libcpath
+ */
+#if defined( HAVE_LOCAL_LIBCPATH )
 
-#if defined( __cplusplus )
-extern "C" {
+#include <libcpath_definitions.h>
+#include <libcpath_path.h>
+
+#else
+
+/* If libtool DLL support is enabled set LIBCPATH_DLL_IMPORT
+ * before including libcpath.h
+ */
+#if defined( _WIN32 ) && defined( DLL_IMPORT ) && !defined( HAVE_STATIC_EXECUTABLES )
+#define LIBCPATH_DLL_IMPORT
 #endif
 
-int libgzipf_decompress_data(
-     const uint8_t *compressed_data,
-     size_t *compressed_data_size,
-     int compression_method,
-     uint8_t *uncompressed_data,
-     size_t *uncompressed_data_size,
-     uint8_t *is_last_block,
-     libcerror_error_t **error );
+#include <libcpath.h>
 
-#if defined( __cplusplus )
-}
-#endif
+#endif /* defined( HAVE_LOCAL_LIBCPATH ) */
 
-#endif /* !defined( _LIBGZIPF_COMPRESSION_H ) */
+#endif /* !defined( _GZIPFTOOLS_LIBCPATH_H ) */
 

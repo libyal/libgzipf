@@ -23,13 +23,19 @@
 #include <memory.h>
 #include <types.h>
 
+#if defined( HAVE_ZLIB ) || defined( ZLIB_DLL )
+#include <zlib.h>
+#endif
+
 #include "libgzipf_compressed_segment.h"
-#include "libgzipf_compression.h"
 #include "libgzipf_definitions.h"
+#include "libgzipf_deflate.h"
 #include "libgzipf_libbfio.h"
+#include "libgzipf_libcdata.h"
 #include "libgzipf_libcerror.h"
 #include "libgzipf_libcnotify.h"
 #include "libgzipf_libfdata.h"
+#include "libgzipf_segment_descriptor.h"
 #include "libgzipf_unused.h"
 
 /* Creates compressed segment
@@ -245,16 +251,337 @@ int libgzipf_compressed_segment_free(
 /* Reads the compressed segment
  * Returns 1 if successful or -1 on error
  */
+int libgzipf_compressed_segment_read_data(
+     libgzipf_compressed_segment_t *compressed_segment,
+     libgzipf_segment_descriptor_t *segment_descriptor,
+     const uint8_t *data,
+     size_t data_size,
+     libcerror_error_t **error )
+{
+#if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL )
+	z_stream zlib_stream;
+
+	size_t data_offset                 = 0;
+	size_t last_compressed_data_size   = 0;
+	size_t safe_compressed_data_size   = 0;
+	size_t safe_uncompressed_data_size = 0;
+	uint8_t bit_shift                  = 0;
+	uint8_t decompression_error        = 0;
+#else
+	libgzipf_deflate_bit_stream_t bit_stream;
+
+	size_t uncompressed_data_offset    = 0;
+#endif
+
+	static char *function              = "libgzipf_compressed_segment_read_data";
+	uint8_t is_last_block              = 0;
+	int result                         = 0;
+
+	if( compressed_segment == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid compressed segment.",
+		 function );
+
+		return( -1 );
+	}
+	if( compressed_segment->uncompressed_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid compressed segment - missing uncompressed data.",
+		 function );
+
+		return( -1 );
+	}
+	if( segment_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid segment descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	if( data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid data.",
+		 function );
+
+		return( -1 );
+	}
+#if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL )
+	if( compressed_segment->uncompressed_data_size > (size_t) ULONG_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid uncompressed data size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( data_size > (size_t) ULONG_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid data size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( memory_set(
+	     &zlib_stream,
+	     0,
+	     sizeof( z_stream ) ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+		 "%s: unable to clear zlib stream.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_ZLIB_INFLATE_INIT2 ) || defined( ZLIB_DLL )
+	result = inflateInit2(
+	          &zlib_stream,
+	          -15 );
+#else
+	result = _inflateInit2(
+	          &zlib_stream,
+	          -15 );
+#endif
+	if( result != Z_OK )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to initialize zlib stream.",
+		 function );
+
+		return( -1 );
+	}
+	if( segment_descriptor->number_of_bits > 0 )
+	{
+		bit_shift = 8 - segment_descriptor->number_of_bits;
+
+		result = inflatePrime(
+		          &zlib_stream,
+		          (int) segment_descriptor->number_of_bits,
+		          (int) data[ 0 ] >> bit_shift );
+
+		if( result != Z_OK )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set compressed stream bits in zlib stream.",
+			 function );
+
+			return( -1 );
+		}
+		data_offset++;
+	}
+	result = inflateSetDictionary(
+	          &zlib_stream,
+	          segment_descriptor->distance_data,
+	          (uInt) segment_descriptor->distance_data_size );
+
+	if( result != Z_OK )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to set dictionary of zlib stream.",
+		 function );
+
+		return( -1 );
+	}
+	zlib_stream.next_in   = (Bytef *) &( data[ data_offset ] );
+	zlib_stream.avail_in  = (uInt) data_size - data_offset;
+	zlib_stream.next_out  = (Bytef *) compressed_segment->uncompressed_data;
+	zlib_stream.avail_out = (uInt) compressed_segment->uncompressed_data_size;
+
+	while( ( is_last_block == 0 )
+	    && ( decompression_error == 0 ) )
+	{
+		last_compressed_data_size = safe_compressed_data_size;
+
+		safe_compressed_data_size   += (size_t) zlib_stream.avail_in;
+		safe_uncompressed_data_size += (size_t) zlib_stream.avail_out;
+
+		result = inflate(
+			  &zlib_stream,
+			  Z_BLOCK );
+
+		safe_compressed_data_size   -= (size_t) zlib_stream.avail_in;
+		safe_uncompressed_data_size -= (size_t) zlib_stream.avail_out;
+
+		if( ( result == Z_OK )
+		 || ( result == Z_STREAM_END ) )
+		{
+			is_last_block = ( result == Z_STREAM_END );
+		}
+		else if( result == Z_DATA_ERROR )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+			 "%s: unable to read compressed data: data error.",
+			 function );
+
+			return( -1 );
+		}
+		else if( result == Z_BUF_ERROR )
+		{
+			if( safe_compressed_data_size == last_compressed_data_size )
+			{
+				decompression_error = 1;
+			}
+			else
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_MEMORY,
+				 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+				 "%s: unable to read compressed data: no progress possible.",
+				 function );
+
+				return( -1 );
+			}
+		}
+		else if( result == Z_MEM_ERROR )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+			 "%s: unable to read compressed data: insufficient memory.",
+			 function );
+
+			return( -1 );
+		}
+		else
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_COMPRESSION,
+			 LIBCERROR_COMPRESSION_ERROR_DECOMPRESS_FAILED,
+			 "%s: zlib returned undefined error: %d.",
+			 function,
+			 result );
+
+			return( -1 );
+		}
+	}
+	if( inflateEnd(
+	     &zlib_stream ) != Z_OK )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to finalize zlib stream.",
+		 function );
+
+		return( -1 );
+	}
+/* TODO determine why size is sometimes 1-off
+	if( safe_uncompressed_data_size != compressed_segment->uncompressed_data_size )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid uncompressed data size value out of bounds (%zd, %zd).",
+		 function, safe_uncompressed_data_size, compressed_segment->uncompressed_data_size );
+
+		return( -1 );
+	}
+*/
+	return( 1 );
+
+#else
+	if( data_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid data size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	bit_stream.byte_stream        = data;
+	bit_stream.byte_stream_size   = data_size;
+	bit_stream.byte_stream_offset = 0;
+	bit_stream.bit_buffer         = 0;
+	bit_stream.bit_buffer_size    = 0;
+
+	result = libgzipf_deflate_read_block(
+	          &bit_stream,
+	          compressed_segment->uncompressed_data,
+	          compressed_segment->uncompressed_data_size,
+	          &uncompressed_data_offset,
+	          &is_last_block,
+	          error );
+
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
+		 LIBCERROR_ENCRYPTION_ERROR_GENERIC,
+		 "%s: unable to decompress DEFLATE compressed data.",
+		 function );
+
+		return( -1 );
+	}
+	/* Correct for the remaining bytes in the bit-stream buffer
+	 */
+	while( bit_stream.bit_buffer_size >= 8 )
+	{
+		bit_stream.byte_stream_offset -= 1;
+		bit_stream.bit_buffer_size    -= 8;
+	}
+	return( result );
+
+#endif /* ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL ) */
+}
+
+/* Reads the compressed segment
+ * Returns 1 if successful or -1 on error
+ */
 int libgzipf_compressed_segment_read_file_io_handle(
      libgzipf_compressed_segment_t *compressed_segment,
+     libgzipf_segment_descriptor_t *segment_descriptor,
      libbfio_handle_t *file_io_handle,
      off64_t file_offset,
      libcerror_error_t **error )
 {
-	static char *function              = "libgzipf_compressed_segment_read_file_io_handle";
-	size_t safe_uncompressed_data_size = 0;
-	ssize_t read_count                 = 0;
-	uint8_t is_last_segment            = 0;
+	static char *function = "libgzipf_compressed_segment_read_file_io_handle";
+	ssize_t read_count    = 0;
 
 	if( compressed_segment == NULL )
 	{
@@ -289,6 +616,17 @@ int libgzipf_compressed_segment_read_file_io_handle(
 
 		return( -1 );
 	}
+	if( segment_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid segment descriptor.",
+		 function );
+
+		return( -1 );
+	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -319,36 +657,18 @@ int libgzipf_compressed_segment_read_file_io_handle(
 
 		return( -1 );
 	}
-	safe_uncompressed_data_size = compressed_segment->uncompressed_data_size;
-
-/* TODO decompress more than 1 block */
-	if( libgzipf_decompress_data(
+	if( libgzipf_compressed_segment_read_data(
+	     compressed_segment,
+	     segment_descriptor,
 	     compressed_segment->compressed_data,
-	     (size_t *) &read_count,
-	     LIBGZIPF_COMPRESSION_METHOD_DEFLATE,
-	     compressed_segment->uncompressed_data,
-	     &safe_uncompressed_data_size,
-	     &is_last_segment,
+	     (size_t) read_count,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
-		 LIBCERROR_ENCRYPTION_ERROR_GENERIC,
-		 "%s: unable to decompress data at offset: %" PRIi64 " (0x%08" PRIx64 ").",
-		 function,
-		 file_offset,
-		 file_offset );
-
-		return( -1 );
-	}
-	if( safe_uncompressed_data_size != compressed_segment->uncompressed_data_size )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid uncompressed data size value out of bounds.",
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read compressed data.",
 		 function );
 
 		return( -1 );
@@ -360,11 +680,11 @@ int libgzipf_compressed_segment_read_file_io_handle(
  * Returns 1 if successful or -1 on error
  */
 int libgzipf_compressed_segment_read_element_data(
-     intptr_t *data_handle LIBGZIPF_ATTRIBUTE_UNUSED,
+     libcdata_array_t *segment_descriptors_array,
      libbfio_handle_t *file_io_handle,
      libfdata_list_element_t *element,
      libfdata_cache_t *cache,
-     int data_range_file_index LIBGZIPF_ATTRIBUTE_UNUSED,
+     int segment_descriptor_index,
      off64_t data_range_offset,
      size64_t data_range_size,
      uint32_t data_range_flags LIBGZIPF_ATTRIBUTE_UNUSED,
@@ -372,14 +692,30 @@ int libgzipf_compressed_segment_read_element_data(
      libcerror_error_t **error )
 {
 	libgzipf_compressed_segment_t *compressed_segment = NULL;
+	libgzipf_segment_descriptor_t *segment_descriptor = NULL;
 	static char *function                             = "libgzipf_compressed_segment_read_element_data";
 	size64_t mapped_size                              = 0;
 
 	LIBGZIPF_UNREFERENCED_PARAMETER( data_handle )
-	LIBGZIPF_UNREFERENCED_PARAMETER( data_range_file_index )
 	LIBGZIPF_UNREFERENCED_PARAMETER( data_range_flags )
 	LIBGZIPF_UNREFERENCED_PARAMETER( read_flags )
 
+	if( libcdata_array_get_entry_by_index(
+	     segment_descriptors_array,
+	     segment_descriptor_index,
+	     (intptr_t **) &segment_descriptor,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve segment descriptor: %d.",
+		 function,
+		 segment_descriptor_index );
+
+		goto on_error;
+	}
 	if( libfdata_list_element_get_mapped_size(
 	     element,
 	     &mapped_size,
@@ -411,6 +747,7 @@ int libgzipf_compressed_segment_read_element_data(
 	}
 	if( libgzipf_compressed_segment_read_file_io_handle(
 	     compressed_segment,
+	     segment_descriptor,
 	     file_io_handle,
 	     data_range_offset,
 	     error ) != 1 )

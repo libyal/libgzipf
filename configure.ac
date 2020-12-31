@@ -2,7 +2,7 @@ AC_PREREQ( 2.59 )
 
 AC_INIT(
  [libgzipf],
- [20201228],
+ [20201231],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -129,6 +129,9 @@ AS_IF(
     ])
   ])
 
+dnl Check if libfuse or required headers and functions are available
+AX_LIBFUSE_CHECK_ENABLE
+
 dnl Check if gzipftools required headers and functions are available
 AX_GZIPFTOOLS_CHECK_LOCAL
 
@@ -148,6 +151,13 @@ AS_IF(
  [AC_SUBST(
   [libgzipf_spec_requires],
   [Requires:])
+ ])
+
+AS_IF(
+ [test "x$ac_cv_libfuse" != xno],
+ [AC_SUBST(
+  [libgzipf_spec_tools_build_requires],
+  [BuildRequires:])
  ])
 
 dnl Set the date for the dpkg files
@@ -222,6 +232,7 @@ Building:
    libfdata support:                           $ac_cv_libfdata
    libfdatetime support:                       $ac_cv_libfdatetime
    DEFLATE compression support:                $ac_cv_inflate
+   FUSE support:                               $ac_cv_libfuse
 
 Features:
    Multi-threading support:                    $ac_cv_libcthreads_multi_threading

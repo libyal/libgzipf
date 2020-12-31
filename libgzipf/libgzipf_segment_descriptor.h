@@ -49,13 +49,17 @@ struct libgzipf_segment_descriptor
 	 */
 	size_t uncompressed_data_size;
 
-	/* The intial bit buffer of the compressed block
+	/* The intial number of bits of the compressed block
 	 */
-	uint8_t bit_buffer;
+	uint8_t number_of_bits;
 
 	/* The preceeding 32 KiB of uncompressed data for distance codes
 	 */
 	uint8_t distance_data[ LIBGZIPF_MAXIMUM_DEFLATE_DISTANCE ];
+
+	/* The distance data size
+	 */
+	size_t distance_data_size;
 };
 
 int libgzipf_segment_descriptor_initialize(

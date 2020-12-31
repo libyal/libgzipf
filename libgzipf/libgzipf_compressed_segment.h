@@ -26,8 +26,10 @@
 #include <types.h>
 
 #include "libgzipf_libbfio.h"
+#include "libgzipf_libcdata.h"
 #include "libgzipf_libcerror.h"
 #include "libgzipf_libfdata.h"
+#include "libgzipf_segment_descriptor.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -64,18 +66,26 @@ int libgzipf_compressed_segment_free(
      libgzipf_compressed_segment_t **compressed_segment,
      libcerror_error_t **error );
 
+int libgzipf_compressed_segment_read_data(
+     libgzipf_compressed_segment_t *compressed_segment,
+     libgzipf_segment_descriptor_t *segment_descriptor,
+     const uint8_t *data,
+     size_t data_size,
+     libcerror_error_t **error );
+
 int libgzipf_compressed_segment_read_file_io_handle(
      libgzipf_compressed_segment_t *compressed_segment,
+     libgzipf_segment_descriptor_t *segment_descriptor,
      libbfio_handle_t *file_io_handle,
      off64_t file_offset,
      libcerror_error_t **error );
 
 int libgzipf_compressed_segment_read_element_data(
-     intptr_t *data_handle,
+     libcdata_array_t *segment_descriptors_array,
      libbfio_handle_t *file_io_handle,
      libfdata_list_element_t *element,
      libfdata_cache_t *cache,
-     int data_range_file_index,
+     int segment_descriptor_index,
      off64_t data_range_offset,
      size64_t data_range_size,
      uint32_t data_range_flags,

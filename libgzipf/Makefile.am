@@ -27,7 +27,6 @@ libgzipf_la_SOURCES = \
 	libgzipf_checksum.c libgzipf_checksum.h \
 	libgzipf_codepage.h \
 	libgzipf_compressed_segment.c libgzipf_compressed_segment.h \
-	libgzipf_compression.c libgzipf_compression.h \
 	libgzipf_debug.c libgzipf_debug.h \
 	libgzipf_definitions.h \
 	libgzipf_deflate.c libgzipf_deflate.h \

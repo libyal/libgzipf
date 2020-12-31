@@ -126,6 +126,7 @@ stamp-h[1-9]
 /pygzipf-python[23]/*.[ch]
 /gzipftools/*.exe
 /gzipftools/gzipfinfo
+/gzipftools/gzipfmount
 /tests/*.exe
 /tests/gzipf_test_checksum
 /tests/gzipf_test_compressed_segment

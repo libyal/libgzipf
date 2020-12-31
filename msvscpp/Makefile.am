@@ -15,6 +15,7 @@ MSVSCPP_FILES = \
 	gzipf_test_tools_output/gzipf_test_tools_output.vcproj \
 	gzipf_test_tools_signal/gzipf_test_tools_signal.vcproj \
 	gzipfinfo/gzipfinfo.vcproj \
+	gzipfmount/gzipfmount.vcproj \
 	libbfio/libbfio.vcproj \
 	libcdata/libcdata.vcproj \
 	libcerror/libcerror.vcproj \

@@ -11,12 +11,14 @@ AM_CPPFLAGS = \
 	@LIBCPATH_CPPFLAGS@ \
 	@LIBBFIO_CPPFLAGS@ \
 	@LIBFDATETIME_CPPFLAGS@ \
+	@LIBFUSE_CPPFLAGS@ \
 	@LIBGZIPF_DLL_IMPORT@
 
 AM_LDFLAGS = @STATIC_LDFLAGS@
 
 bin_PROGRAMS = \
-	gzipfinfo
+	gzipfinfo \
+	gzipfmount
 
 gzipfinfo_SOURCES = \
 	gzipfinfo.c \
@@ -44,6 +46,37 @@ gzipfinfo_LDADD = \
 	@LIBCERROR_LIBADD@ \
 	@LIBINTL@
 
+gzipfmount_SOURCES = \
+	gzipfmount.c \
+	gzipftools_getopt.c gzipftools_getopt.h \
+	gzipftools_i18n.h \
+	gzipftools_libbfio.h \
+	gzipftools_libcdata.h \
+	gzipftools_libcerror.h \
+	gzipftools_libclocale.h \
+	gzipftools_libcnotify.h \
+	gzipftools_libcpath.h \
+	gzipftools_libgzipf.h \
+	gzipftools_libuna.h \
+	gzipftools_output.c gzipftools_output.h \
+	gzipftools_signal.c gzipftools_signal.h \
+	gzipftools_unused.h \
+	mount_dokan.c mount_dokan.h \
+	mount_file_entry.c mount_file_entry.h \
+	mount_file_system.c mount_file_system.h \
+	mount_fuse.c mount_fuse.h \
+	mount_handle.c mount_handle.h
+
+gzipfmount_LDADD = \
+	@LIBFUSE_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCLOCALE_LIBADD@ \
+	@LIBCDATA_LIBADD@ \
+	../libgzipf/libgzipf.la \
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
+
 MAINTAINERCLEANFILES = \
 	Makefile.in
 
@@ -53,4 +86,6 @@ distclean: clean
 splint:
 	@echo "Running splint on gzipfinfo ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(gzipfinfo_SOURCES)
+	@echo "Running splint on gzipfmount ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(gzipfmount_SOURCES)
 
