@@ -20,6 +20,17 @@ AC_DEFUN([AX_GZIPFTOOLS_CHECK_LOCAL],
      [Missing function: close],
      [1])
   ])
+
+  dnl Headers included in gzipftools/gzipfmount.c
+  AC_CHECK_HEADERS([errno.h])
+
+  AC_HEADER_TIME
+
+  dnl Functions included in gzipftools/mount_file_system.c and gzipftools/mount_file_entry.c
+  AS_IF(
+    [test "x$ac_cv_enable_winapi" = xno],
+    [AC_CHECK_FUNCS([clock_gettime getegid geteuid time])
+  ])
 ])
 
 dnl Function to check if DLL support is needed

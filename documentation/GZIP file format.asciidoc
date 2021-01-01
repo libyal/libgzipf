@@ -8,10 +8,11 @@
 == Summary
 
 The GZIP compressed stream format that is commonly used in combination with .tar
-and .log files on Linux.
+and .log files on Linux. This specification is based on publicly available work
+on the format and was enhanced by analyzing test data.
 
-This document is intended as a working document for the GZIP format
-specification.
+This document is intended as a working document of the data format specification
+for the libgzipf project.
 
 [preface]
 == Document information
@@ -28,7 +29,7 @@ specification.
 == License
 
 ....
-Copyright (C) 2017-2020, Joachim Metz <joachim.metz@gmail.com>.
+Copyright (C) 2017-2021, Joachim Metz <joachim.metz@gmail.com>.
 Permission is granted to copy, distribute and/or modify this document under the
 terms of the GNU Free Documentation License, Version 1.3 or any later version
 published by the Free Software Foundation; with no Invariant Sections, no
@@ -45,7 +46,8 @@ in the section entitled "GNU Free Documentation License".
 | 0.0.1 | J.B. Metz | November 2017 | Initial version.
 | 0.0.2 | J.B. Metz | December 2017 | Additional information.
 | 0.0.3 | J.B. Metz | July 2019 | Formatting changes.
-| 0.0.4 | J.B. Metz | July 2020 | Textual correctsion.
+| 0.0.4 | J.B. Metz | July 2020 | Textual corrections.
+| 0.0.5 | J.B. Metz | January 2021 | Small changes.
 |===
 
 :numbered:
@@ -175,7 +177,8 @@ If compression method value is 8 (deflate) the following compression flags can b
 
 === Extra fields
 
-This value is present in the member if the FEXTRA flag is set in the member header flags.
+This value is present in the member if the FEXTRA flag is set in the member
+header flags.
 
 The extra field are variable of size and contains:
 
@@ -189,8 +192,8 @@ Value in bytes.
 
 === Original file name
 
-This value is present in the member if the FNAME flag is set in the member header
-flags.
+This value is present in the member if the FNAME flag is set in the member
+header flags.
 
 This is the original name of the file being compressed, with any directory
 components removed, and, if the file being compressed is on a file system with

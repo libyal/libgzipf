@@ -1,7 +1,7 @@
 /*
  * Compressed segment functions
  *
- * Copyright (C) 2019-2020, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2019-2021, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -696,7 +696,6 @@ int libgzipf_compressed_segment_read_element_data(
 	static char *function                             = "libgzipf_compressed_segment_read_element_data";
 	size64_t mapped_size                              = 0;
 
-	LIBGZIPF_UNREFERENCED_PARAMETER( data_handle )
 	LIBGZIPF_UNREFERENCED_PARAMETER( data_range_flags )
 	LIBGZIPF_UNREFERENCED_PARAMETER( read_flags )
 
