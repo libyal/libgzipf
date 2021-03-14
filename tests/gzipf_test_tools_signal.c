@@ -33,11 +33,53 @@
 
 #include "../gzipftools/gzipftools_signal.h"
 
-void gzipf_test_tools_signal_handler(
+void gzipf_test_tools_signal_handler_function(
       gzipftools_signal_t signal GZIPF_TEST_ATTRIBUTE_UNUSED )
 {
 	GZIPF_TEST_UNREFERENCED_PARAMETER( signal )
 }
+
+#if defined( WINAPI )
+
+/* Tests the gzipftools_signal_handler function
+ * Returns 1 if successful or 0 if not
+ */
+int gzipf_test_tools_signal_handler(
+     void )
+{
+	BOOL result = 0;
+
+	/* Test regular cases
+	 */
+	result = gzipftools_signal_handler(
+	          CTRL_C_EVENT );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 (int) TRUE );
+
+	result = gzipftools_signal_handler(
+	          CTRL_LOGOFF_EVENT );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 (int) FALSE );
+
+	return( 1 );
+
+on_error:
+	return( 0 );
+}
+
+#if defined( _MSC_VER )
+
+	/* TODO add tests for gzipftools_signal_initialize_memory_debug */
+
+#endif /* defined( _MSC_VER ) */
+
+#endif /* defined( WINAPI ) */
 
 /* Tests the gzipftools_signal_attach function
  * Returns 1 if successful or 0 if not
@@ -48,8 +90,10 @@ int gzipf_test_tools_signal_attach(
 	libcerror_error_t *error = NULL;
 	int result               = 0;
 
+	/* Test regular cases
+	 */
 	result = gzipftools_signal_attach(
-	          gzipf_test_tools_signal_handler,
+	          gzipf_test_tools_signal_handler_function,
 	          &error );
 
 	GZIPF_TEST_ASSERT_EQUAL_INT(
@@ -60,6 +104,24 @@ int gzipf_test_tools_signal_attach(
 	GZIPF_TEST_ASSERT_IS_NULL(
 	 "error",
 	 error );
+
+	/* Test error cases
+	 */
+	result = gzipftools_signal_attach(
+	          NULL,
+	          &error );
+
+	GZIPF_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	GZIPF_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
 
 	return( 1 );
 
@@ -81,6 +143,8 @@ int gzipf_test_tools_signal_detach(
 	libcerror_error_t *error = NULL;
 	int result               = 0;
 
+	/* Test regular cases
+	 */
 	result = gzipftools_signal_detach(
 	          &error );
 
@@ -121,13 +185,17 @@ int main(
 
 #if defined( WINAPI )
 
-	/* TODO add tests for gzipftools_signal_handler */
-#endif
+	GZIPF_TEST_RUN(
+	 "gzipftools_signal_handler",
+	 gzipf_test_tools_signal_handler )
 
-#if defined( WINAPI ) && defined( _MSC_VER )
+#if defined( _MSC_VER )
 
 	/* TODO add tests for gzipftools_signal_initialize_memory_debug */
-#endif
+
+#endif /* defined( _MSC_VER ) */
+
+#endif /* defined( WINAPI ) */
 
 	GZIPF_TEST_RUN(
 	 "gzipftools_signal_attach",
