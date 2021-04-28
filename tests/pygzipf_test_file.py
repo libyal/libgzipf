@@ -39,15 +39,16 @@ class FileTypeTests(unittest.TestCase):
 
   def test_open(self):
     """Tests the open function."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
     gzipf_file = pygzipf.file()
 
-    gzipf_file.open(unittest.source)
+    gzipf_file.open(test_source)
 
     with self.assertRaises(IOError):
-      gzipf_file.open(unittest.source)
+      gzipf_file.open(test_source)
 
     gzipf_file.close()
 
@@ -55,19 +56,20 @@ class FileTypeTests(unittest.TestCase):
       gzipf_file.open(None)
 
     with self.assertRaises(ValueError):
-      gzipf_file.open(unittest.source, mode="w")
+      gzipf_file.open(test_source, mode="w")
 
   def test_open_file_object(self):
     """Tests the open_file_object function."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
-    if not os.path.isfile(unittest.source):
+    if not os.path.isfile(test_source):
       raise unittest.SkipTest("source not a regular file")
 
     gzipf_file = pygzipf.file()
 
-    with open(unittest.source, "rb") as file_object:
+    with open(test_source, "rb") as file_object:
 
       gzipf_file.open_file_object(file_object)
 
@@ -84,7 +86,8 @@ class FileTypeTests(unittest.TestCase):
 
   def test_close(self):
     """Tests the close function."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
     gzipf_file = pygzipf.file()
@@ -94,21 +97,22 @@ class FileTypeTests(unittest.TestCase):
 
   def test_open_close(self):
     """Tests the open and close functions."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       return
 
     gzipf_file = pygzipf.file()
 
     # Test open and close.
-    gzipf_file.open(unittest.source)
+    gzipf_file.open(test_source)
     gzipf_file.close()
 
     # Test open and close a second time to validate clean up on close.
-    gzipf_file.open(unittest.source)
+    gzipf_file.open(test_source)
     gzipf_file.close()
 
-    if os.path.isfile(unittest.source):
-      with open(unittest.source, "rb") as file_object:
+    if os.path.isfile(test_source):
+      with open(test_source, "rb") as file_object:
 
         # Test open_file_object and close.
         gzipf_file.open_file_object(file_object)
@@ -125,12 +129,13 @@ class FileTypeTests(unittest.TestCase):
 
   def test_read_buffer(self):
     """Tests the read_buffer function."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
     gzipf_file = pygzipf.file()
 
-    gzipf_file.open(unittest.source)
+    gzipf_file.open(test_source)
 
     size = gzipf_file.get_uncompressed_data_size()
 
@@ -203,15 +208,16 @@ class FileTypeTests(unittest.TestCase):
 
   def test_read_buffer_file_object(self):
     """Tests the read_buffer function on a file-like object."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
-    if not os.path.isfile(unittest.source):
+    if not os.path.isfile(test_source):
       raise unittest.SkipTest("source not a regular file")
 
     gzipf_file = pygzipf.file()
 
-    with open(unittest.source, "rb") as file_object:
+    with open(test_source, "rb") as file_object:
       gzipf_file.open_file_object(file_object)
 
       size = gzipf_file.get_uncompressed_data_size()
@@ -226,12 +232,13 @@ class FileTypeTests(unittest.TestCase):
 
   def test_read_buffer_at_offset(self):
     """Tests the read_buffer_at_offset function."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
     gzipf_file = pygzipf.file()
 
-    gzipf_file.open(unittest.source)
+    gzipf_file.open(test_source)
 
     size = gzipf_file.get_uncompressed_data_size()
 
@@ -293,12 +300,13 @@ class FileTypeTests(unittest.TestCase):
 
   def test_seek_offset(self):
     """Tests the seek_offset function."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
     gzipf_file = pygzipf.file()
 
-    gzipf_file.open(unittest.source)
+    gzipf_file.open(test_source)
 
     size = gzipf_file.get_uncompressed_data_size()
 
@@ -352,12 +360,13 @@ class FileTypeTests(unittest.TestCase):
 
   def test_get_offset(self):
     """Tests the get_offset function."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
     gzipf_file = pygzipf.file()
 
-    gzipf_file.open(unittest.source)
+    gzipf_file.open(test_source)
 
     offset = gzipf_file.get_offset()
     self.assertIsNotNone(offset)
@@ -366,12 +375,13 @@ class FileTypeTests(unittest.TestCase):
 
   def test_get_uncompressed_data_size(self):
     """Tests the get_uncompressed_data_size function and uncompressed_data_size property."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
     gzipf_file = pygzipf.file()
 
-    gzipf_file.open(unittest.source)
+    gzipf_file.open(test_source)
 
     uncompressed_data_size = gzipf_file.get_uncompressed_data_size()
     self.assertIsNotNone(uncompressed_data_size)
@@ -382,12 +392,13 @@ class FileTypeTests(unittest.TestCase):
 
   def test_get_number_of_members(self):
     """Tests the get_number_of_members function and number_of_members property."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
     gzipf_file = pygzipf.file()
 
-    gzipf_file.open(unittest.source)
+    gzipf_file.open(test_source)
 
     number_of_members = gzipf_file.get_number_of_members()
     self.assertIsNotNone(number_of_members)
