@@ -24,8 +24,7 @@ Static library version of libgzipf.
 %package -n libgzipf-devel
 Summary: Header files and libraries for developing applications for libgzipf
 Group: Development/Libraries
-Requires: libgzipf = %{version}-%{release} @ax_libfuse_spec_requires@
-@libgzipf_spec_tools_build_requires@ @ax_libfuse_spec_build_requires@
+Requires: libgzipf = %{version}-%{release}
 
 %description -n libgzipf-devel
 Header files and libraries for developing applications for libgzipf.
@@ -53,7 +52,8 @@ Python 3 bindings for libgzipf
 %package -n libgzipf-tools
 Summary: Several tools for reading GZIP files
 Group: Applications/System
-Requires: libgzipf = %{version}-%{release}
+Requires: libgzipf = %{version}-%{release} @ax_libfuse_spec_requires@
+@libgzipf_spec_tools_build_requires@ @ax_libfuse_spec_build_requires@
 
 %description -n libgzipf-tools
 Several tools for reading GZIP files
