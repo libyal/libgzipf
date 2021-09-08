@@ -353,6 +353,15 @@ void pygzipf_file_free(
 
 		return;
 	}
+	if( pygzipf_file->file_io_handle != NULL )
+	{
+		if( pygzipf_file_close(
+		     pygzipf_file,
+		     NULL ) == NULL )
+		{
+			return;
+		}
+	}
 	if( pygzipf_file->file != NULL )
 	{
 		Py_BEGIN_ALLOW_THREADS
