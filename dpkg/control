@@ -1,7 +1,7 @@
 Source: libgzipf
 Priority: extra
 Maintainer: Joachim Metz <joachim.metz@gmail.com>
-Build-Depends: debhelper (>= 9), dh-autoreconf, pkg-config, zlib1g-dev, python-dev, python-setuptools, python3-dev, python3-setuptools, libfuse-dev
+Build-Depends: debhelper (>= 9), dh-autoreconf, pkg-config, zlib1g-dev, python3-dev, python3-setuptools, libfuse-dev
 Standards-Version: 4.1.4
 Section: libs
 Homepage: https://github.com/libyal/libgzipf
@@ -45,23 +45,6 @@ Architecture: any
 Depends: libgzipf-tools (= ${binary:Version}), ${misc:Depends}
 Description: Debugging symbols for libgzipf-tools
  Debugging symbols for libgzipf-tools.
-
-Package: libgzipf-python
-Section: python
-Architecture: any
-Depends: libgzipf (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
-Conflicts: python-libgzipf
-Replaces: python-libgzipf
-Suggests: libgzipf-python-dbg
-Description: Python 2 bindings for libgzipf
- Python 2 bindings for libgzipf.
-
-Package: libgzipf-python-dbg
-Section: debug
-Architecture: any
-Depends: libgzipf-python (= ${binary:Version}), ${misc:Depends}
-Description: Debugging symbols for libgzipf-python
- Debugging symbols for libgzipf-python.
 
 Package: libgzipf-python3
 Section: python
