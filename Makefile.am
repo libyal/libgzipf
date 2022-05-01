@@ -36,7 +36,6 @@ DPKG_FILES = \
 	dpkg/rules \
 	dpkg/libgzipf.install \
 	dpkg/libgzipf-dev.install \
-	dpkg/libgzipf-python.install \
 	dpkg/libgzipf-python3.install \
 	dpkg/libgzipf-tools.install \
 	dpkg/source/format
