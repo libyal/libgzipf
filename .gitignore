@@ -128,11 +128,13 @@ stamp-h[1-9]
 /gzipftools/gzipfinfo
 /gzipftools/gzipfmount
 /tests/*.exe
+/tests/gzipf_test_bit_stream
 /tests/gzipf_test_checksum
 /tests/gzipf_test_compressed_segment
 /tests/gzipf_test_deflate
 /tests/gzipf_test_error
 /tests/gzipf_test_file
+/tests/gzipf_test_huffman_tree
 /tests/gzipf_test_io_handle
 /tests/gzipf_test_member
 /tests/gzipf_test_member_descriptor

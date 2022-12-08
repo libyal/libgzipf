@@ -24,6 +24,7 @@ libgzipf_la_SOURCES = \
 	gzipf_member_header.h \
 	gzipf_member_footer.h \
 	libgzipf.c \
+	libgzipf_bit_stream.c libgzipf_bit_stream.h \
 	libgzipf_checksum.c libgzipf_checksum.h \
 	libgzipf_codepage.h \
 	libgzipf_compressed_segment.c libgzipf_compressed_segment.h \
@@ -33,6 +34,7 @@ libgzipf_la_SOURCES = \
 	libgzipf_error.c libgzipf_error.h \
 	libgzipf_extern.h \
 	libgzipf_file.c libgzipf_file.h \
+	libgzipf_huffman_tree.c libgzipf_huffman_tree.h \
 	libgzipf_io_handle.c libgzipf_io_handle.h \
 	libgzipf_libbfio.h \
 	libgzipf_libcdata.h \

@@ -7,7 +7,7 @@ EXIT_SUCCESS=0;
 EXIT_FAILURE=1;
 EXIT_IGNORE=77;
 
-LIBRARY_TESTS="checksum compressed_segment deflate error io_handle member member_descriptor member_footer member_header notify";
+LIBRARY_TESTS="bit_stream checksum compressed_segment deflate error huffman_tree io_handle member member_descriptor member_footer member_header notify";
 LIBRARY_TESTS_WITH_INPUT="file support";
 OPTION_SETS="";
 

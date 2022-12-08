@@ -44,11 +44,13 @@ EXTRA_DIST = \
 	$(check_SCRIPTS)
 
 check_PROGRAMS = \
+	gzipf_test_bit_stream \
 	gzipf_test_checksum \
 	gzipf_test_compressed_segment \
 	gzipf_test_deflate \
 	gzipf_test_error \
 	gzipf_test_file \
+	gzipf_test_huffman_tree \
 	gzipf_test_io_handle \
 	gzipf_test_member \
 	gzipf_test_member_descriptor \
@@ -59,6 +61,18 @@ check_PROGRAMS = \
 	gzipf_test_tools_info_handle \
 	gzipf_test_tools_output \
 	gzipf_test_tools_signal
+
+gzipf_test_bit_stream_SOURCES = \
+	gzipf_test_bit_stream.c \
+	gzipf_test_libcerror.h \
+	gzipf_test_libgzipf.h \
+	gzipf_test_macros.h \
+	gzipf_test_memory.c gzipf_test_memory.h \
+	gzipf_test_unused.h
+
+gzipf_test_bit_stream_LDADD = \
+	../libgzipf/libgzipf.la \
+	@LIBCERROR_LIBADD@
 
 gzipf_test_checksum_SOURCES = \
 	gzipf_test_checksum.c \
@@ -132,6 +146,18 @@ gzipf_test_file_LDADD = \
 	@LIBCTHREADS_LIBADD@ \
 	@LIBCERROR_LIBADD@ \
 	@PTHREAD_LIBADD@
+
+gzipf_test_huffman_tree_SOURCES = \
+	gzipf_test_huffman_tree.c \
+	gzipf_test_libcerror.h \
+	gzipf_test_libgzipf.h \
+	gzipf_test_macros.h \
+	gzipf_test_memory.c gzipf_test_memory.h \
+	gzipf_test_unused.h
+
+gzipf_test_huffman_tree_LDADD = \
+	../libgzipf/libgzipf.la \
+	@LIBCERROR_LIBADD@
 
 gzipf_test_io_handle_SOURCES = \
 	gzipf_test_io_handle.c \

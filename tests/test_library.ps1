@@ -6,7 +6,7 @@ $ExitSuccess = 0
 $ExitFailure = 1
 $ExitIgnore = 77
 
-$LibraryTests = "checksum compressed_segment deflate error io_handle member member_descriptor member_footer member_header notify"
+$LibraryTests = "bit_stream checksum compressed_segment deflate error huffman_tree io_handle member member_descriptor member_footer member_header notify"
 $LibraryTestsWithInput = "file support"
 $OptionSets = ""
 
