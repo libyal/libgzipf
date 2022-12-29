@@ -267,14 +267,12 @@ int libgzipf_compressed_segment_read_data(
 	size_t safe_uncompressed_data_size = 0;
 	uint8_t bit_shift                  = 0;
 	uint8_t decompression_error        = 0;
+	uint8_t is_last_block              = 0;
 #else
-	libgzipf_deflate_bit_stream_t bit_stream;
-
-	size_t uncompressed_data_offset    = 0;
+	size_t uncompressed_data_size      = 0;
 #endif
 
 	static char *function              = "libgzipf_compressed_segment_read_data";
-	uint8_t is_last_block              = 0;
 	int result                         = 0;
 
 	if( compressed_segment == NULL )
@@ -533,18 +531,13 @@ int libgzipf_compressed_segment_read_data(
 
 		return( -1 );
 	}
-	bit_stream.byte_stream        = data;
-	bit_stream.byte_stream_size   = data_size;
-	bit_stream.byte_stream_offset = 0;
-	bit_stream.bit_buffer         = 0;
-	bit_stream.bit_buffer_size    = 0;
+	uncompressed_data_size = compressed_segment->uncompressed_data_size;
 
-	result = libgzipf_deflate_read_block(
-	          &bit_stream,
+	result = libgzipf_deflate_decompress(
+	          data,
+	          data_size,
 	          compressed_segment->uncompressed_data,
-	          compressed_segment->uncompressed_data_size,
-	          &uncompressed_data_offset,
-	          &is_last_block,
+	          &uncompressed_data_size,
 	          error );
 
 	if( result != 1 )
@@ -557,13 +550,6 @@ int libgzipf_compressed_segment_read_data(
 		 function );
 
 		return( -1 );
-	}
-	/* Correct for the remaining bytes in the bit-stream buffer
-	 */
-	while( bit_stream.bit_buffer_size >= 8 )
-	{
-		bit_stream.byte_stream_offset -= 1;
-		bit_stream.bit_buffer_size    -= 8;
 	}
 	return( result );
 

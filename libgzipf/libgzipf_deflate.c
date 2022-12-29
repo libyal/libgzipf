@@ -1070,7 +1070,7 @@ int libgzipf_deflate_read_block_header(
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: block header last block flag\t\t\t: %" PRIu8 "\n",
+		 "%s: block header last block flag\t\t: %" PRIu8 "\n",
 		 function,
 		 *last_block_flag );
 
@@ -1444,12 +1444,12 @@ int libgzipf_deflate_decompress(
 	libgzipf_bit_stream_t *bit_stream                     = NULL;
 	libgzipf_huffman_tree_t *fixed_huffman_distances_tree = NULL;
 	libgzipf_huffman_tree_t *fixed_huffman_literals_tree  = NULL;
-	static char *function                                = "libgzipf_deflate_decompress";
-	size_t compressed_data_offset                        = 0;
-	size_t safe_uncompressed_data_size                   = 0;
-	size_t uncompressed_data_offset                      = 0;
-	uint8_t block_type                                   = 0;
-	uint8_t last_block_flag                              = 0;
+	static char *function                                 = "libgzipf_deflate_decompress";
+	size_t compressed_data_offset                         = 0;
+	size_t safe_uncompressed_data_size                    = 0;
+	size_t uncompressed_data_offset                       = 0;
+	uint8_t block_type                                    = 0;
+	uint8_t last_block_flag                               = 0;
 
 	if( compressed_data == NULL )
 	{
@@ -1712,14 +1712,14 @@ int libgzipf_deflate_decompress_zlib(
 	libgzipf_bit_stream_t *bit_stream                     = NULL;
 	libgzipf_huffman_tree_t *fixed_huffman_distances_tree = NULL;
 	libgzipf_huffman_tree_t *fixed_huffman_literals_tree  = NULL;
-	static char *function                                = "libgzipf_deflate_decompress_zlib";
-	size_t compressed_data_offset                        = 0;
-	size_t safe_uncompressed_data_size                   = 0;
-	size_t uncompressed_data_offset                      = 0;
-	uint32_t calculated_checksum                         = 0;
-	uint32_t stored_checksum                             = 0;
-	uint8_t block_type                                   = 0;
-	uint8_t last_block_flag                              = 0;
+	static char *function                                 = "libgzipf_deflate_decompress_zlib";
+	size_t compressed_data_offset                         = 0;
+	size_t safe_uncompressed_data_size                    = 0;
+	size_t uncompressed_data_offset                       = 0;
+	uint32_t calculated_checksum                          = 0;
+	uint32_t stored_checksum                              = 0;
+	uint8_t block_type                                    = 0;
+	uint8_t last_block_flag                               = 0;
 
 	if( compressed_data == NULL )
 	{
