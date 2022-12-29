@@ -515,7 +515,7 @@ int libgzipf_deflate_decode_huffman(
 			 "%s: unable to retrieve literal value from bit stream.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 		if( symbol < 256 )
 		{
@@ -528,7 +528,7 @@ int libgzipf_deflate_decode_huffman(
 				 "%s: invalid uncompressed data value too small.",
 				 function );
 
-				return( -1 );
+				goto on_error;
 			}
 			uncompressed_data[ data_offset++ ] = (uint8_t) symbol;
 		}
@@ -552,7 +552,7 @@ int libgzipf_deflate_decode_huffman(
 				 "%s: unable to retrieve literal extra value from bit stream.",
 				 function );
 
-				return( -1 );
+				goto on_error;
 			}
 			compression_size = libgzipf_deflate_literal_codes_base[ symbol ] + (uint16_t) extra_bits;
 
@@ -569,7 +569,7 @@ int libgzipf_deflate_decode_huffman(
 				 "%s: unable to retrieve distance value from bit stream.",
 				 function );
 
-				return( -1 );
+				goto on_error;
 			}
 			number_of_extra_bits = libgzipf_deflate_distance_codes_number_of_extra_bits[ symbol ];
 
@@ -586,7 +586,7 @@ int libgzipf_deflate_decode_huffman(
 				 "%s: unable to retrieve distance extra value from bit stream.",
 				 function );
 
-				return( -1 );
+				goto on_error;
 			}
 			compression_offset = libgzipf_deflate_distance_codes_base[ symbol ] + (uint16_t) extra_bits;
 
@@ -599,7 +599,7 @@ int libgzipf_deflate_decode_huffman(
 				 "%s: invalid compression offset value out of bounds.",
 				 function );
 
-				return( -1 );
+				goto on_error;
 			}
 			if( ( data_offset + compression_size ) > uncompressed_data_size )
 			{
@@ -610,7 +610,7 @@ int libgzipf_deflate_decode_huffman(
 				 "%s: invalid uncompressed data value too small.",
 				 function );
 
-				return( -1 );
+				goto on_error;
 			}
 			while( compression_size > 0 )
 			{
@@ -630,7 +630,7 @@ int libgzipf_deflate_decode_huffman(
 			 function,
 			 symbol );
 
-			return( -1 );
+			goto on_error;
 		}
 	}
 	while( symbol != 256 );
@@ -638,6 +638,11 @@ int libgzipf_deflate_decode_huffman(
 	*uncompressed_data_offset = data_offset;
 
 	return( 1 );
+
+on_error:
+	*uncompressed_data_offset = data_offset;
+
+	return( -1 );
 }
 
 /* Calculates the little-endian Adler-32 of a buffer
@@ -1428,6 +1433,8 @@ on_error:
 		 &dynamic_huffman_literals_tree,
 		 NULL );
 	}
+	*uncompressed_data_offset = safe_uncompressed_data_offset;
+
 	return( -1 );
 }
 

@@ -549,7 +549,18 @@ int libgzipf_compressed_segment_read_data(
 		 "%s: unable to decompress DEFLATE compressed data.",
 		 function );
 
-		return( -1 );
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( ( error != NULL )
+		 && ( *error != NULL ) )
+		{
+			libcnotify_print_error_backtrace(
+			 *error );
+		}
+#endif
+		libcerror_error_free(
+		 error );
+
+		result = 1;
 	}
 	return( result );
 

@@ -1611,6 +1611,24 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 
 		goto on_error;
 	}
+#else
+	if( libgzipf_bit_stream_initialize(
+	     &bit_stream,
+	     compressed_data,
+	     LIBGZIPF_MAXIMUM_DEFLATE_BLOCK_SIZE,
+	     0,
+	     LIBGZIPF_BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create bit stream.",
+		 function );
+
+		goto on_error;
+	}
 #endif /* ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL ) */
 
 	compressed_block_offset = file_offset;
@@ -1836,143 +1854,116 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 			}
 			uncompressed_block_offset = copy_size;
 		}
-		if( libgzipf_bit_stream_initialize(
-		     &bit_stream,
-		     compressed_data,
-		     (size_t) read_count,
-		     0,
-		     LIBGZIPF_BIT_STREAM_STORAGE_TYPE_BYTE_BACK_TO_FRONT,
+		/* Do not flush the bit buffer */
+
+		bit_stream->byte_stream_size   = (size_t) read_count;
+		bit_stream->byte_stream_offset = 0;
+
+		if( libgzipf_deflate_read_block_header(
+		     bit_stream,
+		     &block_type,
+		     &last_block_flag,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create bit stream.",
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read compressed data block header.",
 			 function );
 
 			goto on_error;
 		}
-		/* Do not flush the bit buffer */
-
-		while( bit_stream->byte_stream_offset < bit_stream->byte_stream_size )
+		if( block_type == LIBGZIPF_DEFLATE_BLOCK_TYPE_HUFFMAN_FIXED )
 		{
-			if( libgzipf_deflate_read_block_header(
-			     bit_stream,
-			     &block_type,
-			     &last_block_flag,
-			     error ) != 1 )
+			if( ( fixed_huffman_literals_tree == NULL )
+			 && ( fixed_huffman_distances_tree == NULL ) )
 			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_IO,
-				 LIBCERROR_IO_ERROR_READ_FAILED,
-				 "%s: unable to read compressed data block header.",
-				 function );
-
-				goto on_error;
-			}
-			if( block_type == LIBGZIPF_DEFLATE_BLOCK_TYPE_HUFFMAN_FIXED )
-			{
-				if( ( fixed_huffman_literals_tree == NULL )
-				 && ( fixed_huffman_distances_tree == NULL ) )
+				if( libgzipf_huffman_tree_initialize(
+				     &fixed_huffman_literals_tree,
+				     288,
+				     15,
+				     error ) != 1 )
 				{
-					if( libgzipf_huffman_tree_initialize(
-					     &fixed_huffman_literals_tree,
-					     288,
-					     15,
-					     error ) != 1 )
-					{
-						libcerror_error_set(
-						 error,
-						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-						 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-						 "%s: unable to build fixed literals Huffman tree.",
-						 function );
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+					 "%s: unable to build fixed literals Huffman tree.",
+					 function );
 
-						goto on_error;
-					}
-					if( libgzipf_huffman_tree_initialize(
-					     &fixed_huffman_distances_tree,
-					     30,
-					     15,
-					     error ) != 1 )
-					{
-						libcerror_error_set(
-						 error,
-						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-						 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-						 "%s: unable to build fixed distances Huffman tree.",
-						 function );
+					goto on_error;
+				}
+				if( libgzipf_huffman_tree_initialize(
+				     &fixed_huffman_distances_tree,
+				     30,
+				     15,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+					 "%s: unable to build fixed distances Huffman tree.",
+					 function );
 
-						goto on_error;
-					}
-					if( libgzipf_deflate_build_fixed_huffman_trees(
-					     fixed_huffman_literals_tree,
-					     fixed_huffman_distances_tree,
-					     error ) != 1 )
-					{
-						libcerror_error_set(
-						 error,
-						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-						 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-						 "%s: unable to build fixed Huffman trees.",
-						 function );
+					goto on_error;
+				}
+				if( libgzipf_deflate_build_fixed_huffman_trees(
+				     fixed_huffman_literals_tree,
+				     fixed_huffman_distances_tree,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+					 "%s: unable to build fixed Huffman trees.",
+					 function );
 
-						goto on_error;
-					}
+					goto on_error;
 				}
 			}
-			if( libgzipf_deflate_read_block(
-			     bit_stream,
-			     block_type,
-			     fixed_huffman_literals_tree,
-			     fixed_huffman_distances_tree,
-			     uncompressed_data,
-			     LIBGZIPF_MAXIMUM_DEFLATE_DISTANCE,
-			     &uncompressed_block_offset,
-			     error ) != 1 )
-			{
-/* TODO add support for decompression error ? */
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_IO,
-				 LIBCERROR_IO_ERROR_READ_FAILED,
-				 "%s: unable to read block of compressed data.",
-				 function );
-
-				goto on_error;
-			}
-			if( last_block_flag != 0 )
-			{
-				break;
-			}
 		}
-		if( ( bit_stream->byte_stream_size - bit_stream->byte_stream_offset ) >= 4 )
+		if( libgzipf_deflate_read_block(
+		     bit_stream,
+		     block_type,
+		     fixed_huffman_literals_tree,
+		     fixed_huffman_distances_tree,
+		     uncompressed_data,
+		     LIBGZIPF_UNCOMPRESSED_BLOCK_SIZE,
+		     &uncompressed_block_offset,
+		     error ) != 1 )
 		{
-			while( bit_stream->bit_buffer_size >= 8 )
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read block of compressed data.",
+			 function );
+
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( ( error != NULL )
+			 && ( *error != NULL ) )
 			{
-				bit_stream->byte_stream_offset -= 1;
-				bit_stream->bit_buffer_size    -= 8;
+				libcnotify_print_error_backtrace(
+				 *error );
 			}
+#endif
+			libcerror_error_free(
+			 error );
+
+			decompression_error = 1;
+		}
+		while( bit_stream->bit_buffer_size >= 8 )
+		{
+			bit_stream->byte_stream_offset -= 1;
+			bit_stream->bit_buffer_size    -= 8;
 		}
 		compressed_block_size      = bit_stream->byte_stream_offset;
 		uncompressed_block_size    = uncompressed_block_offset - uncompressed_block_size;
 		uncompressed_block_offset -= uncompressed_block_size;
 
-		if( libgzipf_bit_stream_free(
-		     &bit_stream,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free bit stream.",
-			 function );
-
-			goto on_error;
-		}
 		is_last_block = ( last_block_flag != 0 );
 
 #endif /* ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL ) */
@@ -2130,6 +2121,19 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 
 			goto on_error;
 		}
+	}
+	if( libgzipf_bit_stream_free(
+	     &bit_stream,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free bit stream.",
+		 function );
+
+		goto on_error;
 	}
 #endif /* ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL ) */
 
