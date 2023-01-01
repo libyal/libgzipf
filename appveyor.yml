@@ -1,4 +1,6 @@
 environment:
+  PYPI_TOKEN:
+    secure: VHuZiUWgTqTciKE2nsv/LpX+1Y5i/JV8T8lkkQ2quketJFqn4dgBMQolag/TUMnkNNTkVDJU8TJ+XZeOrnESTIyfm0Z590qwdFejhkHk1BX/jsDIPVmOp6iMZIuAWBFqqTkYCeGHcebwRC3HPRp7vYeDIOTqf524FgpDtP7rSLesQPvl1iy/e+bjzvTtWmpcGrOSXVgcIH14mot+xzDdpQbzlt52AdYbJJtvoM3QVL9SPUrdBRwv0WeYzARNdZhLIoeoTU4LIzpgtnb8xbbgtZBbgETFoercBvX+5kUqueY=
   matrix:
   - TARGET: vs2008
     BUILD_ENVIRONMENT: msbuild
@@ -231,7 +233,7 @@ build_script:
 - sh: if test ${BUILD_ENVIRONMENT} = "xcode"; then export PATH="/usr/local/opt/gettext/bin:$PATH"; export SED="/usr/local/bin/gsed"; tests/build.sh ${CONFIGURE_OPTIONS}; fi
 - cmd: if [%BUILD_ENVIRONMENT%]==[python] (
     "%PYTHON%" setup.py bdist_wheel )
-- sh: if test ${BUILD_ENVIRONMENT} = "python-tox"; then export PATH="/usr/local/opt/gettext/bin:$PATH"; export SED="/usr/local/bin/gsed"; ./synclibs.sh && ./autogen.sh && ./configure --disable-nls --disable-shared-libs && tox -e${TOXENV}; fi
+- sh: if test ${BUILD_ENVIRONMENT} = "python-tox"; then export PATH="/usr/local/opt/gettext/bin:$PATH"; export SED="/usr/local/bin/gsed"; ./synclibs.sh && ./autogen.sh && ./configure --disable-nls --disable-shared-libs && make >/dev/null && tox -e${TOXENV}; fi
 - cmd: if [%BUILD_ENVIRONMENT%]==[cygwin64] (
     xcopy /i /q /s C:\projects\libgzipf C:\cygwin64\home\appveyor\libgzipf &&
     C:\cygwin64\bin\bash -e -l -c "cd libgzipf && wget 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD' -O './config.guess' && wget 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD' -O './config.sub'" &&
@@ -258,4 +260,9 @@ after_test:
 
 artifacts:
 - path: dist\*.whl
+
+deploy_script:
+- ps: If ($env:APPVEYOR_REPO_TAG -eq "true" -and $isWindows -and $env:BUILD_ENVIRONMENT -eq "python") {
+    Invoke-Expression "${env:PYTHON} -m twine upload dist/*.whl --username __token__ --password ${env:PYPI_TOKEN} --skip-existing" }
+- sh: if test ${APPVEYOR_REPO_TAG} = "true" && test ${BUILD_ENVIRONMENT} = "python-tox"; then twine upload dist/*.whl --username __token__ --password ${PYPI_TOKEN} --skip-existing; fi
 
