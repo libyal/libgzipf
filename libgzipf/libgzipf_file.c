@@ -1129,6 +1129,17 @@ int libgzipf_internal_file_open_read(
 
 		goto on_error;
 	}
+	if( file_size < 10 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid file size value out of bounds.",
+		 function );
+
+		goto on_error;
+	}
 	if( libfdata_list_initialize(
 	     &( internal_file->compressed_segments_list ),
 	     (intptr_t *) internal_file->segment_descriptors_array,
@@ -1360,13 +1371,13 @@ int libgzipf_internal_file_open_read(
 
 			goto on_error;
 		}
-		if( member_descriptor->uncompressed_data_size != uncompressed_stream_size )
+		if( (size64_t) member_descriptor->uncompressed_data_size != uncompressed_stream_size )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_INPUT,
 			 LIBCERROR_INPUT_ERROR_VALUE_MISMATCH,
-			 "%s: mismatch in uncompressed stream size ( 0x%08" PRIx32 " != 0x%08" PRIx32 " ).",
+			 "%s: mismatch in uncompressed stream size ( %" PRIu32 " != %" PRIu64 " ).",
 			 function,
 			 member_descriptor->uncompressed_data_size,
 			 uncompressed_stream_size );
@@ -1537,6 +1548,8 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 
 		return( -1 );
 	}
+	*uncompressed_stream_size = 0;
+
 	if( calculated_checksum == NULL )
 	{
 		libcerror_error_set(
@@ -1826,7 +1839,11 @@ int libgzipf_internal_file_read_deflate_compressed_stream(
 			}
 		}
 #else
-		if( uncompressed_block_size > 0 )
+		if( uncompressed_block_size == 0 )
+		{
+			uncompressed_block_offset = 0;
+		}
+		else
 		{
 			if( uncompressed_block_size < LIBGZIPF_MAXIMUM_DEFLATE_DISTANCE )
 			{
