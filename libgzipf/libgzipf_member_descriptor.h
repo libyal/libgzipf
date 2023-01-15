@@ -64,17 +64,29 @@ struct libgzipf_member_descriptor
 	 */
 	uint8_t operating_system;
 
+	/* The data size
+	 */
+	size64_t data_size;
+
 	/* The compressed data offset
 	 */
 	off64_t compressed_data_offset;
+
+	/* The compressed data size
+	 */
+	size64_t compressed_data_size;
 
 	/* The uncompressed data size
 	 */
 	uint32_t uncompressed_data_size;
 
-	/* The uncompressed data checksum
+	/* The calculated (uncompressed data) checksum
 	 */
-	uint32_t uncompressed_data_checksum;
+	uint32_t calculated_checksum;
+
+	/* Value to indicate if there was a decompression error
+	 */
+	uint8_t decompression_error;
 };
 
 int libgzipf_member_descriptor_initialize(

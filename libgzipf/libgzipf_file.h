@@ -25,7 +25,14 @@
 #include <common.h>
 #include <types.h>
 
+#if defined( HAVE_ZLIB ) || defined( ZLIB_DLL )
+#include <zlib.h>
+#endif  
+
+#include "libgzipf_bit_stream.h"
+#include "libgzipf_compressed_segment.h"
 #include "libgzipf_extern.h"
+#include "libgzipf_huffman_tree.h"
 #include "libgzipf_io_handle.h"
 #include "libgzipf_libbfio.h"
 #include "libgzipf_libcdata.h"
@@ -33,6 +40,8 @@
 #include "libgzipf_libcthreads.h"
 #include "libgzipf_libfdata.h"
 #include "libgzipf_libfcache.h"
+#include "libgzipf_member_descriptor.h"
+#include "libgzipf_segment_descriptor.h"
 #include "libgzipf_types.h"
 
 #if defined( __cplusplus )
@@ -70,6 +79,48 @@ struct libgzipf_internal_file
 	/* The segment descriptors array
 	 */
 	libcdata_array_t *segment_descriptors_array;
+
+	/* The compressed data
+	 */
+	uint8_t *compressed_data;
+
+	/* The uncompressed data
+	 */
+	uint8_t *uncompressed_data;
+
+#if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL )
+	/* The zlib stream
+	 */
+        z_stream zlib_stream;
+
+	/* The last number of compressed stream bits
+	 */
+	uint8_t last_number_of_compressed_stream_bits;
+#else
+	/* The compressed data bit stream
+	 */
+	libgzipf_bit_stream_t *bit_stream;
+
+	/* The fixed distances Huffman tree
+	 */
+        libgzipf_huffman_tree_t *fixed_huffman_distances_tree;
+
+	/* The fixed literals Huffman tree
+	 */
+        libgzipf_huffman_tree_t *fixed_huffman_literals_tree;
+
+	/* The last uncompressed block size
+	 */
+	size_t last_uncompressed_block_size;
+#endif
+
+	/* The file size
+	 */
+	size64_t file_size;
+
+	/* The compressed segments offset
+	 */
+	off64_t compressed_segments_offset;
 
 	/* The compressed segments list
 	 */
@@ -144,13 +195,42 @@ int libgzipf_internal_file_open_read(
      libbfio_handle_t *file_io_handle,
      libcerror_error_t **error );
 
-int libgzipf_internal_file_read_deflate_compressed_stream(
+int libgzipf_internal_file_read_deflate_block(
      libgzipf_internal_file_t *internal_file,
      libbfio_handle_t *file_io_handle,
      off64_t file_offset,
-     size64_t *compressed_stream_size,
-     size64_t *uncompressed_stream_size,
-     uint32_t *calculated_checksum,
+     libgzipf_member_descriptor_t *member_descriptor,
+     libgzipf_segment_descriptor_t *segment_descriptor,
+     size_t *compressed_block_size,
+     uint8_t *is_last_block,
+     uint8_t *decompression_error,
+     libcerror_error_t **error );
+
+int libgzipf_internal_file_read_deflate_stream(
+     libgzipf_internal_file_t *internal_file,
+     libbfio_handle_t *file_io_handle,
+     off64_t file_offset,
+     libgzipf_member_descriptor_t *member_descriptor,
+     libcerror_error_t **error );
+
+int libgzipf_internal_file_read_member(
+     libgzipf_internal_file_t *internal_file,
+     libbfio_handle_t *file_io_handle,
+     off64_t file_offset,
+     libgzipf_member_descriptor_t *member_descriptor,
+     libcerror_error_t **error );
+
+int libgzipf_internal_file_read_members(
+     libgzipf_internal_file_t *internal_file,
+     libbfio_handle_t *file_io_handle,
+     libcerror_error_t **error );
+
+int libgzipf_internal_file_get_compressed_segment_at_offset(
+     libgzipf_internal_file_t *internal_file,
+     libbfio_handle_t *file_io_handle,
+     off64_t offset,
+     off64_t *element_data_offset,
+     libgzipf_compressed_segment_t **compressed_segment,
      libcerror_error_t **error );
 
 ssize_t libgzipf_internal_file_read_buffer_from_file_io_handle(

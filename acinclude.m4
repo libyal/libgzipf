@@ -1,6 +1,6 @@
 dnl Checks for required headers and functions
 dnl
-dnl Version: 20200713
+dnl Version: 20230115
 
 dnl Function to detect if libgzipf dependencies are available
 AC_DEFUN([AX_LIBGZIPF_CHECK_LOCAL],
@@ -22,9 +22,7 @@ AC_DEFUN([AX_GZIPFTOOLS_CHECK_LOCAL],
   ])
 
   dnl Headers included in gzipftools/gzipfmount.c
-  AC_CHECK_HEADERS([errno.h])
-
-  AC_HEADER_TIME
+  AC_CHECK_HEADERS([errno.h sys/time.h])
 
   dnl Functions included in gzipftools/mount_file_system.c and gzipftools/mount_file_entry.c
   AS_IF(

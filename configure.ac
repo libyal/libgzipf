@@ -2,7 +2,7 @@ AC_PREREQ([2.71])
 
 AC_INIT(
  [libgzipf],
- [20230114],
+ [20230115],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
