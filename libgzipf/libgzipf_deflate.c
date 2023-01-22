@@ -1075,12 +1075,12 @@ int libgzipf_deflate_read_block_header(
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(
-		 "%s: block header last block flag\t\t: %" PRIu8 "\n",
+		 "%s: block header last block flag\t: %" PRIu8 "\n",
 		 function,
 		 *last_block_flag );
 
 		libcnotify_printf(
-		 "%s: block header block type\t\t\t: %" PRIu8 " (",
+		 "%s: block header block type\t\t: %" PRIu8 " (",
 		 function,
 		 *block_type );
 
@@ -1133,12 +1133,12 @@ int libgzipf_deflate_read_block(
 {
 	libgzipf_huffman_tree_t *dynamic_huffman_distances_tree = NULL;
 	libgzipf_huffman_tree_t *dynamic_huffman_literals_tree  = NULL;
-	static char *function                                  = "libgzipf_deflate_read_block";
-	size_t safe_uncompressed_data_offset                   = 0;
-	uint32_t block_size                                    = 0;
-	uint32_t block_size_copy                               = 0;
-	uint32_t value_32bit                                   = 0;
-	uint8_t skip_bits                                      = 0;
+	static char *function                                   = "libgzipf_deflate_read_block";
+	size_t safe_uncompressed_data_offset                    = 0;
+	uint32_t block_size                                     = 0;
+	uint32_t block_size_copy                                = 0;
+	uint32_t value_32bit                                    = 0;
+	uint8_t skip_bits                                       = 0;
 
 	if( bit_stream == NULL )
 	{

@@ -84,10 +84,6 @@ struct libgzipf_internal_file
 	 */
 	uint8_t *compressed_data;
 
-	/* The uncompressed data
-	 */
-	uint8_t *uncompressed_data;
-
 #if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL )
 	/* The zlib stream
 	 */
@@ -114,6 +110,10 @@ struct libgzipf_internal_file
 	size_t last_uncompressed_block_size;
 #endif
 
+	/* The uncompressed data
+	 */
+	uint8_t *uncompressed_data;
+
 	/* The file size
 	 */
 	size64_t file_size;
@@ -121,6 +121,10 @@ struct libgzipf_internal_file
 	/* The compressed segments offset
 	 */
 	off64_t compressed_segments_offset;
+
+	/* The uncompressed segments size
+	 */
+	size64_t uncompressed_segments_size;
 
 	/* The compressed segments list
 	 */
