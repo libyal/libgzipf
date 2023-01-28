@@ -72,9 +72,17 @@ struct libgzipf_internal_file
 	 */
 	uint8_t file_io_handle_opened_in_library;
 
+	/* The member descriptor
+	 */
+	libgzipf_member_descriptor_t *member_descriptor;
+
 	/* The member descriptors array
 	 */
 	libcdata_array_t *member_descriptors_array;
+
+	/* Value to indicate the members have been read
+	 */
+	uint8_t members_read;
 
 	/* The segment descriptors array
 	 */
@@ -105,9 +113,9 @@ struct libgzipf_internal_file
 	 */
         libgzipf_huffman_tree_t *fixed_huffman_literals_tree;
 
-	/* The last uncompressed block size
+	/* The last uncompressed block offset
 	 */
-	size_t last_uncompressed_block_size;
+	size_t last_uncompressed_block_offset;
 #endif
 
 	/* The uncompressed data
@@ -217,7 +225,14 @@ int libgzipf_internal_file_read_deflate_stream(
      libgzipf_member_descriptor_t *member_descriptor,
      libcerror_error_t **error );
 
-int libgzipf_internal_file_read_member(
+int libgzipf_internal_file_read_member_header(
+     libgzipf_internal_file_t *internal_file,
+     libbfio_handle_t *file_io_handle,
+     off64_t file_offset,
+     libgzipf_member_descriptor_t **member_descriptor,
+     libcerror_error_t **error );
+
+int libgzipf_internal_file_read_member_footer(
      libgzipf_internal_file_t *internal_file,
      libbfio_handle_t *file_io_handle,
      off64_t file_offset,
