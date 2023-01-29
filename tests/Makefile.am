@@ -285,6 +285,7 @@ gzipf_test_tools_info_handle_SOURCES = \
 	gzipf_test_unused.h
 
 gzipf_test_tools_info_handle_LDADD = \
+	@LIBFDATETIME_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
 	../libgzipf/libgzipf.la \
 	@LIBCERROR_LIBADD@

@@ -113,10 +113,15 @@ struct libgzipf_internal_file
 	 */
         libgzipf_huffman_tree_t *fixed_huffman_literals_tree;
 
-	/* The last uncompressed block offset
+	/* The preceeding 32 KiB of uncompressed data for distance codes
 	 */
-	size_t last_uncompressed_block_offset;
-#endif
+	uint8_t distance_data[ LIBGZIPF_MAXIMUM_DEFLATE_DISTANCE ];
+
+	/* The distance data size
+	 */
+	size_t distance_data_size;
+
+#endif /* ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_INFLATE ) ) || defined( ZLIB_DLL ) */
 
 	/* The uncompressed data
 	 */
@@ -212,8 +217,8 @@ int libgzipf_internal_file_read_deflate_block(
      libbfio_handle_t *file_io_handle,
      off64_t file_offset,
      libgzipf_member_descriptor_t *member_descriptor,
-     libgzipf_segment_descriptor_t *segment_descriptor,
      size_t *compressed_block_size,
+     size_t *uncompressed_block_size,
      uint8_t *is_last_block,
      uint8_t *decompression_error,
      libcerror_error_t **error );
@@ -221,8 +226,8 @@ int libgzipf_internal_file_read_deflate_block(
 int libgzipf_internal_file_read_deflate_stream(
      libgzipf_internal_file_t *internal_file,
      libbfio_handle_t *file_io_handle,
-     off64_t file_offset,
      libgzipf_member_descriptor_t *member_descriptor,
+     off64_t offset,
      libcerror_error_t **error );
 
 int libgzipf_internal_file_read_member_header(
@@ -242,6 +247,7 @@ int libgzipf_internal_file_read_member_footer(
 int libgzipf_internal_file_read_members(
      libgzipf_internal_file_t *internal_file,
      libbfio_handle_t *file_io_handle,
+     off64_t offset,
      libcerror_error_t **error );
 
 int libgzipf_internal_file_get_compressed_segment_at_offset(

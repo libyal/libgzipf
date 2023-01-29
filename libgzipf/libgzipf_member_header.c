@@ -274,6 +274,11 @@ int libgzipf_member_header_read_data(
 		 "%s: compression flags\t\t\t: 0x%02" PRIx8 "\n",
 		 function,
 		 ( (gzipf_member_header_t *) data )->compression_flags );
+		libgzipf_debug_print_compression_flags(
+		 ( (gzipf_member_header_t *) data )->compression_method,
+		 ( (gzipf_member_header_t *) data )->compression_flags );
+		libcnotify_printf(
+		 "\n" );
 
 		libcnotify_printf(
 		 "%s: operating system\t\t\t: %" PRIu8 "\n",

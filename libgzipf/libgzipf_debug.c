@@ -84,6 +84,70 @@ void libgzipf_debug_print_flags(
 	}
 }
 
+/* Prints the compression flags
+ */
+void libgzipf_debug_print_compression_flags(
+      uint8_t compression_method,
+      uint8_t compression_flags )
+{
+	if( ( compression_flags & 0x01 ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tUnknown 0x01\n" );
+	}
+	if( ( compression_flags & 0x02 ) != 0 )
+	{
+		if( compression_method == 8 )
+		{
+			libcnotify_printf(
+			 "\tUse maximum compression\n" );
+		}
+		else
+		{
+			libcnotify_printf(
+			 "\tUnknown 0x02\n" );
+		}
+	}
+	if( ( compression_flags & 0x04 ) != 0 )
+	{
+		if( compression_method == 8 )
+		{
+			libcnotify_printf(
+			 "\tUse fastest compression\n" );
+		}
+		else
+		{
+			libcnotify_printf(
+			 "\tUnknown 0x04\n" );
+		}
+	}
+	if( ( compression_flags & 0x08 ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tUnknown 0x08\n" );
+	}
+	if( ( compression_flags & 0x10 ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tUnknown 0x10\n" );
+	}
+	if( ( compression_flags & 0x20 ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tUnknown 0x20\n" );
+	}
+	if( ( compression_flags & 0x40 ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tUnknown 0x40\n" );
+	}
+	if( ( compression_flags & 0x80 ) != 0 )
+	{
+		libcnotify_printf(
+		 "\tUnknown 0x80\n" );
+	}
+}
+
 /* Prints the compression method
  */
 const char *libgzipf_debug_print_compression_method(
@@ -94,7 +158,7 @@ const char *libgzipf_debug_print_compression_method(
 		case 8:
 			return( "deflate" );
 	}
-	return( "_UNKNOWN_" );
+	return( "Unknown" );
 }
 
 /* Prints a POSIX value

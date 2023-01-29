@@ -27,11 +27,11 @@
 #include <types.h>
 #include <wide_string.h>
 
-#include "info_handle.h"
 #include "gzipftools_libcerror.h"
 #include "gzipftools_libclocale.h"
 #include "gzipftools_libfdatetime.h"
 #include "gzipftools_libgzipf.h"
+#include "info_handle.h"
 
 #define INFO_HANDLE_NOTIFY_STREAM	stdout
 
@@ -291,6 +291,340 @@ int info_handle_close_input(
 	return( 0 );
 }
 
+/* Prints a POSIX value
+ * Returns 1 if successful or -1 on error
+ */
+int info_handle_posix_time_value_fprint(
+     info_handle_t *info_handle,
+     const char *value_name,
+     uint32_t value_32bit,
+     libcerror_error_t **error )
+{
+	system_character_t date_time_string[ 32 ];
+
+	libfdatetime_posix_time_t *posix_time = NULL;
+	static char *function                 = "info_handle_posix_time_fprint";
+	int result                            = 0;
+
+	if( info_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid info handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( value_32bit == 0 )
+	{
+		fprintf(
+		 info_handle->notify_stream,
+		 "%s: Not set (0)\n",
+		 value_name );
+	}
+	else
+	{
+		if( libfdatetime_posix_time_initialize(
+		     &posix_time,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create POSIX time.",
+			 function );
+
+			goto on_error;
+		}
+		if( libfdatetime_posix_time_copy_from_32bit(
+		     posix_time,
+		     value_32bit,
+		     LIBFDATETIME_POSIX_TIME_VALUE_TYPE_SECONDS_32BIT_SIGNED,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to copy POSIX time from 32-bit.",
+			 function );
+
+			goto on_error;
+		}
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+		result = libfdatetime_posix_time_copy_to_utf16_string(
+			  posix_time,
+			  (uint16_t *) date_time_string,
+			  32,
+			  LIBFDATETIME_STRING_FORMAT_TYPE_CTIME | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME,
+			  error );
+#else
+		result = libfdatetime_posix_time_copy_to_utf8_string(
+			  posix_time,
+			  (uint8_t *) date_time_string,
+			  32,
+			  LIBFDATETIME_STRING_FORMAT_TYPE_CTIME | LIBFDATETIME_STRING_FORMAT_FLAG_DATE_TIME,
+			  error );
+#endif
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to copy POSIX time to string.",
+			 function );
+
+			goto on_error;
+		}
+		fprintf(
+		 info_handle->notify_stream,
+		 "%s: %" PRIs_SYSTEM " UTC\n",
+		 value_name,
+		 date_time_string );
+
+		if( libfdatetime_posix_time_free(
+		     &posix_time,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free POSIX time.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	return( 1 );
+
+on_error:
+	if( posix_time != NULL )
+	{
+		libfdatetime_posix_time_free(
+		 &posix_time,
+		 NULL );
+	}
+	return( -1 );
+}
+
+/* Prints member information
+ * Returns 1 if successful or -1 on error
+ */
+int info_handle_member_fprint(
+     info_handle_t *info_handle,
+     libgzipf_member_t *member,
+     libcerror_error_t **error )
+{
+	system_character_t *value_string = NULL;
+	static char *function            = "info_handle_member_fprint";
+	size_t value_string_size         = 0;
+	uint32_t value_32bit             = 0;
+	int result                       = 0;
+
+	if( info_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid info handle.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+	result = libgzipf_member_get_utf16_name_size(
+		  member,
+		  &value_string_size,
+		  error );
+#else
+	result = libgzipf_member_get_utf8_name_size(
+		  member,
+		  &value_string_size,
+		  error );
+#endif
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve name size.",
+		 function );
+
+		goto on_error;
+	}
+	if( value_string_size > 0 )
+	{
+		value_string = system_string_allocate(
+				value_string_size );
+
+		if( value_string == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+			 "%s: unable to create value string.",
+			 function );
+
+			goto on_error;
+		}
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+		result = libgzipf_member_get_utf16_name(
+			  member,
+			  (uint16_t *) value_string,
+			  value_string_size,
+			  error );
+#else
+		result = libgzipf_member_get_utf8_name(
+			  member,
+			  (uint8_t *) value_string,
+			  value_string_size,
+			  error );
+#endif
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve name.",
+			 function );
+
+			goto on_error;
+		}
+		fprintf(
+		 info_handle->notify_stream,
+		 "\tName\t\t\t\t: %" PRIs_SYSTEM "\n",
+		 value_string );
+
+		memory_free(
+		 value_string );
+
+		value_string = NULL;
+	}
+	if( libgzipf_member_get_modification_time(
+	     member,
+	     &value_32bit,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve modification time.",
+		 function );
+
+		goto on_error;
+	}
+	if( info_handle_posix_time_value_fprint(
+	     info_handle,
+	     "\tModification time\t\t",
+	     value_32bit,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+		 "%s: unable to print POSIX time value.",
+		 function );
+
+		goto on_error;
+	}
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+	result = libgzipf_member_get_utf16_comments_size(
+		  member,
+		  &value_string_size,
+		  error );
+#else
+	result = libgzipf_member_get_utf8_comments_size(
+		  member,
+		  &value_string_size,
+		  error );
+#endif
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve comments size.",
+		 function );
+
+		goto on_error;
+	}
+	if( value_string_size > 0 )
+	{
+		value_string = system_string_allocate(
+				value_string_size );
+
+		if( value_string == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+			 "%s: unable to create value string.",
+			 function );
+
+			goto on_error;
+		}
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+		result = libgzipf_member_get_utf16_comments(
+			  member,
+			  (uint16_t *) value_string,
+			  value_string_size,
+			  error );
+#else
+		result = libgzipf_member_get_utf8_comments(
+			  member,
+			  (uint8_t *) value_string,
+			  value_string_size,
+			  error );
+#endif
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve comments.",
+			 function );
+
+			goto on_error;
+		}
+		fprintf(
+		 info_handle->notify_stream,
+		 "\tComments\t\t\t\t: %" PRIs_SYSTEM "\n",
+		 value_string );
+
+		memory_free(
+		 value_string );
+
+		value_string = NULL;
+	}
+/* TODO print operating system */
+/* TODO print compressed data size */
+/* TODO print uncompressed data size */
+
+	return( 1 );
+
+on_error:
+	if( value_string != NULL )
+	{
+		memory_free(
+		 value_string );
+	}
+	return( -1 );
+}
+
 /* Prints the file information
  * Returns 1 if successful or -1 on error
  */
@@ -298,9 +632,11 @@ int info_handle_file_fprint(
      info_handle_t *info_handle,
      libcerror_error_t **error )
 {
+	libgzipf_member_t *member       = NULL;
 	static char *function           = "info_handle_file_fprint";
 	size64_t uncompressed_data_size = 0;
 	int is_corrupted                = 0;
+	int member_index                = 0;
 	int number_of_members           = 0;
 
 	if( info_handle == NULL )
@@ -330,7 +666,7 @@ int info_handle_file_fprint(
 		 "%s: unable to retrieve uncompressed data size.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	fprintf(
 	 info_handle->notify_stream,
@@ -349,7 +685,7 @@ int info_handle_file_fprint(
 		 "%s: unable to retrieve number of members.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	fprintf(
 	 info_handle->notify_stream,
@@ -383,6 +719,73 @@ int info_handle_file_fprint(
 	 info_handle->notify_stream,
 	 "\n" );
 
+	for( member_index = 0;
+	     member_index < number_of_members;
+	     member_index++ )
+	{
+		fprintf(
+		 info_handle->notify_stream,
+		 "Member: %d\n",
+		 member_index + 1 );
+
+		if( libgzipf_file_get_member_by_index(
+		     info_handle->input_file,
+		     member_index,
+		     &member,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve member: %d.",
+			 function,
+			 member_index );
+
+			goto on_error;
+		}
+		if( info_handle_member_fprint(
+		     info_handle,
+		     member,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+			 "%s: unable to print member: %d.",
+			 function,
+			 member_index );
+
+			goto on_error;
+		}
+		if( libgzipf_member_free(
+		     &member,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free member: %d.",
+			 function,
+			 member_index );
+
+			goto on_error;
+		}
+		fprintf(
+		 info_handle->notify_stream,
+		 "\n" );
+	}
 	return( 1 );
+
+on_error:
+	if( member != NULL )
+	{
+		libgzipf_member_free(
+		 &member,
+		 NULL );
+	}
+	return( -1 );
 }
 
