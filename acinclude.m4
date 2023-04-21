@@ -1,6 +1,6 @@
 dnl Checks for required headers and functions
 dnl
-dnl Version: 20230115
+dnl Version: 20200713
 
 dnl Function to detect if libgzipf dependencies are available
 AC_DEFUN([AX_LIBGZIPF_CHECK_LOCAL],
