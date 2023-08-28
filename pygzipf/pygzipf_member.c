@@ -480,7 +480,6 @@ PyObject *pygzipf_member_get_name(
 {
 	PyObject *string_object  = NULL;
 	libcerror_error_t *error = NULL;
-	const char *errors       = NULL;
 	static char *function    = "pygzipf_member_get_name";
 	char *utf8_string        = NULL;
 	size_t utf8_string_size  = 0;
@@ -568,7 +567,7 @@ PyObject *pygzipf_member_get_name(
 	string_object = PyUnicode_DecodeUTF8(
 	                 utf8_string,
 	                 (Py_ssize_t) utf8_string_size - 1,
-	                 errors );
+	                 NULL );
 
 	if( string_object == NULL )
 	{
@@ -602,7 +601,6 @@ PyObject *pygzipf_member_get_comments(
 {
 	PyObject *string_object  = NULL;
 	libcerror_error_t *error = NULL;
-	const char *errors       = NULL;
 	static char *function    = "pygzipf_member_get_comments";
 	char *utf8_string        = NULL;
 	size_t utf8_string_size  = 0;
@@ -690,7 +688,7 @@ PyObject *pygzipf_member_get_comments(
 	string_object = PyUnicode_DecodeUTF8(
 	                 utf8_string,
 	                 (Py_ssize_t) utf8_string_size - 1,
-	                 errors );
+	                 NULL );
 
 	if( string_object == NULL )
 	{
