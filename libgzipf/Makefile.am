@@ -84,11 +84,13 @@ MAINTAINERCLEANFILES = \
 	Makefile.in
 
 distclean: clean
-	/bin/rm -f libgzipf_definitions.h
-	/bin/rm -f libgzipf.rc
-	/bin/rm -f Makefile
+	-rm -f libgzipf_definitions.h
+	-rm -f libgzipf.rc
+	-rm -f Makefile
 
-splint:
+sources-local: $(BUILT_SOURCES)
+
+splint-local:
 	@echo "Running splint on libgzipf ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(libgzipf_la_SOURCES)
 

@@ -19,9 +19,9 @@ MAINTAINERCLEANFILES = \
 	Makefile.in
 
 distclean: clean
-	/bin/rm -f libgzipf.h
-	/bin/rm -f libgzipf/definitions.h
-	/bin/rm -f libgzipf/features.h
-	/bin/rm -f libgzipf/types.h
-	/bin/rm -f Makefile
+	-rm -f libgzipf.h
+	-rm -f libgzipf/definitions.h
+	-rm -f libgzipf/features.h
+	-rm -f libgzipf/types.h
+	-rm -f Makefile
 
