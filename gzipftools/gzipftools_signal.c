@@ -40,7 +40,7 @@ void (*gzipftools_signal_signal_handler)( gzipftools_signal_t ) = NULL;
 /* Signal handler for Ctrl+C or Ctrl+Break signals
  */
 BOOL WINAPI gzipftools_signal_handler(
-             unsigned long signal )
+             gzipftools_signal_t signal )
 {
 	static char *function = "gzipftools_signal_handler";
 
@@ -112,7 +112,7 @@ int gzipftools_signal_attach(
 	gzipftools_signal_signal_handler = signal_handler;
 
 	if( SetConsoleCtrlHandler(
-	     gzipftools_signal_handler,
+	     (PHANDLER_ROUTINE) gzipftools_signal_handler,
 	     TRUE ) == 0 )
 	{
 		libcerror_error_set(
@@ -179,7 +179,7 @@ int gzipftools_signal_detach(
 	static char *function = "gzipftools_signal_detach";
 
 	if( SetConsoleCtrlHandler(
-	     gzipftools_signal_handler,
+	     (PHANDLER_ROUTINE) gzipftools_signal_handler,
 	     FALSE ) == 0 )
 	{
 		libcerror_error_set(

@@ -19,8 +19,6 @@ SUBDIRS = \
 	libgzipf \
 	gzipftools \
 	pygzipf \
-	pygzipf-python2 \
-	pygzipf-python3 \
 	po \
 	manuals \
 	tests \
@@ -48,6 +46,9 @@ PKGCONFIG_FILES = \
 	libgzipf.pc.in
 
 SETUP_PY_FILES = \
+	pyproject.toml \
+	setup.cfg \
+	setup.cfg.in \
 	setup.py
 
 SPEC_FILES = \
