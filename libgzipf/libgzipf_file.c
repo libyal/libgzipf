@@ -1,7 +1,7 @@
 /*
  * File functions
  *
- * Copyright (C) 2019-2023, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2019-2024, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -2475,7 +2475,7 @@ int libgzipf_internal_file_read_members(
 		return( -1 );
 	}
 	while( ( offset < 0 )
-	    || ( (size64_t) offset > internal_file->uncompressed_segments_size ) )
+	    || ( (size64_t) offset >= internal_file->uncompressed_segments_size ) )
 	{
 		if( internal_file->member_descriptor == NULL )
 		{

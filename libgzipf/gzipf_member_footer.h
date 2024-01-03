@@ -1,7 +1,7 @@
 /*
  * Member footer of a GZIP file
  *
- * Copyright (C) 2019-2023, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2019-2024, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
