@@ -6,9 +6,7 @@ EXTRA_DIST = \
 	gzipfinfo.1 \
 	libgzipf.3
 
-MAINTAINERCLEANFILES = \
+DISTCLEANFILES = \
+	Makefile \
 	Makefile.in
-
-distclean: clean
-	-rm -f Makefile
 

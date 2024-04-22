@@ -15,13 +15,11 @@ EXTRA_DIST = \
 	libgzipf/features.h.in \
 	libgzipf/types.h.in
 
-MAINTAINERCLEANFILES = \
+DISTCLEANFILES = \
+	libgzipf.h \
+	libgzipf/definitions.h \
+	libgzipf/features.h \
+	libgzipf/types.h \
+	Makefile \
 	Makefile.in
-
-distclean: clean
-	-rm -f libgzipf.h
-	-rm -f libgzipf/definitions.h
-	-rm -f libgzipf/features.h
-	-rm -f libgzipf/types.h
-	-rm -f Makefile
 

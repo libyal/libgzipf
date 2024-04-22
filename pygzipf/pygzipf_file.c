@@ -82,14 +82,14 @@ PyMethodDef pygzipf_file_object_methods[] = {
 	{ "read_buffer",
 	  (PyCFunction) pygzipf_file_read_buffer,
 	  METH_VARARGS | METH_KEYWORDS,
-	  "read_buffer(size) -> Binary string\n"
+	  "read_buffer(size)-> Bytes\n"
 	  "\n"
 	  "Reads a buffer of uncompressed data from the current offset into a buffer." },
 
 	{ "read_buffer_at_offset",
 	  (PyCFunction) pygzipf_file_read_buffer_at_offset,
 	  METH_VARARGS | METH_KEYWORDS,
-	  "read_buffer_at_offset(size, offset) -> Binary string\n"
+	  "read_buffer_at_offset(size, offset)-> Bytes\n"
 	  "\n"
 	  "Reads a buffer of uncompressed data at a specific offset." },
 
@@ -110,7 +110,7 @@ PyMethodDef pygzipf_file_object_methods[] = {
 	{ "read",
 	  (PyCFunction) pygzipf_file_read_buffer,
 	  METH_VARARGS | METH_KEYWORDS,
-	  "read(size) -> Binary string\n"
+	  "read(size)-> Bytes\n"
 	  "\n"
 	  "Reads a buffer of uncompressed data from the current offset into a buffer." },
 
