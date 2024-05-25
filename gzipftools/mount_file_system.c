@@ -121,7 +121,7 @@ int mount_file_system_initialize(
 		return( -1 );
 	}
 	if( libcdata_array_initialize(
-	     &( ( *file_system )->handles_array ),
+	     &( ( *file_system )->files_array ),
 	     0,
 	     error ) != 1 )
 	{
@@ -129,7 +129,7 @@ int mount_file_system_initialize(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to initialize handles array.",
+		 "%s: unable to initialize files array.",
 		 function );
 
 		goto on_error;
@@ -250,7 +250,7 @@ int mount_file_system_free(
 			 ( *file_system )->path_prefix );
 		}
 		if( libcdata_array_free(
-		     &( ( *file_system )->handles_array ),
+		     &( ( *file_system )->files_array ),
 		     NULL,
 		     error ) != 1 )
 		{
@@ -258,7 +258,7 @@ int mount_file_system_free(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free handles array.",
+			 "%s: unable to free files array.",
 			 function );
 
 			result = -1;
@@ -280,8 +280,8 @@ int mount_file_system_signal_abort(
 {
 	libgzipf_file_t *gzipf_file = NULL;
 	static char *function       = "mount_file_system_signal_abort";
-	int handle_index            = 0;
-	int number_of_handles       = 0;
+	int file_index              = 0;
+	int number_of_files         = 0;
 
 	if( file_system == NULL )
 	{
@@ -295,26 +295,26 @@ int mount_file_system_signal_abort(
 		return( -1 );
 	}
 	if( libcdata_array_get_number_of_entries(
-	     file_system->handles_array,
-	     &number_of_handles,
+	     file_system->files_array,
+	     &number_of_files,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve number of handles.",
+		 "%s: unable to retrieve number of files.",
 		 function );
 
 		return( -1 );
 	}
-	for( handle_index = number_of_handles - 1;
-	     handle_index > 0;
-	     handle_index-- )
+	for( file_index = number_of_files - 1;
+	     file_index > 0;
+	     file_index-- )
 	{
 		if( libcdata_array_get_entry_by_index(
-		     file_system->handles_array,
-		     handle_index,
+		     file_system->files_array,
+		     file_index,
 		     (intptr_t **) &gzipf_file,
 		     error ) != 1 )
 		{
@@ -322,9 +322,9 @@ int mount_file_system_signal_abort(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve handle: %d.",
+			 "%s: unable to retrieve file: %d.",
 			 function,
-			 handle_index );
+			 file_index );
 
 			return( -1 );
 		}
@@ -336,9 +336,9 @@ int mount_file_system_signal_abort(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to signal handle: %d to abort.",
+			 "%s: unable to signal file: %d to abort.",
 			 function,
-			 handle_index );
+			 file_index );
 
 			return( -1 );
 		}
@@ -498,15 +498,15 @@ int mount_file_system_get_mounted_timestamp(
 	return( 1 );
 }
 
-/* Retrieves the number of handles
+/* Retrieves the number of files
  * Returns 1 if successful or -1 on error
  */
-int mount_file_system_get_number_of_handles(
+int mount_file_system_get_number_of_files(
      mount_file_system_t *file_system,
-     int *number_of_handles,
+     int *number_of_files,
      libcerror_error_t **error )
 {
-	static char *function = "mount_file_system_get_number_of_handles";
+	static char *function = "mount_file_system_get_number_of_files";
 
 	if( file_system == NULL )
 	{
@@ -520,15 +520,15 @@ int mount_file_system_get_number_of_handles(
 		return( -1 );
 	}
 	if( libcdata_array_get_number_of_entries(
-	     file_system->handles_array,
-	     number_of_handles,
+	     file_system->files_array,
+	     number_of_files,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve number of handles.",
+		 "%s: unable to retrieve number of files.",
 		 function );
 
 		return( -1 );
@@ -536,16 +536,16 @@ int mount_file_system_get_number_of_handles(
 	return( 1 );
 }
 
-/* Retrieves a specific handle
+/* Retrieves a specific file
  * Returns 1 if successful or -1 on error
  */
-int mount_file_system_get_handle_by_index(
+int mount_file_system_get_file_by_index(
      mount_file_system_t *file_system,
-     int handle_index,
+     int file_index,
      libgzipf_file_t **gzipf_file,
      libcerror_error_t **error )
 {
-	static char *function = "mount_file_system_get_handle_by_index";
+	static char *function = "mount_file_system_get_file_by_index";
 
 	if( file_system == NULL )
 	{
@@ -559,8 +559,8 @@ int mount_file_system_get_handle_by_index(
 		return( -1 );
 	}
 	if( libcdata_array_get_entry_by_index(
-	     file_system->handles_array,
-	     handle_index,
+	     file_system->files_array,
+	     file_index,
 	     (intptr_t **) gzipf_file,
 	     error ) != 1 )
 	{
@@ -568,29 +568,29 @@ int mount_file_system_get_handle_by_index(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve handle: %d.",
+		 "%s: unable to retrieve file: %d.",
 		 function,
-		 handle_index );
+		 file_index );
 
 		return( -1 );
 	}
 	return( 1 );
 }
 
-/* Retrieves the handle for a specific path
- * Returns 1 if successful, 0 if no such handle or -1 on error
+/* Retrieves the file for a specific path
+ * Returns 1 if successful, 0 if no such file or -1 on error
  */
-int mount_file_system_get_handle_by_path(
+int mount_file_system_get_file_by_path(
      mount_file_system_t *file_system,
      const system_character_t *path,
      size_t path_length,
      libgzipf_file_t **gzipf_file,
      libcerror_error_t **error )
 {
-	static char *function        = "mount_file_system_get_handle_by_path";
+	static char *function        = "mount_file_system_get_file_by_path";
 	system_character_t character = 0;
 	size_t path_index            = 0;
-	int handle_index             = 0;
+	int file_index               = 0;
 	int result                   = 0;
 
 	if( file_system == NULL )
@@ -643,7 +643,7 @@ int mount_file_system_get_handle_by_path(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid handle.",
+		 "%s: invalid file.",
 		 function );
 
 		return( -1 );
@@ -678,7 +678,7 @@ int mount_file_system_get_handle_by_path(
 	{
 		return( 0 );
 	}
-	handle_index = 0;
+	file_index = 0;
 
 	path_index = file_system->path_prefix_size - 1;
 
@@ -691,14 +691,14 @@ int mount_file_system_get_handle_by_path(
 		{
 			return( 0 );
 		}
-		handle_index *= 10;
-		handle_index += character - (system_character_t) '0';
+		file_index *= 10;
+		file_index += character - (system_character_t) '0';
 	}
-	handle_index -= 1;
+	file_index -= 1;
 
 	if( libcdata_array_get_entry_by_index(
-	     file_system->handles_array,
-	     handle_index,
+	     file_system->files_array,
+	     file_index,
 	     (intptr_t **) gzipf_file,
 	     error ) != 1 )
 	{
@@ -706,24 +706,24 @@ int mount_file_system_get_handle_by_path(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve handle: %d.",
+		 "%s: unable to retrieve file: %d.",
 		 function,
-		 handle_index );
+		 file_index );
 
 		return( -1 );
 	}
 	return( 1 );
 }
 
-/* Appends a handle to the file system
+/* Appends a file to the file system
  * Returns 1 if successful or -1 on error
  */
-int mount_file_system_append_handle(
+int mount_file_system_append_file(
      mount_file_system_t *file_system,
      libgzipf_file_t *gzipf_file,
      libcerror_error_t **error )
 {
-	static char *function = "mount_file_system_append_handle";
+	static char *function = "mount_file_system_append_file";
 	int entry_index       = 0;
 
 	if( file_system == NULL )
@@ -738,7 +738,7 @@ int mount_file_system_append_handle(
 		return( -1 );
 	}
 	if( libcdata_array_append_entry(
-	     file_system->handles_array,
+	     file_system->files_array,
 	     &entry_index,
 	     (intptr_t *) gzipf_file,
 	     error ) != 1 )
@@ -747,7 +747,7 @@ int mount_file_system_append_handle(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-		 "%s: unable to append handle to array.",
+		 "%s: unable to append file to array.",
 		 function );
 
 		return( -1 );
@@ -755,20 +755,20 @@ int mount_file_system_append_handle(
 	return( 1 );
 }
 
-/* Retrieves the path from a handle index.
+/* Retrieves the path from a file index.
  * Returns 1 if successful or -1 on error
  */
-int mount_file_system_get_path_from_handle_index(
+int mount_file_system_get_path_from_file_index(
      mount_file_system_t *file_system,
-     int handle_index,
+     int file_index,
      system_character_t *path,
      size_t path_size,
      libcerror_error_t **error )
 {
-	static char *function     = "mount_file_system_get_path_from_handle_index";
+	static char *function     = "mount_file_system_get_path_from_file_index";
 	size_t path_index         = 0;
 	size_t required_path_size = 0;
-	int handle_number         = 0;
+	int file_number           = 0;
 
 	if( file_system == NULL )
 	{
@@ -816,13 +816,13 @@ int mount_file_system_get_path_from_handle_index(
 	}
         required_path_size = file_system->path_prefix_size;
 
-	handle_number = handle_index + 1;
+	file_number = file_index + 1;
 
-	while( handle_number > 0 )
+	while( file_number > 0 )
 	{
 		required_path_size++;
 
-		handle_number /= 10;
+		file_number /= 10;
 	}
 	if( path_size <= required_path_size )
 	{
@@ -851,15 +851,15 @@ int mount_file_system_get_path_from_handle_index(
 	}
 	path_index = required_path_size - 1;
 
-	handle_number = handle_index + 1;
+	file_number = file_index + 1;
 
 	path[ path_index-- ] = 0;
 
-	while( handle_number > 0 )
+	while( file_number > 0 )
 	{
-		path[ path_index-- ] = (system_character_t) '0' + ( handle_number % 10 );
+		path[ path_index-- ] = (system_character_t) '0' + ( file_number % 10 );
 
-		handle_number /= 10;
+		file_number /= 10;
 	}
 	return( 1 );
 }

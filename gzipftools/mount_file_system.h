@@ -48,9 +48,9 @@ struct mount_file_system
 	 */
 	size_t path_prefix_size;
 
-	/* The handles array
+	/* The files array
 	 */
-	libcdata_array_t *handles_array;
+	libcdata_array_t *files_array;
 };
 
 int mount_file_system_initialize(
@@ -76,32 +76,32 @@ int mount_file_system_get_mounted_timestamp(
      uint64_t *mounted_timestamp,
      libcerror_error_t **error );
 
-int mount_file_system_get_number_of_handles(
+int mount_file_system_get_number_of_files(
      mount_file_system_t *file_system,
-     int *number_of_handles,
+     int *number_of_files,
      libcerror_error_t **error );
 
-int mount_file_system_get_handle_by_index(
+int mount_file_system_get_file_by_index(
      mount_file_system_t *file_system,
-     int handle_index,
+     int file_index,
      libgzipf_file_t **gzipf_file,
      libcerror_error_t **error );
 
-int mount_file_system_get_handle_by_path(
+int mount_file_system_get_file_by_path(
      mount_file_system_t *file_system,
      const system_character_t *path,
      size_t path_length,
      libgzipf_file_t **gzipf_file,
      libcerror_error_t **error );
 
-int mount_file_system_append_handle(
+int mount_file_system_append_file(
      mount_file_system_t *file_system,
      libgzipf_file_t *gzipf_file,
      libcerror_error_t **error );
 
-int mount_file_system_get_path_from_handle_index(
+int mount_file_system_get_path_from_file_index(
      mount_file_system_t *file_system,
-     int handle_index,
+     int file_index,
      system_character_t *path,
      size_t path_size,
      libcerror_error_t **error );

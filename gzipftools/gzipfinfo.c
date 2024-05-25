@@ -1,5 +1,5 @@
 /*
- * Shows information obtained from a GZIP file
+ * Shows information obtained from a GZIP file.
  *
  * Copyright (C) 2019-2024, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -39,7 +39,6 @@
 #include <unistd.h>
 #endif
 
-#include "info_handle.h"
 #include "gzipftools_getopt.h"
 #include "gzipftools_libcerror.h"
 #include "gzipftools_libclocale.h"
@@ -48,11 +47,12 @@
 #include "gzipftools_output.h"
 #include "gzipftools_signal.h"
 #include "gzipftools_unused.h"
+#include "info_handle.h"
 
 info_handle_t *gzipfinfo_info_handle = NULL;
 int gzipfinfo_abort                  = 0;
 
-/* Prints the executable usage information
+/* Prints usage information
  */
 void usage_fprint(
       FILE *stream )

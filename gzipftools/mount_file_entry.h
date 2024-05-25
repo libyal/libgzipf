@@ -49,7 +49,7 @@ struct mount_file_entry
 	 */
 	size_t name_size;
 
-	/* The handle
+	/* The file
 	 */
 	libgzipf_file_t *gzipf_file;
 };

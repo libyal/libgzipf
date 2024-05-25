@@ -281,7 +281,7 @@ int mount_handle_open(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to initialize handle.",
+		 "%s: unable to initialize file.",
 		 function );
 
 		goto on_error;
@@ -305,12 +305,12 @@ int mount_handle_open(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_OPEN_FAILED,
-		 "%s: unable to open handle.",
+		 "%s: unable to open file.",
 		 function );
 
 		goto on_error;
 	}
-	if( mount_file_system_append_handle(
+	if( mount_file_system_append_file(
 	     mount_handle->file_system,
 	     gzipf_file,
 	     error ) != 1 )
@@ -319,7 +319,7 @@ int mount_handle_open(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-		 "%s: unable to append handle to file system.",
+		 "%s: unable to append file to file system.",
 		 function );
 
 		goto on_error;
@@ -345,8 +345,9 @@ int mount_handle_close(
 {
 	libgzipf_file_t *gzipf_file = NULL;
 	static char *function       = "mount_handle_close";
-	int handle_index            = 0;
-	int number_of_handles       = 0;
+	int file_index              = 0;
+	int number_of_files         = 0;
+	int result                  = 0;
 
 	if( mount_handle == NULL )
 	{
@@ -359,27 +360,27 @@ int mount_handle_close(
 
 		return( -1 );
 	}
-	if( mount_file_system_get_number_of_handles(
+	if( mount_file_system_get_number_of_files(
 	     mount_handle->file_system,
-	     &number_of_handles,
+	     &number_of_files,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve number of handles.",
+		 "%s: unable to retrieve number of files.",
 		 function );
 
-		goto on_error;
+		result = -1;
 	}
-	for( handle_index = number_of_handles - 1;
-	     handle_index > 0;
-	     handle_index-- )
+	for( file_index = number_of_files - 1;
+	     file_index > 0;
+	     file_index-- )
 	{
-		if( mount_file_system_get_handle_by_index(
+		if( mount_file_system_get_file_by_index(
 		     mount_handle->file_system,
-		     handle_index,
+		     file_index,
 		     &gzipf_file,
 		     error ) != 1 )
 		{
@@ -387,11 +388,11 @@ int mount_handle_close(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve handle: %d.",
+			 "%s: unable to retrieve file: %d.",
 			 function,
-			 handle_index );
+			 file_index );
 
-			goto on_error;
+			result = -1;
 		}
 /* TODO remove gzipf_file from file system */
 
@@ -403,11 +404,11 @@ int mount_handle_close(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_IO,
 			 LIBCERROR_IO_ERROR_CLOSE_FAILED,
-			 "%s: unable to close handle: %d.",
+			 "%s: unable to close file: %d.",
 			 function,
-			 handle_index );
+			 file_index );
 
-			goto on_error;
+			result = -1;
 		}
 		if( libgzipf_file_free(
 		     &gzipf_file,
@@ -417,23 +418,14 @@ int mount_handle_close(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free handle: %d.",
+			 "%s: unable to free file: %d.",
 			 function,
-			 handle_index );
+			 file_index );
 
-			goto on_error;
+			result = -1;
 		}
 	}
-	return( 0 );
-
-on_error:
-	if( gzipf_file != NULL )
-	{
-		libgzipf_file_free(
-		 &gzipf_file,
-		 NULL );
-	}
-	return( -1 );
+	return( result );
 }
 
 /* Retrieves a file entry for a specific path
@@ -516,7 +508,7 @@ int mount_handle_get_file_entry_by_path(
 		filename        = &( path[ path_index + 1 ] );
 		filename_length = path_length - ( path_index + 1 );
 	}
-	result = mount_file_system_get_handle_by_path(
+	result = mount_file_system_get_file_by_path(
 	          mount_handle->file_system,
 	          path,
 	          path_length,
@@ -529,7 +521,7 @@ int mount_handle_get_file_entry_by_path(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve handle.",
+		 "%s: unable to retrieve file.",
 		 function );
 
 		goto on_error;

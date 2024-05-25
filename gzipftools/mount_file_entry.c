@@ -631,7 +631,7 @@ int mount_file_entry_get_number_of_sub_file_entries(
      libcerror_error_t **error )
 {
 	static char *function = "mount_file_entry_get_number_of_sub_file_entries";
-	int number_of_handles = 0;
+	int number_of_files   = 0;
 
 	if( file_entry == NULL )
 	{
@@ -657,34 +657,34 @@ int mount_file_entry_get_number_of_sub_file_entries(
 	}
 	if( file_entry->gzipf_file == NULL )
 	{
-		if( mount_file_system_get_number_of_handles(
+		if( mount_file_system_get_number_of_files(
 		     file_entry->file_system,
-		     &number_of_handles,
+		     &number_of_files,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve number of handles.",
+			 "%s: unable to retrieve number of files.",
 			 function );
 
 			return( -1 );
 		}
-		if( ( number_of_handles < 0 )
-		 || ( number_of_handles > 99 ) )
+		if( ( number_of_files < 0 )
+		 || ( number_of_files > 999 ) )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 			 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-			 "%s: unsupported number of handles.",
+			 "%s: unsupported number of files.",
 			 function );
 
 			return( -1 );
 		}
 	}
-	*number_of_sub_file_entries = number_of_handles;
+	*number_of_sub_file_entries = number_of_files;
 
 	return( 1 );
 }
@@ -764,7 +764,7 @@ int mount_file_entry_get_sub_file_entry_by_index(
 
 		return( -1 );
 	}
-	if( mount_file_system_get_path_from_handle_index(
+	if( mount_file_system_get_path_from_file_index(
 	     file_entry->file_system,
 	     sub_file_entry_index,
 	     path,
@@ -781,7 +781,7 @@ int mount_file_entry_get_sub_file_entry_by_index(
 
 		return( -1 );
 	}
-	if( mount_file_system_get_handle_by_index(
+	if( mount_file_system_get_file_by_index(
 	     file_entry->file_system,
 	     sub_file_entry_index,
 	     &gzipf_file,
@@ -791,7 +791,7 @@ int mount_file_entry_get_sub_file_entry_by_index(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve handle: %d from file system.",
+		 "%s: unable to retrieve file: %d from file system.",
 		 function,
 		 sub_file_entry_index );
 
@@ -803,7 +803,7 @@ int mount_file_entry_get_sub_file_entry_by_index(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: missing handle: %d.",
+		 "%s: missing file: %d.",
 		 function,
 		 sub_file_entry_index );
 
