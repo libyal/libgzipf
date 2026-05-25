@@ -46,10 +46,9 @@ PKGCONFIG_FILES = \
 	libgzipf.pc.in
 
 SETUP_PY_FILES = \
+	_build.py \
 	pyproject.toml \
-	setup.cfg \
-	setup.cfg.in \
-	setup.py
+	pyproject.toml.in
 
 SPEC_FILES = \
 	libgzipf.spec \

@@ -31,14 +31,17 @@
  */
 #if defined( LIBGZIPF_DLL_EXPORT )
 #define LIBGZIPF_EXTERN __declspec(dllexport)
+#define LIBGZIPF_EXTERN_VARIABLE extern __declspec(dllexport)
 
 #elif defined( LIBGZIPF_DLL_IMPORT )
-#define LIBGZIPF_EXTERN extern __declspec(dllimport)
+#define LIBGZIPF_EXTERN __declspec(dllimport)
+#define LIBGZIPF_EXTERN_VARIABLE extern __declspec(dllimport)
 
 #else
 #define LIBGZIPF_EXTERN extern
+#define LIBGZIPF_EXTERN_VARIABLE extern
 
-#endif
+#endif /* defined( LIBGZIPF_DLL_EXPORT ) */
 
 #endif /* !defined( _LIBGZIPF_EXTERN_H ) */
 
