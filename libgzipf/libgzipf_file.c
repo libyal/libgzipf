@@ -1766,8 +1766,6 @@ int libgzipf_internal_file_read_deflate_block(
 
 		return( -1 );
 	}
-	uncompressed_block_offset += safe_uncompressed_block_size;
-
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -2058,7 +2056,7 @@ int libgzipf_internal_file_read_deflate_stream(
 			 "%s: unable to finalize zlib stream.",
 			 function );
 
-			result = -1;
+			goto on_error;
 		}
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )

@@ -19,6 +19,10 @@ AM_CPPFLAGS = \
 	@PTHREAD_CPPFLAGS@ \
 	@LIBGZIPF_DLL_IMPORT@
 
+AM_TESTS_ENVIRONMENT = \
+	export PYTHON="@PYTHON@"; \
+	export TESTS_USE_WINAPI="@TESTS_USE_WINAPI@";
+
 if HAVE_PYTHON_TESTS
 TESTS_PYGZIPF = \
 	test_python_module.sh
@@ -299,7 +303,8 @@ gzipf_test_tools_output_SOURCES = \
 
 gzipf_test_tools_output_LDADD = \
 	../libgzipf/libgzipf.la \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 gzipf_test_tools_signal_SOURCES = \
 	../gzipftools/gzipftools_signal.c ../gzipftools/gzipftools_signal.h \
