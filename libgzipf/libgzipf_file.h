@@ -27,7 +27,7 @@
 
 #if defined( HAVE_ZLIB ) || defined( ZLIB_DLL )
 #include <zlib.h>
-#endif  
+#endif
 
 #include "libgzipf_bit_stream.h"
 #include "libgzipf_compressed_segment.h"

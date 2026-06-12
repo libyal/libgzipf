@@ -24,6 +24,19 @@
 
 #include <common.h>
 
+#if !defined( __CYGWIN__ ) && !defined( _WIN32 ) && defined( __has_attribute )
+#if __has_attribute( visibility )
+#define LIBGZIPF_INTERNAL	__attribute__((visibility("hidden"))) extern
+
+#else
+#define LIBGZIPF_INTERNAL	extern
+
+#endif /* __has_attribute( visibility ) */
+#else
+#define LIBGZIPF_INTERNAL	extern
+
+#endif /* !defined( __CYGWIN__ ) && !defined( _WIN32 ) && defined( __has_attribute ) */
+
 /* Define HAVE_LOCAL_LIBGZIPF for local use of libgzipf
  */
 #if !defined( HAVE_LOCAL_LIBGZIPF )
@@ -32,7 +45,7 @@
 
 #else
 #define LIBGZIPF_EXTERN		/* extern */
-#define LIBGZIPF_EXTERN_VARIABLE	extern
+#define LIBGZIPF_EXTERN_VARIABLE	LIBGZIPF_INTERNAL
 
 #endif /* !defined( HAVE_LOCAL_LIBGZIPF ) */
 
