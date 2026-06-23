@@ -309,7 +309,7 @@ int libgzipf_file_is_corrupted(
      libgzipf_error_t **error );
 
 /* Retrieves the uncompressed data size
- * Returns the 1 if succesful or -1 on error
+ * Returns the 1 if successful or -1 on error
  */
 LIBGZIPF_EXTERN \
 int libgzipf_file_get_uncompressed_data_size(

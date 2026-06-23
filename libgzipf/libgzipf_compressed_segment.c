@@ -264,7 +264,7 @@ int libgzipf_compressed_segment_read_data(
 	size_t data_offset                 = 0;
 	size_t last_compressed_data_size   = 0;
 	size_t safe_compressed_data_size   = 0;
-/* TODO 
+/* TODO
 	size_t safe_uncompressed_data_size = 0;
 */
 	uint8_t bit_shift                  = 0;
@@ -427,7 +427,7 @@ int libgzipf_compressed_segment_read_data(
 		last_compressed_data_size = safe_compressed_data_size;
 
 		safe_compressed_data_size   += (size_t) zlib_stream.avail_in;
-/* TODO 
+/* TODO
 		safe_uncompressed_data_size += (size_t) zlib_stream.avail_out;
 */
 
@@ -436,7 +436,7 @@ int libgzipf_compressed_segment_read_data(
 			  Z_BLOCK );
 
 		safe_compressed_data_size   -= (size_t) zlib_stream.avail_in;
-/* TODO 
+/* TODO
 		safe_uncompressed_data_size -= (size_t) zlib_stream.avail_out;
 */
 
