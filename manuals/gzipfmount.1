@@ -1,18 +1,20 @@
 .Dd June 25, 2026
-.Dt GZIPFINFO 1
+.Dt GZIPFMOUNT 1
 .Os
 .Sh NAME
-.Nm gzipfinfo
-.Nd determines information about a GZIP file
+.Nm gzipfmount
+.Nd mounts a GZIP file
 .Sh SYNOPSIS
-.Nm gzipfinfo
+.Nm gzipfmount
+.Op Fl X Ar extended_options
 .Op Fl hvV
 .Ar source
+.Ar mount_point
 .Sh DESCRIPTION
-.Nm gzipfinfo
-is a utility to determine information about a GZIP file
+.Nm gzipfmount
+is a utility to mount a GZIP file
 .Pp
-.Nm gzipfinfo
+.Nm gzipfmount
 is part of the
 .Nm libgzipf
 package.
@@ -20,16 +22,20 @@ package.
 is a library to access the GZIP file format
 .Pp
 .Ar source
-is the source file.
+a GZIP file
+.Ar mount_point
+the directory to serve as mount point
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
 .It Fl h
 shows this help
 .It Fl v
-verbose output to stderr
+verbose output to stderr, while gzipfmount will remain running in the foreground
 .It Fl V
 print version
+.It Fl X Ar extended_options
+extended options to pass to sub system
 .El
 .Sh ENVIRONMENT
 None
@@ -37,16 +43,8 @@ None
 None
 .Sh EXAMPLES
 .Bd -literal
-# gzipfinfo syslog.gz
-gzipfinfo 20260625
-.sp
-GZIP file information:
-	Uncompressed data size		: 1247
-	Number of members		: 1
-.sp
-Member: 1
-	Name				: syslog.1
-	Modification time		: Jul 28, 2012 16:44:07 UTC
+# gzipfmount syslog.gz /mnt/gzipf
+gzipfmount 20260623
 .sp
 .Ed
 .Sh DIAGNOSTICS
@@ -54,7 +52,7 @@ Errors, verbose and debug output are printed to stderr when verbose output \
 \-v is enabled.
 Verbose and debug output are only printed when enabled at compilation.
 .Sh SEE ALSO
-.Xr gzipfmount 1
+.Xr gzipfinfo 1
 .Sh AUTHORS
 .An Joachim Metz <joachim.metz@gmail.com>
 .Sh BUGS
