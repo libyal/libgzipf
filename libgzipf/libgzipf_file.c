@@ -383,7 +383,7 @@ int libgzipf_file_open(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-		 "%s: unsupported accesss flags.",
+		 "%s: unsupported access flags.",
 		 function );
 
 		return( -1 );

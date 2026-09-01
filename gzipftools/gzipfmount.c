@@ -486,6 +486,14 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
+#if defined( HAVE_LIBFUSE3 )
+	fuse_unmount(
+	 gzipfmount_fuse_handle );
+#else
+	fuse_unmount(
+	 mount_point,
+	 gzipfmount_fuse_channel );
+#endif
 	fuse_destroy(
 	 gzipfmount_fuse_handle );
 
