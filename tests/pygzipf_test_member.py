@@ -28,119 +28,124 @@ import pygzipf
 
 
 class MemberTypeTests(unittest.TestCase):
-  """Tests the member type."""
+    """Tests the member type."""
 
-  def test_get_modification_time(self):
-    """Tests the get_modification_time function and modification_time property."""
-    test_source = getattr(unittest, "source", None)
-    if not test_source:
-      raise unittest.SkipTest("missing source")
+    def test_get_modification_time(self):
+        """Tests the get_modification_time function and modification_time property."""
+        test_source = getattr(unittest, "source", None)
+        if not test_source:
+            raise unittest.SkipTest("missing source")
 
-    gzipf_file = pygzipf.file()
+        gzipf_file = pygzipf.file()
 
-    gzipf_file.open(test_source)
+        gzipf_file.open(test_source)
 
-    try:
-      if not gzipf_file.number_of_members:
-        raise unittest.SkipTest("missing members")
+        try:
+            if not gzipf_file.number_of_members:
+                raise unittest.SkipTest("missing members")
 
-      gzipf_member = gzipf_file.get_member(0)
-      self.assertIsNotNone(gzipf_member)
+            gzipf_member = gzipf_file.get_member(0)
+            self.assertIsNotNone(gzipf_member)
 
-      modification_time = gzipf_member.get_modification_time()
-      self.assertIsNotNone(modification_time)
+            modification_time = gzipf_member.get_modification_time()
+            self.assertIsNotNone(modification_time)
 
-      self.assertIsNotNone(gzipf_member.modification_time)
+            self.assertIsNotNone(gzipf_member.modification_time)
 
-    finally:
-      gzipf_file.close()
+        finally:
+            gzipf_file.close()
 
-  def test_get_name(self):
-    """Tests the get_name function and name property."""
-    test_source = getattr(unittest, "source", None)
-    if not test_source:
-      raise unittest.SkipTest("missing source")
+    def test_get_name(self):
+        """Tests the get_name function and name property."""
+        test_source = getattr(unittest, "source", None)
+        if not test_source:
+            raise unittest.SkipTest("missing source")
 
-    gzipf_file = pygzipf.file()
+        gzipf_file = pygzipf.file()
 
-    gzipf_file.open(test_source)
+        gzipf_file.open(test_source)
 
-    try:
-      if not gzipf_file.number_of_members:
-        raise unittest.SkipTest("missing members")
+        try:
+            if not gzipf_file.number_of_members:
+                raise unittest.SkipTest("missing members")
 
-      gzipf_member = gzipf_file.get_member(0)
-      self.assertIsNotNone(gzipf_member)
+            gzipf_member = gzipf_file.get_member(0)
+            self.assertIsNotNone(gzipf_member)
 
-      name = gzipf_member.get_name()
-      self.assertIsNotNone(name)
+            name = gzipf_member.get_name()
+            self.assertIsNotNone(name)
 
-      self.assertIsNotNone(gzipf_member.name)
+            self.assertIsNotNone(gzipf_member.name)
 
-    finally:
-      gzipf_file.close()
+        finally:
+            gzipf_file.close()
 
-  def test_get_comments(self):
-    """Tests the get_comments function and comments property."""
-    test_source = getattr(unittest, "source", None)
-    if not test_source:
-      raise unittest.SkipTest("missing source")
+    def test_get_comments(self):
+        """Tests the get_comments function and comments property."""
+        test_source = getattr(unittest, "source", None)
+        if not test_source:
+            raise unittest.SkipTest("missing source")
 
-    gzipf_file = pygzipf.file()
+        gzipf_file = pygzipf.file()
 
-    gzipf_file.open(test_source)
+        gzipf_file.open(test_source)
 
-    try:
-      if not gzipf_file.number_of_members:
-        raise unittest.SkipTest("missing members")
+        try:
+            if not gzipf_file.number_of_members:
+                raise unittest.SkipTest("missing members")
 
-      gzipf_member = gzipf_file.get_member(0)
-      self.assertIsNotNone(gzipf_member)
+            gzipf_member = gzipf_file.get_member(0)
+            self.assertIsNotNone(gzipf_member)
 
-      comments = gzipf_member.get_comments()
-      self.assertIsNotNone(comments)
+            comments = gzipf_member.get_comments()
+            self.assertIsNotNone(comments)
 
-      self.assertIsNotNone(gzipf_member.comments)
+            self.assertIsNotNone(gzipf_member.comments)
 
-    finally:
-      gzipf_file.close()
+        finally:
+            gzipf_file.close()
 
-  def test_get_operating_system(self):
-    """Tests the get_operating_system function and operating_system property."""
-    test_source = getattr(unittest, "source", None)
-    if not test_source:
-      raise unittest.SkipTest("missing source")
+    def test_get_operating_system(self):
+        """Tests the get_operating_system function and operating_system property."""
+        test_source = getattr(unittest, "source", None)
+        if not test_source:
+            raise unittest.SkipTest("missing source")
 
-    gzipf_file = pygzipf.file()
+        gzipf_file = pygzipf.file()
 
-    gzipf_file.open(test_source)
+        gzipf_file.open(test_source)
 
-    try:
-      if not gzipf_file.number_of_members:
-        raise unittest.SkipTest("missing members")
+        try:
+            if not gzipf_file.number_of_members:
+                raise unittest.SkipTest("missing members")
 
-      gzipf_member = gzipf_file.get_member(0)
-      self.assertIsNotNone(gzipf_member)
+            gzipf_member = gzipf_file.get_member(0)
+            self.assertIsNotNone(gzipf_member)
 
-      operating_system = gzipf_member.get_operating_system()
-      self.assertIsNotNone(operating_system)
+            operating_system = gzipf_member.get_operating_system()
+            self.assertIsNotNone(operating_system)
 
-      self.assertIsNotNone(gzipf_member.operating_system)
+            self.assertIsNotNone(gzipf_member.operating_system)
 
-    finally:
-      gzipf_file.close()
+        finally:
+            gzipf_file.close()
 
 
 if __name__ == "__main__":
-  argument_parser = argparse.ArgumentParser()
+    argument_parser = argparse.ArgumentParser()
 
-  argument_parser.add_argument(
-      "source", nargs="?", action="store", metavar="PATH",
-      default=None, help="path of the source file.")
+    argument_parser.add_argument(
+        "source",
+        nargs="?",
+        action="store",
+        metavar="PATH",
+        default=None,
+        help="path of the source file.",
+    )
 
-  options, unknown_options = argument_parser.parse_known_args()
-  unknown_options.insert(0, sys.argv[0])
+    options, unknown_options = argument_parser.parse_known_args()
+    unknown_options.insert(0, sys.argv[0])
 
-  setattr(unittest, "source", options.source)
+    setattr(unittest, "source", options.source)
 
-  unittest.main(argv=unknown_options, verbosity=2)
+    unittest.main(argv=unknown_options, verbosity=2)
