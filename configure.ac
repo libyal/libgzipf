@@ -2,7 +2,7 @@ AC_PREREQ([2.71])
 
 AC_INIT(
   [libgzipf],
-  [20261009],
+  [20261108],
   [https://github.com/libyal/libgzipf/issues])
 
 AC_CONFIG_SRCDIR(
